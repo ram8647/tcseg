@@ -13,8 +13,22 @@ The Tribolium c. modeling project is funded by a grant from the National Science
 The focus of the project is to create a Monte-Carlo cellular-level model of the process of segmentation in an arthropod. 
 
 There are three main source files that make up the Simulation.  These are typically found in the /Simulation folder of a ComputCell project.
+These are the files that will typically be edited and revised during development.
  
- *  <projectname>.py -- initialization file
- *  <projectname>Steppables.py -- scripts that define the steps that are performed on each Monte Carlo step.
- *  <name>.piff  -- initial layout of cell lattice
+ *  Simulation/RewrittenSarrazin.py -- initialization file
+ *  Simulation/RewrittenSarrazinSteppables.py -- scripts that define the steps that are performed on each Monte Carlo step.
+ *  Simulation/new.piff  -- initial layout of cell lattice
+
+There is also the main simulation (.cc3d) file.  This does not need editing:
+
+ * RewrittenSarrazin.cc3d
+
+To Run the Model
+================
+ 1. Run Compucell3D (CC3D_3.7.1) by double clicking on CC3D_3.7.1/compucell3d.command
+ 2. This will open a console and the GUI player
+ 3. To open a model: File > Open Simulation File (.cc3d)
+ 4. To run it, click on the player's run icon
+ 5. Debugging runtime comments appear in the console.
+
  
