@@ -17,5 +17,4 @@ There are three main source files that make up the Simulation.  These are typica
  *  <projectname>.py -- initialization file
  *  <projectname>Steppables.py -- scripts that define the steps that are performed on each Monte Carlo step.
  *  <name>.piff  -- initial layout of cell lattice
- *  
  
