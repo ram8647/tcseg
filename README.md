@@ -22,6 +22,13 @@ These are the files that will typically be edited and revised during development
 There is also the main simulation (.cc3d) file.  This does not need editing:
 
  * RewrittenSarrazin.cc3d
+ 
+ To sync with upstream ram8647/tcseg
+ ====================================
+ $ git fetch upstream
+ $ git checkout master
+ $ git merge upstream/master
+ 
 
 To Run the Model
 ================
@@ -31,4 +38,4 @@ To Run the Model
  4. To run it, click on the player's run icon
  5. Debugging runtime comments appear in the console.
 
-Testing Ralph
+Testing Ralph Hello Terri
