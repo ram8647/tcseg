@@ -23,12 +23,25 @@ There is also the main simulation (.cc3d) file.  This does not need editing:
 
  * RewrittenSarrazin.cc3d
  
- To sync with upstream ram8647/tcseg
- ====================================
- $ git fetch upstream
- $ git checkout master
- $ git merge upstream/master
- 
+To sync with upstream ram8647/tcseg
+====================================
+$ git fetch upstream
+$ git checkout master
+$ git merge upstream/master
+
+Standard work flow
+=================
+1. Sync with upstream repo
+2. From master $ git branch taskname
+3. Edit file/test code/etc
+4. $ git add --all
+5. $ git commit -m "tastname message"
+6. $ git checkout master
+7. Sync with upstream again
+8. $ git merge taskname
+9. $ git push
+10.$ git push upstream
+11.$ git granch -d taskname 
 
 To Run the Model
 ================
