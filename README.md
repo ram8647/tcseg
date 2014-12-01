@@ -29,9 +29,12 @@ To sync with upstream ram8647/tcseg
   2. $ git checkout master
   3. $ git merge upstream/master
 
-Standard work flow
-=================
+Standard work flow in Terminal Window
+=====================================
 1. Sync with upstream repo
+  1. $ git fetch upstream
+  2. $ git checkout master
+  3. $ git merge upstream/master
 2. From master $ git branch taskname
 3. Edit file/test code/etc
 4. $ git add --all
