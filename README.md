@@ -35,16 +35,18 @@ Standard work flow in Terminal Window
   1. $ git fetch upstream
   2. $ git checkout master
   3. $ git merge upstream/master
-2. From master $ git branch taskname
-3. Edit file/test code/etc
-4. $ git add --all
-5. $ git commit -m "taskname message"
-6. $ git checkout master
-7. Sync with upstream again
-8. $ git merge taskname
-9. $ git push
-10. $ git push upstream
-11. $ git branch -d taskname 
+2. From the master branch create a new work branch and switch to that branch
+  1. $ git branch taskname
+  2. $ git checkout taskname
+3. Make edits to the files you're going to change, e.g.,  file/test code/etc
+4. $ git add --all                     # Add all the changed files to the changeset
+5. $ git commit -m "taskname message"  # Commit the changeset, giving it a short message
+6. $ git checkout master               # Switch back to the master branch
+7. Sync with upstream again            # Same as step 1 (in case others have changed the repo)
+8. $ git merge taskname                # Merge the changeset from the taskname branch
+9. $ git push                          # Push the changes (this pushes to your clone of the main repo)
+10. $ git push upstream                # Push the changes to the main repo (assuming you are a collaborator)
+11. $ git branch -d taskname           # Optional: Delete your task branch once you're sure your changes are in the repo
 
 
 To Run the Model
