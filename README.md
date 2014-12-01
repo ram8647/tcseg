@@ -51,6 +51,3 @@ To Run the Model
  3. To open a model: File > Open Simulation File (.cc3d)
  4. To run it, click on the player's run icon
  5. Debugging runtime comments appear in the console.
-
-* Testing Ralph 
-* Hello Terri
