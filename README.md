@@ -35,13 +35,13 @@ Standard work flow
 2. From master $ git branch taskname
 3. Edit file/test code/etc
 4. $ git add --all
-5. $ git commit -m "tastname message"
+5. $ git commit -m "taskname message"
 6. $ git checkout master
 7. Sync with upstream again
 8. $ git merge taskname
 9. $ git push
 10. $ git push upstream
-11. $ git granch -d taskname 
+11. $ git branch -d taskname 
 
 
 To Run the Model
