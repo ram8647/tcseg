@@ -25,9 +25,9 @@ There is also the main simulation (.cc3d) file.  This does not need editing:
  
 To sync with upstream ram8647/tcseg
 ====================================
-  * $ git fetch upstream
-  * $ git checkout master
-  * $ git merge upstream/master
+  1 $ git fetch upstream
+  2 $ git checkout master
+  3 $ git merge upstream/master
 
 Standard work flow
 =================
