@@ -40,8 +40,8 @@ Standard work flow
 7. Sync with upstream again
 8. $ git merge taskname
 9. $ git push
- 10. $ git push upstream
- 11. $ git granch -d taskname 
+10. $ git push upstream
+11. $ git granch -d taskname 
 
 
 To Run the Model
