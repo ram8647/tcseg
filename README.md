@@ -7,8 +7,8 @@ This project manages the Python source code for a CompuCell modeling project. Co
 
 The Tribolium c. modeling project is funded by a grant from the National Science Foundation. It is led by Terri Williams and Ralph Morelli (Trinity College) and Susan Hester (Unversity of Arizona).  Student research assistants include:
 
-   * Yuxuan (Effie) Li, Trinity 2017
-   * Peter Jong, Trinity 2017
+* Yuxuan (Effie) Li, Trinity 2017
+* Peter Jung, Trinity 2017
 
 The focus of the project is to create a Monte-Carlo cellular-level model of the process of segmentation in an arthropod. 
 
