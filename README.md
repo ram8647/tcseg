@@ -40,8 +40,8 @@ Standard work flow
 7. Sync with upstream again
 8. $ git merge taskname
 9. $ git push
-10.$ git push upstream
-11.$ git granch -d taskname 
+ 10.$ git push upstream
+ 11.$ git granch -d taskname 
 
 
 To Run the Model
@@ -52,5 +52,5 @@ To Run the Model
  4. To run it, click on the player's run icon
  5. Debugging runtime comments appear in the console.
 
-Testing Ralph 
-Hello Terri
+* Testing Ralph 
+* Hello Terri
