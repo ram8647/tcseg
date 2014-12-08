@@ -85,7 +85,7 @@ def configureSimulation(sim):
     SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"PIFInitializer"})
     
     # Initial layout of cells using PIFF file. Piff files can be generated using PIFGEnerator
-    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/new.piff")
+    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/Dec2014.piff")
 
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
             
