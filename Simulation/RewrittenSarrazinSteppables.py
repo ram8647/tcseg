@@ -258,37 +258,6 @@ class Engrailed(SteppableBasePy):
                         #if self.hinder_anterior_cells == True:
                             #self.gene_product_secretor.secreteInsideCell(cell,1)
 
-        '''
-        for cell in self.cellList:
-
-            cellDict = CompuCell.getPyAttrib(cell)
-            cell_address = cellDict["CELL_AP_ADDRESS"] # figure out where the cell is, accurate to within the last 100 mcs
-
-            #reset cell variables here
-            cellDict["En_ON"] = False
-            cell.type = 1
-            cell.lambdaSurface = 2.0
-
-            ##******** Here, we assign which cells express EN ********##
-
-            for stripe in self.stripes:
-                if stripe.start_mcs < mcs:
-                    spread = 0.0125    #  y - size of the stripe
-
-                    #if cell_address < stripe.relative_position + spread and cell_address > stripe.relative_position - spread:
-                    
-
-            ##******** Here, we retard those cells within the domain of the EN gene product ********##
-
-            #if self.hinder_anterior_cells == True:
-                #cell.lambdaSurface = 2.0
-
-                # ignore the EN expressing cells. It might be logical to remove this step later.
-                #if cellDict["En_ON"] == False and self.gene_product_field[int(cell.xCOM), int(cell.yCOM), 0] > 4:
-                #if self.gene_product_field[int(cell.xCOM), int(cell.yCOM), 0] > 0.1:
-                    #cell.lambdaSurface = 60.0
-'''
-
 '''
 class SarrazinCloneVisualizer(SteppableBasePy):
     def __init__(self,_simulator,_frequency, _cell_locs):
