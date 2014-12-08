@@ -258,7 +258,6 @@ class Engrailed(SteppableBasePy):
                         #if self.hinder_anterior_cells == True:
                             #self.gene_product_secretor.secreteInsideCell(cell,1)
 
-'''
 class SarrazinCloneVisualizer(SteppableBasePy):
     def __init__(self,_simulator,_frequency, _cell_locs):
         SteppableBasePy.__init__(self,_simulator,_frequency)
@@ -281,4 +280,3 @@ class SarrazinCloneVisualizer(SteppableBasePy):
     def step(self,mcs):
         for cell in self.sarraCells:
             self.sarrazin_path_field[int(cell.xCOM), int(cell.yCOM), 0] = 1
-'''
