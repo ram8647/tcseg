@@ -2,6 +2,9 @@ from PlayerPython import *
 import CompuCellSetup
 ##******** Simulation Flags ********##
 
+# Simulation Dimension Parameters
+global Dx; global Dy
+
 # general simulation flags
 global batch; global speed_up_sim
 
@@ -12,11 +15,18 @@ global pinch_force_mag; global pinch_force_falloff_sharpness
 global hinder_cells_near_EN
 global stripe_y
 
+## Mitosis parameters
+global regional_mitosis; global y_GZ_mitosis_border
+
+##  Set Simulation Dimension Parameters  ##
+Dx = 320
+Dy = 750 #480
+
 ##******** Configure Simulation Flags ********##
 
 speed_up_sim = False
 batch = False
-hinder_cells_near_EN = True
+hinder_cells_near_EN = False  ## THIS PARAMETER IS CURRENTLY NOT DOING ANYTHING MECHANISTIC (sdh)
 
 ## configure the sarrazin force steppable. Comments show default values.
 
@@ -25,6 +35,10 @@ pull_force_magnitude = 60 #60
 pinch_force_relative_center = 0.35 #0.35
 pinch_force_mag = 30 #17
 pinch_force_falloff_sharpness = 3.5 #3.5
+
+## Set Mitosis flag ##
+regional_mitosis=1 # RegionalMitosis steppable runs if nonzero
+## Set Mitosis Steppable parameters in Steppables file ##
 
 ##******** Batch Run Configuration ********##
 
@@ -40,7 +54,7 @@ def configureSimulation(sim):
     PottsElmnt=CompuCell3DElmnt.ElementCC3D("Potts")
     
     # Basic properties of CPM (GGH) algorithm
-    PottsElmnt.ElementCC3D("Dimensions",{"x":"320","y":"480","z":"1"})
+    PottsElmnt.ElementCC3D("Dimensions",{"x":Dx,"y":Dy,"z":1})
     PottsElmnt.ElementCC3D("Steps",{},"2001")
     PottsElmnt.ElementCC3D("Temperature",{},"10.0")
     PottsElmnt.ElementCC3D("NeighborOrder",{},"1")
@@ -50,6 +64,7 @@ def configureSimulation(sim):
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"1","TypeName":"AnteriorLobe"})
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"2","TypeName":"EN"})
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"3","TypeName":"GZ"})
+    PluginElmnt.ElementCC3D("CellType",{"TypeId":"4","TypeName":"Mitosing"})
     
     PluginElmnt_1=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Volume"}) # Cell property trackers and manipulators
     PluginElmnt_2=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Surface"})
@@ -63,29 +78,37 @@ def configureSimulation(sim):
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"AnteriorLobe"},"100.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"EN"},"100.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"GZ"},"100.0")
+    PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"Mitosing"},"100.0")    
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"AnteriorLobe","Type2":"AnteriorLobe"},"10.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"AnteriorLobe","Type2":"EN"},"10.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"AnteriorLobe","Type2":"GZ"},"10.0")
+    PluginElmnt_5.ElementCC3D("Energy",{"Type1":"AnteriorLobe","Type2":"Mitosing"},"10.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"EN","Type2":"EN"},"10.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"EN","Type2":"GZ"},"10.0")
+    PluginElmnt_5.ElementCC3D("Energy",{"Type1":"EN","Type2":"Mitosing"},"10.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"GZ","Type2":"GZ"},"10.0")
+    PluginElmnt_5.ElementCC3D("Energy",{"Type1":"GZ","Type2":"Mitosing"},"10.0")
+    PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Mitosing","Type2":"Mitosing"},"10.0")
     PluginElmnt_5.ElementCC3D("NeighborOrder",{},"1")
 
+    
+    ## EN GENE PRODUCT FIELD NOT ACCOMPLISHING ANYTHING MECHANISTIC, AND SLOWING DOWN SIMULATION A LOT
     ## ***** Define the properties of the Engrailed gene product ***** ##
 
-    SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"DiffusionSolverFE"})
-    DiffusionFieldElmnt=SteppableElmnt.ElementCC3D("DiffusionField",{"Name":"EN_GENE_PRODUCT"})
-    DiffusionDataElmnt=DiffusionFieldElmnt.ElementCC3D("DiffusionData")
-    DiffusionDataElmnt.ElementCC3D("FieldName",{},"EN_GENE_PRODUCT")
-    DiffusionDataElmnt.ElementCC3D("GlobalDiffusionConstant",{},"10.0") # 0.05 for anterior retardation; 0.5 for bidirectional retardation
-    DiffusionDataElmnt.ElementCC3D("GlobalDecayConstant",{},"0.05") # 0.005 for anterior retardation; 0.05 for bidirectional retardation
+    if hinder_cells_near_EN: # THIS IS TO AVOID SLOWDOWN WHEN FIELD NOT NECESSARY (sdh)
+      SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"DiffusionSolverFE"})
+      DiffusionFieldElmnt=SteppableElmnt.ElementCC3D("DiffusionField",{"Name":"EN_GENE_PRODUCT"})
+      DiffusionDataElmnt=DiffusionFieldElmnt.ElementCC3D("DiffusionData")
+      DiffusionDataElmnt.ElementCC3D("FieldName",{},"EN_GENE_PRODUCT")
+      DiffusionDataElmnt.ElementCC3D("GlobalDiffusionConstant",{},"10.0") # 0.05 for anterior retardation; 0.5 for bidirectional retardation
+      DiffusionDataElmnt.ElementCC3D("GlobalDecayConstant",{},"0.05") # 0.005 for anterior retardation; 0.05 for bidirectional retardation
 
     ## ***** ##
     
     SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"PIFInitializer"})
     
     # Initial layout of cells using PIFF file. Piff files can be generated using PIFGEnerator
-    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/Dec2014.piff")
+    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/Dec2014_v02.piff")
 
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
             
@@ -143,6 +166,11 @@ steppables = [s1,s2,s3,s5]
 for steppable in steppables: steppableRegistry.registerSteppable(steppable)
 
 ## ***** Declare the other steppables *****  ##
+if regional_mitosis:
+   from RewrittenSarrazinSteppables import RegionalMitosis
+   mitosis = RegionalMitosis(sim,_frequency = 1)
+   steppableRegistry.registerSteppable(mitosis)
+
 '''
 if speed_up_sim == False: # Disable the superfluous code for runs where efficiency is important
     from RewrittenSarrazinSteppables import SarrazinVisualizer
