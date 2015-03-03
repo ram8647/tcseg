@@ -1,5 +1,4 @@
 <Simulation version="3.6.2">
    <PythonScript Type="PythonScript">Simulation/RewrittenSarrazin.py</PythonScript>
    <Resource Type="Python">Simulation/RewrittenSarrazinSteppables.py</Resource>
-   <PIFFile>Simulation/newStart.piff</PIFFile>
 </Simulation>

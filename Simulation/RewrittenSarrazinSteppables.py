@@ -254,7 +254,8 @@ class Engrailed(SteppableBasePy):
             for cell in self.cellList:
                 #cellDict = CompuCell.getPyAttrib(cell)
                 print "self.stripe_y:    ", self.stripe_y
-                if cell.type == 1: #AnteriorLobe
+                # if cell.type == 1: #AnteriorLobe
+                if cell:
                     if cell.yCOM < self.stripe_y + 6 and cell.yCOM > self.stripe_y - 6:
                         #cellDict["En_ON"] = True
                         cell.type = 2 # EN
@@ -290,19 +291,29 @@ class RegionalMitosis(MitosisSteppableBase):
       self.y_GZ_mitosis_border_percent = 0.5 ## The position, in fraction of the GZ (from posteriormost EN stripe to posterior of GZ,
                                              ## of the border between mitosis regions in the GZ (measured from the posterior)
       r_mitosis_R0 = 0.0 # approximate fraction of cells dividing in a given window in region 0 (anterior to EN)
-      r_mitosis_R1 = 0.9 # approximate fraction of cells dividing in a given window in region 1 (EN striped region)
-      r_mitosis_R2 = 0.9 # approximate fraction of cells dividing in a given window in region 2 (anterior GZ)
-      r_mitosis_R3 = 0.9 # approximate fraction of cells dividing in a given window in region 3 (posterior GZ)
+      r_mitosis_R1 = 0.0 # approximate fraction of cells dividing in a given window in region 1 (EN striped region)
+      r_mitosis_R2 = 0.0 # approximate fraction of cells dividing in a given window in region 2 (anterior GZ)
+      r_mitosis_R3 = 0.5 # approximate fraction of cells dividing in a given window in region 3 (posterior GZ)
+      self.r_mitosis_list=[r_mitosis_R0,r_mitosis_R1,r_mitosis_R2,r_mitosis_R3]
+      
       self.window = 500 # length of window in MCS (see above)
-      self.V_divide = 90 # volume, in pixels, at which cells divide
+      self.Vmin_divide = 60 # minimum volume, in pixels, at which cells can divide
+      self.Vmax = 90 # maximum volume to which cells can grow
       self.mitosisVisualizationFlag = 1 # if nonzero, turns on mitosis visualization
       self.mitosisVisualizationWindow = 100 # number of MCS that cells stay labeled as having divided
       
-      t_grow_R0=self.calculate_t_grow(r_mitosis_R0)
-      t_grow_R1=self.calculate_t_grow(r_mitosis_R1)
-      t_grow_R2=self.calculate_t_grow(r_mitosis_R2)
-      t_grow_R3=self.calculate_t_grow(r_mitosis_R3)
-      self.t_grow_list=[t_grow_R0,t_grow_R1,t_grow_R2,t_grow_R3]
+      # Set r_grow for each region: pixels per MCS added to cell's volume
+      r_grow_R0=0
+      r_grow_R1=0
+      r_grow_R2=0
+      r_grow_R3=0.05
+      self.r_grow_list=[r_grow_R0,r_grow_R1,r_grow_R2,r_grow_R3]      
+      
+      # t_grow_R0=self.calculate_t_grow(r_mitosis_R0)
+      # t_grow_R1=self.calculate_t_grow(r_mitosis_R1)
+      # t_grow_R2=self.calculate_t_grow(r_mitosis_R2)
+      # t_grow_R3=self.calculate_t_grow(r_mitosis_R3)
+      # self.t_grow_list=[t_grow_R0,t_grow_R1,t_grow_R2,t_grow_R3]
       
       self.fraction_AP_oriented=0.5
       
@@ -312,20 +323,22 @@ class RegionalMitosis(MitosisSteppableBase):
       self.y_GZ_border=self.find_y_GZ_mitosis_border()
       for cell in self.cellList:
          region=self.assign_cell_region(cell)
-         self.initiate_cell_volume(cell)  ## Initiates cells with new volumes to distribute mitoses in time
+         # self.initiate_cell_volume(cell)  ## Initiates cells with new volumes to distribute mitoses in time
          cellDict = CompuCell.getPyAttrib(cell)
-         cellDict["growth_timer"]=self.attach_growth_timer(cell,region)  ## attached a countdown timer for cell growth
+         cellDict["growth_timer"]=self.attach_growth_timer(cell)  ## attached a countdown timer for cell growth
    
    def step(self,mcs):
       print 'Executing Mitosis Steppable'
+      mitosis_list=self.make_mitosis_list()
+      self.perform_mitosis(mitosis_list)
       self.y_EN_pos=self.find_posterior_EN_stripe()
       self.y_EN_ant=self.find_anterior_EN_stripe()
       self.y_GZ_border=self.find_y_GZ_mitosis_border()
       for cell in self.cellList:
-         region=self.assign_cell_region(cell)
-         self.grow_cell(cell,region)
-      mitosis_list=self.make_mitosis_list()
-      self.perform_mitosis(mitosis_list)
+         self.assign_cell_region(cell)
+         self.grow_cell(cell)
+      # mitosis_list=self.make_mitosis_list()
+      # self.perform_mitosis(mitosis_list)
 
    def perform_mitosis(self,mitosis_list):
       for cell in mitosis_list:
@@ -362,42 +375,56 @@ class RegionalMitosis(MitosisSteppableBase):
          childDict[key]=deepcopy(parentDict[key])
    
    def assign_cell_region(self,cell):
+      cellDict=CompuCell.getPyAttrib(cell)
       yCM=cell.yCM/float(cell.volume)
       if yCM > self.y_EN_ant: # if cell is anterior to EN stripes
-         region=0
+         cellDict["region"]=0
+         # if (cell.type!=4 and cell.type!=2): # if cell is not En or mitosing
+            # cell.type=1 # AnteriorLobe
       elif yCM > self.y_EN_pos: # if cell is in EN-striped region
-         region=1
+         cellDict["region"]=1
+         if (cell.type!=2 and cell.type!=4): # if cell is not En or mitosing
+            cell.type=5 # Segmented
       elif yCM > self.y_GZ_border: # if cell is in anterior region of GZ
-         region=2
+         cellDict["region"]=2
+         if (cell.type!=2 and cell.type!=4): # if cell is not En or mitosing
+            cell.type=3 #GZ
       else:                # if cell is in posterior region of GZ
-         region=3
-      return region
+         cellDict["region"]=3
+         if cell.type!=4: #if cell is not mitosing
+            cell.type=3 # GZ
       
    def initiate_cell_volume(self,cell): 
       phase=random() # chooses a phase between 0 and 1 to initialize cell volume
-      volume_difference=self.V_divide - cell.volume
+      volume_difference=self.Vmin_divide - cell.volume
       new_volume=phase*volume_difference + cell.volume
       cell.targetVolume = new_volume
       
-   def attach_growth_timer(self,cell,region):
+   def attach_growth_timer(self,cell):
       phase=random() # picks a random phase between 0 and 1 to initialize cell growth timer
-      growth_timer=phase*self.t_grow_list[region]
+      growth_timer=phase
       return growth_timer
       
-   def grow_cell(self,cell,region):
+   def grow_cell(self,cell):
       cellDict=CompuCell.getPyAttrib(cell)
-      t_grow=self.t_grow_list[region]
-      if cellDict["growth_timer"] >= t_grow:
-         cell.targetVolume+=1
-         cellDict["growth_timer"]=0
-      elif t_grow < 999999999: # if cell is in region experiencing mitosis
-         cellDict["growth_timer"]+=1
+      region=cellDict["region"]
+      r_grow=self.r_grow_list[region]
+      if cellDict["growth_timer"] >= 1:
+         if cell.targetVolume<=self.Vmax:
+            cell.targetVolume+=int(cellDict["growth_timer"])
+            cellDict["growth_timer"]=0
+      else:
+         cellDict["growth_timer"]+=r_grow
          
    def make_mitosis_list(self):
       mitosis_list=[]
       for cell in self.cellList:
-         if cell.volume >= self.V_divide:
-            mitosis_list.append(cell)
+         cellDict=CompuCell.getPyAttrib(cell)
+         region=cellDict["region"]
+         mitosis_probability=self.r_mitosis_list[region]/self.window
+         if mitosis_probability>=random():      
+            if cell.volume >= self.Vmin_divide:
+               mitosis_list.append(cell)
       return mitosis_list
       
    def find_posterior_EN_stripe(self):
@@ -431,13 +458,13 @@ class RegionalMitosis(MitosisSteppableBase):
             y_GZ_pos=yCM
       return y_GZ_pos
       
-   def calculate_t_grow(self,r_mitosis):
-      if r_mitosis > 0:
-         t_cycle=self.window/r_mitosis # approx time to double volume, in MCS
-         t_grow=2*t_cycle/self.V_divide # MCS per pixel growth
-      else:
-         t_grow=999999999
-      return t_grow
+   # def calculate_t_grow(self,r_mitosis):
+      # if r_mitosis > 0:
+         # t_cycle=self.window/r_mitosis # approx time to double volume, in MCS
+         # t_grow=2*t_cycle/self.V_divide # MCS per pixel growth
+      # else:
+         # t_grow=999999999
+      # return t_grow
       
    def visualizeMitosis(self,cell):
       cellDict=CompuCell.getPyAttrib(cell)
