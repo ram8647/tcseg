@@ -1,3 +1,5 @@
+from Stats import Stats
+
 from PlayerPython import * 
 import CompuCellSetup
 ## General Note: Cell Address is relative to the anterior. So, a 0.0 address means that it is on the anterior tip.
@@ -137,6 +139,8 @@ class SarrazinForces(SteppableBasePy):
 
     def start(self):
         self.posteriormost_cell = self.getSteppableByClassName('AssignCellAddresses').posteriormost_cell
+#        Stats.displayStats()
+#        Stats.outputStats()
 
     @staticmethod
     def setstripe_y(self,stripe_y):
@@ -146,6 +150,10 @@ class SarrazinForces(SteppableBasePy):
 
         target_coord_x = 160
         target_coord_y = self.posteriormost_cell.yCOM + self.y_target_offset
+
+        if (mcs % 50 == 0):
+            Stats.displayStats('Number of cells=', len(self.cellList))
+
 
         for cell in self.cellList:
             cell.lambdaVecX = 0; cell.lambdaVecY = 0 #reset forces from the MCS
