@@ -75,6 +75,89 @@ class VolumeStabilizer(SteppableBasePy):
             cell.lambdaSurface = 2.0 # However, a low lambdaSurface still allows them to move easily.
 
             # In effect, these above two lines allow the cells to travel without squeezing, which would be unrealistic.
+
+class SimplifiedForces(SteppableBasePy):
+    def __init__(self,_simulator,_frequency):
+      SteppableBasePy.__init__(self,_simulator,_frequency)
+      # Uncomment 1 of the following:
+      self.position = "normalized"    # normalizes position between 0 and 1 to calculate force
+      # position = "absolute"    # calculates force based on absolute distance from posterior
+      
+    def start(self):pass
+
+   # Define the AP force function
+    def AP_potential_function(self,x,y):
+      # Set the constants for the AP force function
+      k1=50.0
+      k2=-(1.0/500)
+      k3=0
+      V=k1*math.exp(k2*(y-self.posterior))+k3
+      # V=20
+      return V
+      
+   # Define the ML force function
+    def ML_potential_function(self,x,y):
+      # Set the constants for the ML force function
+      k1=100.0
+      k2=-(1.0/80)
+      k3=0
+      
+      if x<self.midline:
+         k1=-1*k1
+      
+      V=k1*math.exp(k2*abs(self.anterior-y))+k3
+      # V=k1*math.exp(k2*abs(self.posterior-y))+k3
+      # V=50
+      return V       
+      
+    def step(self,mcs):
+      self.midline=self.find_midline()
+      self.anterior=self.find_anterior_GZ()
+      self.posterior=self.find_posterior_GZ()
+      for cell in self.cellList:
+         if cell.yCOM < self.anterior: # if posterior to last EN stripe
+         # if cell.type==3: # GZ
+            x=cell.xCOM
+            y=cell.yCOM
+            V_y=self.AP_potential_function(x,y)
+            V_x=self.ML_potential_function(x,y)
+            cell.lambdaVecX=V_x
+            cell.lambdaVecY=V_y
+         else: 
+            cell.lambdaVecX=0
+            cell.lambdaVecY=0
+         # print "cell id: " + str(cell.id) + " cell.COM: " + str(cell.xCOM) + " Vx=" + str(V_x)
+         # print "anterior = " +str(self.anterior)
+         # print "posterior = " +str(self.posterior)
+      
+    def find_midline(self):
+      x0=999999
+      x_max=0
+      for cell in self.cellList:
+         xCM=cell.xCOM
+         if xCM>x_max:
+            x_max=xCM
+         elif xCM<x0:
+            x0=xCM
+      midline=x0+0.5*(x_max-x0)
+      return midline
+      
+    def find_anterior_GZ(self):
+      y_GZ_ant=0
+      for cell in self.cellList:
+         if cell.type==3: #GZ
+            yCM=cell.yCOM
+            if yCM > y_GZ_ant:
+               y_GZ_ant=yCM
+      return y_GZ_ant    
+
+    def find_posterior_GZ(self):
+      y_GZ_pos=999999
+      for cell in self.cellList:
+         yCM=cell.yCOM
+         if yCM < y_GZ_pos:
+            y_GZ_pos=yCM
+      return y_GZ_pos       
             
 class AssignCellAddresses(SteppableBasePy): # this steppable assigns each cell an address along the AP axis
     def __init__(self,_simulator,_frequency):
@@ -117,80 +200,12 @@ class AssignCellAddresses(SteppableBasePy): # this steppable assigns each cell a
 
     def immobilizeAnteriorLobe(self,cell):
         address = CompuCell.getPyAttrib(cell)["CELL_AP_ADDRESS"]
-        if address < 0.2:
+        if cell.type==1: # AnteriorLobe
+        # if address < 0.2:
             cell.lambdaSurface += (0.2 - address) * 100
 
     def start(self): self.assignAllRelativeAddresses()
     def step(self,mcs): self.assignAllRelativeAddresses()
-
-class SarrazinForces(SteppableBasePy):
-
-    def __init__(self,_simulator,_frequency, _y_target_offset, _pull_force_magnitude, _pinch_force_relative_center, _pinch_force_mag, _pinch_force_falloff_sharpness):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
-        self.y_target_offset = _y_target_offset
-        self.pull_force_magnitude = _pull_force_magnitude
-        self.pinch_force_relative_center = _pinch_force_relative_center
-        self.pinch_force_mag = _pinch_force_mag
-        self.pinch_force_falloff_sharpness = _pinch_force_falloff_sharpness
-        self.posteriormost_cell = None
-        self.stripe_y = None
-
-    def start(self):
-        self.posteriormost_cell = self.getSteppableByClassName('AssignCellAddresses').posteriormost_cell
-
-    @staticmethod
-    def setstripe_y(self,stripe_y):
-        self.stripe_y = stripe_y
-
-    def step(self,mcs):
-
-        target_coord_x = 160
-        target_coord_y = self.posteriormost_cell.yCOM + self.y_target_offset
-
-        for cell in self.cellList:
-            cell.lambdaVecX = 0; cell.lambdaVecY = 0 #reset forces from the MCS
-            cell_address = CompuCell.getPyAttrib(cell)["CELL_AP_ADDRESS"] # figure out where the cell is within the last 100 mcs
-
-            ##******** Here, we'll apply the pull force: ********##
-
-            newVec = jeremyVector.vecBetweenPoints(cell.xCOM, cell.yCOM, target_coord_x,target_coord_y) # find the direction vector
-            newVec.normalize() # make the vector into a unit vector
-            newVec.scale(self.pull_force_magnitude) # scale it to a standard length, so that the field has a uniform, substantial magnitude
-            #newVec.scale(cell_address) # scale it again, so that posterior cells are most affected by this force
-
-            # Finally, apply the pull force
-
-            cell.lambdaVecX -= newVec.x
-            if cell.yCOM > self.stripe_y:
-                cell.lambdaVecY -= newVec.y * cell_address
-
-            # this previous line of code scales the component parallel to the AP axis
-            # as a function of each cell's location on that axis.
-
-             ##******** And here, we'll apply the pinch force ********##
-
-            direction_vec = (160 - cell.xCOM) # First, find the vector between the cell and the AP axis.
-            try: direction_vec = direction_vec/abs(direction_vec) # normalize this vector...
-            except: direction_vec = 0   # unless we get a divide by zero error, in which it must be a zero vector.
-
-            #Here, we configure the variables that govern the pinch force
-
-            rc = self.pinch_force_relative_center # where along the AP axis, as a percentage of body length from the posterior, should this force be most active
-            f = self.pinch_force_mag # the value of the force at its greatest value
-            s = self.pinch_force_falloff_sharpness # sharpness of the falloff from its strongest point
-
-            # Beyond this point lies mathy stuff -- its all just manipulation of variables to get the
-
-            min_zenith_loc = 1/s
-            max_zenith_loc = s - min_zenith_loc
-            zenith_range = max_zenith_loc - min_zenith_loc
-            o = min_zenith_loc + (zenith_range * rc)
-            mag = (((-1) * (s*cell_address - o)**2) + 1) * f
-            if mag < 0: mag = 0
-
-            # Finally, apply the pinch force
-
-            cell.lambdaVecX -= direction_vec * mag
 
 class SarrazinVisualizer(SteppableBasePy):
     def __init__(self, _simulator, _frequency):
@@ -201,23 +216,6 @@ class SarrazinVisualizer(SteppableBasePy):
         self.vectorCLField.clear()
         for cell in self.cellList:
             self.vectorCLField[cell] = [cell.lambdaVecX * -1, cell.lambdaVecY * -1, 0]
-
-class lobePincher(SteppableBasePy):
-    def __init__(self, _simulator, _frequency, _center_x, _center_y, _extent):
-        SteppableBasePy.__init__(self, _simulator, _frequency)
-        self.center_x = _center_x
-        self.center_y = _center_y
-        self.extent = _extent
-        self.cells_to_pinch = []
-
-    def start(self):
-        for cell in self.cellList:
-            if jeremyVector.vecBetweenPoints(cell.xCOM, cell.yCOM, self.center_x, self.center_y).mag() < self.extent:
-                self.cells_to_pinch.append(cell)
-
-    def step(self, mcs):
-        for cell in self.cells_to_pinch:
-            cell.lambdaVecY -= 100
 
 class EN_stripe:
     def __init__(self,_relative_position,_speed_mcs,_start_mcs):
@@ -250,7 +248,7 @@ class Engrailed(SteppableBasePy):
     def step(self, mcs):
         if (mcs != 0) and (mcs % 300 == 0) :
             self.stripe_y -= 50
-            SarrazinForces.setstripe_y(SarrazinForces, self.stripe_y)
+            # SarrazinForces.setstripe_y(SarrazinForces, self.stripe_y)
             for cell in self.cellList:
                 #cellDict = CompuCell.getPyAttrib(cell)
                 print "self.stripe_y:    ", self.stripe_y

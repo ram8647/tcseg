@@ -55,7 +55,7 @@ def configureSimulation(sim):
     
     # Basic properties of CPM (GGH) algorithm
     PottsElmnt.ElementCC3D("Dimensions",{"x":Dx,"y":Dy,"z":1})
-    PottsElmnt.ElementCC3D("Steps",{},"2001")
+    PottsElmnt.ElementCC3D("Steps",{},"3001")
     PottsElmnt.ElementCC3D("Temperature",{},"10.0")
     PottsElmnt.ElementCC3D("NeighborOrder",{},"1")
     
@@ -149,10 +149,14 @@ from RewrittenSarrazinSteppables import AssignCellAddresses
 s2 = AssignCellAddresses(sim,_frequency = 1)
 
 
-from RewrittenSarrazinSteppables import SarrazinForces
-s3 = SarrazinForces(sim,_frequency = 1, _y_target_offset = y_target_offset, _pull_force_magnitude = pull_force_magnitude,
-                      _pinch_force_relative_center = pinch_force_relative_center, _pinch_force_mag = pinch_force_mag,
-                      _pinch_force_falloff_sharpness = pinch_force_falloff_sharpness)
+from RewrittenSarrazinSteppables_02_25 import SimplifiedForces
+s3 = SimplifiedForces(sim,_frequency = 10)
+
+
+# from RewrittenSarrazinSteppables import SarrazinForces
+# s3 = SarrazinForces(sim,_frequency = 1, _y_target_offset = y_target_offset, _pull_force_magnitude = pull_force_magnitude,
+#                       _pinch_force_relative_center = pinch_force_relative_center, _pinch_force_mag = pinch_force_mag,
+#                       _pinch_force_falloff_sharpness = pinch_force_falloff_sharpness)
 
 #from RewrittenSarrazinSteppables import lobePincher
 #s4 = lobePincher(sim, _frequency = 10, _center_x = 152, _center_y = 35, _extent = 9)
