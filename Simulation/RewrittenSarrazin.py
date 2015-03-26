@@ -149,7 +149,7 @@ from RewrittenSarrazinSteppables import AssignCellAddresses
 s2 = AssignCellAddresses(sim,_frequency = 1)
 
 
-from RewrittenSarrazinSteppables_02_25 import SimplifiedForces
+from RewrittenSarrazinSteppables import SimplifiedForces
 s3 = SimplifiedForces(sim,_frequency = 10)
 
 
