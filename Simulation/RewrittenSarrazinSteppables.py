@@ -139,7 +139,7 @@ class SarrazinForces(SteppableBasePy):
 
     def start(self):
         self.posteriormost_cell = self.getSteppableByClassName('AssignCellAddresses').posteriormost_cell
-#        Stats.displayStats()
+#        Stats.displayStats(['a1', 1, 'a2', 2, 'a3', 3])
 #        Stats.outputStats()
 
     @staticmethod
@@ -151,8 +151,8 @@ class SarrazinForces(SteppableBasePy):
         target_coord_x = 160
         target_coord_y = self.posteriormost_cell.yCOM + self.y_target_offset
 
-        if (mcs % 50 == 0):
-            Stats.displayStats('Number of cells=', len(self.cellList))
+#        if (mcs % 50 == 0):
+#            Stats.displayStats('Number of cells=', len(self.cellList))
 
 
         for cell in self.cellList:
@@ -324,6 +324,9 @@ class RegionalMitosis(MitosisSteppableBase):
       # self.t_grow_list=[t_grow_R0,t_grow_R1,t_grow_R2,t_grow_R3]
       
       self.fraction_AP_oriented=0.5
+  
+      Stats.displayStats(['rg_RO', r_grow_R0, 'rg_R1', r_grow_R1, 'rg_R2', r_grow_R2, 'rg_R3', r_grow_R3])
+
       
    def start(self):
       self.y_EN_pos=self.find_posterior_EN_stripe()
