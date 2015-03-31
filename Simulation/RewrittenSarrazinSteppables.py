@@ -88,11 +88,12 @@ class SimplifiedForces(SteppableBasePy):
    # Define the AP force function
     def AP_potential_function(self,x,y):
       # Set the constants for the AP force function
-      k1=50.0
-      k2=-(1.0/500)
-      k3=0
-      V=k1*math.exp(k2*(y-self.posterior))+k3
-      # V=20
+      # k1=50.0
+      # k2=-(1.0/500)
+      # k3=0
+      # V=k1*math.exp(k2*(y-self.posterior))+k3
+      V=50
+      # V=0
       return V
       
    # Define the ML force function
@@ -238,7 +239,7 @@ class Engrailed(SteppableBasePy):
             self.gene_product_field = CompuCell.getConcentrationField(self.simulator,"EN_GENE_PRODUCT")
             self.gene_product_secretor = self.getFieldSecretor("EN_GENE_PRODUCT")
         for cell in self.cellList: # THIS BLOCK HAS BEEN JUSTIFIED OUTSIDE OF EARLIER "IF" STATEMENT (sdh)
-            self.stripe_y = 645 #375
+            self.stripe_y = 805 #645 #375
             if cell.yCOM < self.stripe_y+5 and cell.yCOM > self.stripe_y-5:
             # cellDict["En_ON"] = True
                 cell.type = 2 # EN cell
@@ -248,72 +249,48 @@ class Engrailed(SteppableBasePy):
     def step(self, mcs):
         if (mcs != 0) and (mcs % 300 == 0) :
             self.stripe_y -= 50
-            # SarrazinForces.setstripe_y(SarrazinForces, self.stripe_y)
+            #### SarrazinForces.setstripe_y(SarrazinForces, self.stripe_y)
             for cell in self.cellList:
-                #cellDict = CompuCell.getPyAttrib(cell)
+                ####cellDict = CompuCell.getPyAttrib(cell)
                 print "self.stripe_y:    ", self.stripe_y
-                # if cell.type == 1: #AnteriorLobe
+                ##### if cell.type == 1: #AnteriorLobe
                 if cell:
                     if cell.yCOM < self.stripe_y + 6 and cell.yCOM > self.stripe_y - 6:
-                        #cellDict["En_ON"] = True
+                        ######cellDict["En_ON"] = True
                         cell.type = 2 # EN
-                        #if self.hinder_anterior_cells == True:
-                            #self.gene_product_secretor.secreteInsideCell(cell,1)
+                        #####if self.hinder_anterior_cells == True:
+                            #######self.gene_product_secretor.secreteInsideCell(cell,1)
 
-class SarrazinCloneVisualizer(SteppableBasePy):
-    def __init__(self,_simulator,_frequency, _cell_locs):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
-        self.cellLocs = _cell_locs
-        self.sarraCells = []
-        self.sarrazin_clone_field = self.createScalarFieldCellLevelPy("LABELED_CLONES")
-        self.sarrazin_path_field = self.createScalarFieldPy("PATH_FIELD")
-
-    def start(self):
-        ## Here, we set up the field to monitor the cells in real time, the "Labeled Clones Field"
-
-        for cell in self.cellList:
-            self.sarrazin_clone_field[cell]= 0.5
-
-        for cell_loc in self.cellLocs:
-            sarrazin_clone = self.cellField[int(cell_loc.x),int(cell_loc.y),0]
-            self.sarrazin_clone_field[sarrazin_clone]= 1.0
-            self.sarraCells.append(sarrazin_clone)
-
-    def step(self,mcs):
-        for cell in self.sarraCells:
-            self.sarrazin_path_field[int(cell.xCOM), int(cell.yCOM), 0] = 1
             
 class RegionalMitosis(MitosisSteppableBase):
    def __init__(self,_simulator,_frequency=1):
       MitosisSteppableBase.__init__(self,_simulator, _frequency)
       self.y_GZ_mitosis_border_percent = 0.5 ## The position, in fraction of the GZ (from posteriormost EN stripe to posterior of GZ,
                                              ## of the border between mitosis regions in the GZ (measured from the posterior)
-      r_mitosis_R0 = 0.0 # approximate fraction of cells dividing in a given window in region 0 (anterior to EN)
-      r_mitosis_R1 = 0.0 # approximate fraction of cells dividing in a given window in region 1 (EN striped region)
-      r_mitosis_R2 = 0.0 # approximate fraction of cells dividing in a given window in region 2 (anterior GZ)
-      r_mitosis_R3 = 0.5 # approximate fraction of cells dividing in a given window in region 3 (posterior GZ)
-      self.r_mitosis_list=[r_mitosis_R0,r_mitosis_R1,r_mitosis_R2,r_mitosis_R3]
+      self.transition_counter = 0                ## keeps track of which time window simulation is in
+      self.transition_times = [0,200,500]   ## A list of times at which the mitosis rates for the regions will change
+                                             ## NOTE: You can add or subtract to the number of transition times, as long as 
+                                             ## parameters below agree (e.g., if three times are set, there must be three entries for each)                                                                                        
+      self.r_mitosis_R0 = [0.0,0.0,0.0] # approximate fraction of cells dividing in a given window in region 0 (anterior to EN)
+      self.r_mitosis_R1 = [0.0,0.0,0.0] # approximate fraction of cells dividing in a given window in region 1 (EN striped region)
+      self.r_mitosis_R2 = [0.0,0.5,0.0] #0.3 #0.0 # approximate fraction of cells dividing in a given window in region 2 (anterior GZ)
+      self.r_mitosis_R3 = [0.5,0.5,0.5] #0.3 # approximate fraction of cells dividing in a given window in region 3 (posterior GZ)
+      self.r_mitosis_list=[self.r_mitosis_R0[0],self.r_mitosis_R1[0],self.r_mitosis_R2[0],self.r_mitosis_R3[0]]
+           
+      # Set r_grow for each region: pixels per MCS added to cell's volume
+      self.r_grow_R0=[0.0,0.0,0.0]
+      self.r_grow_R1=[0.0,0.0,0.0]
+      self.r_grow_R2=[0.0,0.0,0.0] #0.05 #0
+      self.r_grow_R3=[0.05,0.05,0.05]
+      self.r_grow_list=[self.r_grow_R0[0],self.r_grow_R1[0],self.r_grow_R2[0],self.r_grow_R3[0]]      
+      
+      self.fraction_AP_oriented=0 #0.5
       
       self.window = 500 # length of window in MCS (see above)
       self.Vmin_divide = 60 # minimum volume, in pixels, at which cells can divide
       self.Vmax = 90 # maximum volume to which cells can grow
       self.mitosisVisualizationFlag = 1 # if nonzero, turns on mitosis visualization
-      self.mitosisVisualizationWindow = 100 # number of MCS that cells stay labeled as having divided
-      
-      # Set r_grow for each region: pixels per MCS added to cell's volume
-      r_grow_R0=0
-      r_grow_R1=0
-      r_grow_R2=0
-      r_grow_R3=0.05
-      self.r_grow_list=[r_grow_R0,r_grow_R1,r_grow_R2,r_grow_R3]      
-      
-      # t_grow_R0=self.calculate_t_grow(r_mitosis_R0)
-      # t_grow_R1=self.calculate_t_grow(r_mitosis_R1)
-      # t_grow_R2=self.calculate_t_grow(r_mitosis_R2)
-      # t_grow_R3=self.calculate_t_grow(r_mitosis_R3)
-      # self.t_grow_list=[t_grow_R0,t_grow_R1,t_grow_R2,t_grow_R3]
-      
-      self.fraction_AP_oriented=0.5
+      self.mitosisVisualizationWindow = 100 # number of MCS that cells stay labeled as having divided      
       
    def start(self):
       self.y_EN_pos=self.find_posterior_EN_stripe()
@@ -327,6 +304,13 @@ class RegionalMitosis(MitosisSteppableBase):
    
    def step(self,mcs):
       print 'Executing Mitosis Steppable'
+      if mcs in self.transition_times:
+         print '*******************TRANSITIONING MITOSIS TIME WINDOW**********************'
+         self.r_mitosis_list=[self.r_mitosis_R0[self.transition_counter],self.r_mitosis_R1[self.transition_counter],self.r_mitosis_R2[self.transition_counter],self.r_mitosis_R3[self.transition_counter]]
+         self.r_grow_list=[self.r_grow_R0[self.transition_counter],self.r_grow_R1[self.transition_counter],self.r_grow_R2[self.transition_counter],self.r_grow_R3[self.transition_counter]]      
+         self.transition_counter+=1
+
+         
       mitosis_list=self.make_mitosis_list()
       self.perform_mitosis(mitosis_list)
       self.y_EN_pos=self.find_posterior_EN_stripe()
@@ -377,8 +361,8 @@ class RegionalMitosis(MitosisSteppableBase):
       yCM=cell.yCM/float(cell.volume)
       if yCM > self.y_EN_ant: # if cell is anterior to EN stripes
          cellDict["region"]=0
-         # if (cell.type!=4 and cell.type!=2): # if cell is not En or mitosing
-            # cell.type=1 # AnteriorLobe
+         if (cell.type!=4 and cell.type!=2): # if cell is not En or mitosing
+            cell.type=1 # AnteriorLobe
       elif yCM > self.y_EN_pos: # if cell is in EN-striped region
          cellDict["region"]=1
          if (cell.type!=2 and cell.type!=4): # if cell is not En or mitosing
@@ -478,4 +462,63 @@ class RegionalMitosis(MitosisSteppableBase):
                cell.type=cellDict['returnToCellType']
             else:
                cellDict['mitosisVisualizationTimer']-=1
+               
+## Labels a population of cells and outputs to a Player visualization field      
+class DyeCells(SteppablePy):
+   def __init__(self,_simulator,_frequency,_x0,_y0,_xf,_yf):
+      SteppablePy.__init__(self,_frequency)
+      self.simulator=_simulator
+      self.potts=self.simulator.getPotts()
+      self.cellFieldG=self.potts.getCellFieldG()
+      self.inventory=self.potts.getCellInventory()
+      self.cellList=CellList(_inventory=self.inventory)
+      self.pixelTrackerPlugin=CompuCell.getPixelTrackerPlugin()
+      self.dim=self.cellFieldG.getDim()
+      self.x0=_x0; self.xf=_xf
+      self.y0=_y0; self.yf=_yf
+      
+   def setScalarField(self,_field):
+      self.dyeField=_field
+      
+   def start(self):
+   ## TEST
+      # dye=1
+      # for cell in self.cellList:
+         # if cell:
+            # pixelList=CellPixelList(self.pixelTrackerPlugin,cell)
+            # for pixelData in pixelList:
+               # pt=pixelData.pixel   
+               # fillScalarValue(self.dyeField,pt.x,pt.y,pt.z,dye)   
+   
+      ## set dye load as an item in cells' dictionaries
+      dye=1   # magnitude of initial dye load (1)
+      for cell in self.cellList:
+         if cell:
+            cellDict=CompuCell.getPyAttrib(cell)
+            xCM=cell.xCM/float(cell.volume)
+            yCM=cell.yCM/float(cell.volume)
+            if (xCM>=self.x0 and xCM<=self.xf and yCM>=self.y0 and yCM<=self.yf): ## if the cell is within the dye area
+               cellDict["dye"]=dye  ## set initial dye load
+               pixelList=CellPixelList(self.pixelTrackerPlugin,cell)
+               for pixelData in pixelList:
+                  pt=pixelData.pixel
+                  fillScalarValue(self.dyeField,pt.x,pt.y,pt.z,dye)
+            else:
+               cellDict["dye"]=0  ## set initial dye load to 0
+      
+   def step(self,mcs):
+   ##### Set dye field to zero
+      for x in range(self.dim.x):
+         for y in range(self.dim.y):
+            fillScalarValue(self.dyeField,x,y,0,0)
+   ##### identify cells that have dye and visualize the dye in Player
+      for cell in self.cellList:
+         if cell:
+            cellDict=CompuCell.getPyAttrib(cell)
+            dye=cellDict["dye"]
+            if dye>0:
+               pixelList=CellPixelList(self.pixelTrackerPlugin,cell)
+               for pixelData in pixelList:
+                  pt=pixelData.pixel   
+                  fillScalarValue(self.dyeField,pt.x,pt.y,pt.z,dye)
                

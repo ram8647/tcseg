@@ -18,9 +18,21 @@ global stripe_y
 ## Mitosis parameters
 global regional_mitosis; global y_GZ_mitosis_border
 
+# Cell labeling parameters
+global x0_dye; global xf_dye; global y0_dye
+global yf_dye; global dye_flag 
+
 ##  Set Simulation Dimension Parameters  ##
 Dx = 320
-Dy = 750 #480
+Dy = 910 #750 #480
+
+# Cell-labeling parameters
+dye_flag = 0 ## set to 1 to dye cells
+## set the coordinates (in pixels) of the cells to be dyed
+x0_dye = 110
+xf_dye = 150
+y0_dye = 520
+yf_dye = 560
 
 ##******** Configure Simulation Flags ********##
 
@@ -35,7 +47,7 @@ pull_force_magnitude = 60 #60
 pinch_force_relative_center = 0.35 #0.35
 pinch_force_mag = 30 #17
 pinch_force_falloff_sharpness = 3.5 #3.5
-
+   
 ## Set Mitosis flag ##
 regional_mitosis=1 # RegionalMitosis steppable runs if nonzero
 ## Set Mitosis Steppable parameters in Steppables file ##
@@ -115,7 +127,7 @@ def configureSimulation(sim):
     SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"PIFInitializer"})
     
     # Initial layout of cells using PIFF file. Piff files can be generated using PIFGEnerator
-    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/Dec2014_v02.piff")
+    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_3_19_2015.piff")
 
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
             
@@ -148,18 +160,8 @@ s1 = VolumeStabilizer(sim,_frequency = 1)
 from RewrittenSarrazinSteppables import AssignCellAddresses
 s2 = AssignCellAddresses(sim,_frequency = 1)
 
-
 from RewrittenSarrazinSteppables import SimplifiedForces
 s3 = SimplifiedForces(sim,_frequency = 10)
-
-
-# from RewrittenSarrazinSteppables import SarrazinForces
-# s3 = SarrazinForces(sim,_frequency = 1, _y_target_offset = y_target_offset, _pull_force_magnitude = pull_force_magnitude,
-#                       _pinch_force_relative_center = pinch_force_relative_center, _pinch_force_mag = pinch_force_mag,
-#                       _pinch_force_falloff_sharpness = pinch_force_falloff_sharpness)
-
-#from RewrittenSarrazinSteppables import lobePincher
-#s4 = lobePincher(sim, _frequency = 10, _center_x = 152, _center_y = 35, _extent = 9)
 
 from RewrittenSarrazinSteppables import Engrailed
 s5 = Engrailed(sim, _frequency = 1,
@@ -182,23 +184,18 @@ if regional_mitosis:
    mitosis = RegionalMitosis(sim,_frequency = 1)
    steppableRegistry.registerSteppable(mitosis)
 
-'''
-if speed_up_sim == False: # Disable the superfluous code for runs where efficiency is important
-    from RewrittenSarrazinSteppables import SarrazinVisualizer
-    SV = SarrazinVisualizer(sim, _frequency = 1)
+###### Add extra player fields here
+if dye_flag:
+   dim=sim.getPotts().getCellFieldG().getDim()
+   Label01Field=simthread.createFloatFieldPy(dim,"CellLabel01")
+  #### Label02Field=simthread.createFloatFieldPy(dim,"CellLabel02")
+  #### Label03Field=simthread.createFloatFieldPy(dim,"CellLabel03")   
 
-    from RewrittenSarrazinSteppables import SarrazinCloneVisualizer
-    SCV = SarrazinCloneVisualizer(sim, _frequency = 1, _cell_locs =  [jeremyVector(_x = 160, _y = 275),
-                                                  jeremyVector(_x = 120, _y = 250),
-                                                  jeremyVector(_x = 113, _y = 240),
-                                                  jeremyVector(_x = 106, _y = 210),
-                                                  jeremyVector(_x = 210, _y = 250),
-                                                  jeremyVector(_x = 207, _y = 240),
-                                                  jeremyVector(_x = 214, _y = 210)])
-
-    super_steppables = [SV, SCV]
-    for steppable in super_steppables: steppableRegistry.registerSteppable(steppable)
-'''
+if dye_flag:
+   from RewrittenSarrazinSteppables import DyeCells
+   dyeCells=DyeCells(_simulator=sim,_frequency=20,_x0=x0_dye,_y0=y0_dye,_xf=xf_dye,_yf=yf_dye)
+   dyeCells.setScalarField(Label01Field)
+   steppableRegistry.registerSteppable(dyeCells) 
 
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
         
