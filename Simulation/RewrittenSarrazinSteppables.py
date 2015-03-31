@@ -76,7 +76,7 @@ class VolumeStabilizer(SteppableBasePy):
 
             # In effect, these above two lines allow the cells to travel without squeezing, which would be unrealistic.
 
-class SimplifiedForces(SteppableBasePy):
+class SimplifiedForces_GrowthZone(SteppableBasePy):
     def __init__(self,_simulator,_frequency):
       SteppableBasePy.__init__(self,_simulator,_frequency)
       # Uncomment 1 of the following:
@@ -159,7 +159,91 @@ class SimplifiedForces(SteppableBasePy):
          if yCM < y_GZ_pos:
             y_GZ_pos=yCM
       return y_GZ_pos       
-            
+
+class SimplifiedForces_EntireEmbryo(SteppableBasePy):
+    def __init__(self,_simulator,_frequency):
+      SteppableBasePy.__init__(self,_simulator,_frequency)
+      # Uncomment 1 of the following:
+      self.position = "normalized"    # normalizes position between 0 and 1 to calculate force
+      # position = "absolute"    # calculates force based on absolute distance from posterior
+      
+    def start(self):pass
+
+   # Define the AP force function
+    def AP_potential_function(self,x,y):
+      # Set the constants for the AP force function
+      # k1=50.0
+      # k2=-(1.0/500)
+      # k3=0
+      # V=k1*math.exp(k2*(y-self.posterior))+k3
+      V=50
+      # V=0
+      return V
+      
+   # Define the ML force function
+    def ML_potential_function(self,x,y):
+      # Set the constants for the ML force function
+      k1=100.0
+      k2=-(1.0/80)
+      k3=0
+      
+      if x<self.midline:
+         k1=-1*k1
+      
+      V=k1*math.exp(k2*abs(self.anterior-y))+k3
+      # V=k1*math.exp(k2*abs(self.posterior-y))+k3
+      # V=50
+      return V       
+      
+    def step(self,mcs):
+      self.midline=self.find_midline()
+      self.anterior=self.find_anterior_EN()
+      self.posterior=self.find_posterior_GZ()
+      for cell in self.cellList:
+         if cell.yCOM < self.anterior: # if posterior to first EN stripe
+            x=cell.xCOM
+            y=cell.yCOM
+            V_y=self.AP_potential_function(x,y)
+            V_x=self.ML_potential_function(x,y)
+            cell.lambdaVecX=V_x
+            cell.lambdaVecY=V_y
+         else: 
+            cell.lambdaVecX=0
+            cell.lambdaVecY=0
+         # print "cell id: " + str(cell.id) + " cell.COM: " + str(cell.xCOM) + " Vx=" + str(V_x)
+         # print "anterior = " +str(self.anterior)
+         # print "posterior = " +str(self.posterior)
+      
+    def find_midline(self):
+      x0=999999
+      x_max=0
+      for cell in self.cellList:
+         xCM=cell.xCOM
+         if xCM>x_max:
+            x_max=xCM
+         elif xCM<x0:
+            x0=xCM
+      midline=x0+0.5*(x_max-x0)
+      return midline
+      
+    def find_anterior_EN(self):
+      y_EN_ant=999999
+      for cell in self.cellList:
+         if cell.type==1: #EN
+            yCM=cell.yCOM
+            if yCM < y_EN_ant:
+               y_EN_ant=yCM
+      return y_EN_ant    
+
+    def find_posterior_GZ(self):
+      y_GZ_pos=999999
+      for cell in self.cellList:
+         yCM=cell.yCOM
+         if yCM < y_GZ_pos:
+            y_GZ_pos=yCM
+      return y_GZ_pos       
+
+      
 class AssignCellAddresses(SteppableBasePy): # this steppable assigns each cell an address along the AP axis
     def __init__(self,_simulator,_frequency):
         SteppableBasePy.__init__(self,_simulator,_frequency)
@@ -365,7 +449,7 @@ class RegionalMitosis(MitosisSteppableBase):
             cell.type=1 # AnteriorLobe
       elif yCM > self.y_EN_pos: # if cell is in EN-striped region
          cellDict["region"]=1
-         if (cell.type!=2 and cell.type!=4): # if cell is not En or mitosing
+         if (cell.type!=2 and cell.type!=4 and cell.type!=1): # if cell is not En or mitosing or AnteriorLobe
             cell.type=5 # Segmented
       elif yCM > self.y_GZ_border: # if cell is in anterior region of GZ
          cellDict["region"]=2

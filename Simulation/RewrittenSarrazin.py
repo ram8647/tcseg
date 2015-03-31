@@ -160,8 +160,11 @@ s1 = VolumeStabilizer(sim,_frequency = 1)
 from RewrittenSarrazinSteppables import AssignCellAddresses
 s2 = AssignCellAddresses(sim,_frequency = 1)
 
-from RewrittenSarrazinSteppables import SimplifiedForces
-s3 = SimplifiedForces(sim,_frequency = 10)
+# from RewrittenSarrazinSteppables import SimplifiedForces_GrowthZone
+# s3 = SimplifiedForces_GrowthZone(sim,_frequency = 10)
+
+from RewrittenSarrazinSteppables import SimplifiedForces_EntireEmbryo
+s3 = SimplifiedForces_EntireEmbryo(sim,_frequency = 10)
 
 from RewrittenSarrazinSteppables import Engrailed
 s5 = Engrailed(sim, _frequency = 1,
