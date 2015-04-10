@@ -79,9 +79,6 @@ class VolumeStabilizer(SteppableBasePy):
 class SimplifiedForces_GrowthZone(SteppableBasePy):
     def __init__(self,_simulator,_frequency):
       SteppableBasePy.__init__(self,_simulator,_frequency)
-      # Uncomment 1 of the following:
-      self.position = "normalized"    # normalizes position between 0 and 1 to calculate force
-      # position = "absolute"    # calculates force based on absolute distance from posterior
       
     def start(self):pass
 
@@ -163,53 +160,61 @@ class SimplifiedForces_GrowthZone(SteppableBasePy):
 class SimplifiedForces_EntireEmbryo(SteppableBasePy):
     def __init__(self,_simulator,_frequency):
       SteppableBasePy.__init__(self,_simulator,_frequency)
-      # Uncomment 1 of the following:
-      self.position = "normalized"    # normalizes position between 0 and 1 to calculate force
-      # position = "absolute"    # calculates force based on absolute distance from posterior
       
     def start(self):pass
-
+    
    # Define the AP force function
     def AP_potential_function(self,x,y):
       # Set the constants for the AP force function
-      # k1=50.0
-      # k2=-(1.0/500)
-      # k3=0
-      # V=k1*math.exp(k2*(y-self.posterior))+k3
-      V=50
+
+      if y < self.anterior: # if posterior to first EN stripe
+         if (y-self.posterior)/(self.anterior-self.posterior) < 0.5:
+            V=100.0
+         else:
+            k1=100.0
+            k2=5.0
+                  
+            V=k1*((self.anterior-y)/(self.anterior-self.posterior))+k2
+         
+      else:
+         k1=5 #80
+         k2=-(1.0/50)
+         V=k1*math.exp(k2*abs((y-self.anterior)))
       # V=0
       return V
       
    # Define the ML force function
     def ML_potential_function(self,x,y):
       # Set the constants for the ML force function
-      k1=100.0
-      k2=-(1.0/80)
-      k3=0
-      
+      if y < self.anterior: # if posterior to first EN stripe
+         k1=50.0 #100.0
+         k2=-(1.0/240) #-(1.0/300) #-(1.0/160) #-1/80
+         k3=0
+      else:
+         k1=10.0 #10.0
+         k2=-(1.0/10)
+         k3=0
       if x<self.midline:
          k1=-1*k1
       
       V=k1*math.exp(k2*abs(self.anterior-y))+k3
-      # V=k1*math.exp(k2*abs(self.posterior-y))+k3
-      # V=50
       return V       
       
     def step(self,mcs):
       self.midline=self.find_midline()
-      self.anterior=self.find_anterior_EN()
+      self.anterior=self.find_posterior_EN()
       self.posterior=self.find_posterior_GZ()
       for cell in self.cellList:
-         if cell.yCOM < self.anterior: # if posterior to first EN stripe
-            x=cell.xCOM
-            y=cell.yCOM
-            V_y=self.AP_potential_function(x,y)
-            V_x=self.ML_potential_function(x,y)
-            cell.lambdaVecX=V_x
-            cell.lambdaVecY=V_y
-         else: 
-            cell.lambdaVecX=0
-            cell.lambdaVecY=0
+         # if cell.yCOM < self.anterior: # if posterior to first EN stripe
+         x=cell.xCOM
+         y=cell.yCOM
+         V_y=self.AP_potential_function(x,y)
+         V_x=self.ML_potential_function(x,y)
+         cell.lambdaVecX=V_x
+         cell.lambdaVecY=V_y
+         # else: 
+            # cell.lambdaVecX=0
+            # cell.lambdaVecY=0
          # print "cell id: " + str(cell.id) + " cell.COM: " + str(cell.xCOM) + " Vx=" + str(V_x)
          # print "anterior = " +str(self.anterior)
          # print "posterior = " +str(self.posterior)
@@ -226,14 +231,14 @@ class SimplifiedForces_EntireEmbryo(SteppableBasePy):
       midline=x0+0.5*(x_max-x0)
       return midline
       
-    def find_anterior_EN(self):
-      y_EN_ant=999999
+    def find_posterior_EN(self):
+      y_EN_pos=999999
       for cell in self.cellList:
-         if cell.type==1: #EN
+         if cell.type==2: #Anterior
             yCM=cell.yCOM
-            if yCM < y_EN_ant:
-               y_EN_ant=yCM
-      return y_EN_ant    
+            if yCM < y_EN_pos:
+               y_EN_pos=yCM
+      return y_EN_pos    
 
     def find_posterior_GZ(self):
       y_GZ_pos=999999
@@ -283,11 +288,11 @@ class AssignCellAddresses(SteppableBasePy): # this steppable assigns each cell a
         for cell in self.cellList:
             self.assignRelativeAddress(cell)
 
-    def immobilizeAnteriorLobe(self,cell):
-        address = CompuCell.getPyAttrib(cell)["CELL_AP_ADDRESS"]
-        if cell.type==1: # AnteriorLobe
-        # if address < 0.2:
-            cell.lambdaSurface += (0.2 - address) * 100
+    # def immobilizeAnteriorLobe(self,cell):
+        # address = CompuCell.getPyAttrib(cell)["CELL_AP_ADDRESS"]
+        # if cell.type==1: # AnteriorLobe
+        #### if address < 0.2:
+            # cell.lambdaSurface += (0.2 - address) * 100
 
     def start(self): self.assignAllRelativeAddresses()
     def step(self,mcs): self.assignAllRelativeAddresses()
@@ -317,29 +322,32 @@ class Engrailed(SteppableBasePy):
         self.gene_product_secretor = None
         self.height = height
         self.stripe_y = None
+        self.width=30
+        self.segment_length=100  #50
+        self.segmentation_period=400 #300
 
     def start(self):
         if self.hinder_anterior_cells == True:
             self.gene_product_field = CompuCell.getConcentrationField(self.simulator,"EN_GENE_PRODUCT")
             self.gene_product_secretor = self.getFieldSecretor("EN_GENE_PRODUCT")
         for cell in self.cellList: # THIS BLOCK HAS BEEN JUSTIFIED OUTSIDE OF EARLIER "IF" STATEMENT (sdh)
-            self.stripe_y = 805 #645 #375
-            if cell.yCOM < self.stripe_y+5 and cell.yCOM > self.stripe_y-5:
+            self.stripe_y = 1610 #805 #645 #375
+            if cell.yCOM < self.stripe_y+self.width/2 and cell.yCOM > self.stripe_y-self.width/2:
             # cellDict["En_ON"] = True
                 cell.type = 2 # EN cell
                 if self.hinder_anterior_cells == True:
                      self.gene_product_secretor.secreteInsideCell(cell, 1)
 
     def step(self, mcs):
-        if (mcs != 0) and (mcs % 300 == 0) :
-            self.stripe_y -= 50
+        if (mcs != 0) and (mcs % self.segmentation_period == 0) :
+            self.stripe_y -= self.segment_length
             #### SarrazinForces.setstripe_y(SarrazinForces, self.stripe_y)
             for cell in self.cellList:
                 ####cellDict = CompuCell.getPyAttrib(cell)
                 print "self.stripe_y:    ", self.stripe_y
                 ##### if cell.type == 1: #AnteriorLobe
                 if cell:
-                    if cell.yCOM < self.stripe_y + 6 and cell.yCOM > self.stripe_y - 6:
+                    if cell.yCOM < self.stripe_y + (self.width/2+1) and cell.yCOM > self.stripe_y - (self.width/2+1):
                         ######cellDict["En_ON"] = True
                         cell.type = 2 # EN
                         #####if self.hinder_anterior_cells == True:
@@ -357,7 +365,7 @@ class RegionalMitosis(MitosisSteppableBase):
                                              ## parameters below agree (e.g., if three times are set, there must be three entries for each)                                                                                        
       self.r_mitosis_R0 = [0.0,0.0,0.0] # approximate fraction of cells dividing in a given window in region 0 (anterior to EN)
       self.r_mitosis_R1 = [0.0,0.0,0.0] # approximate fraction of cells dividing in a given window in region 1 (EN striped region)
-      self.r_mitosis_R2 = [0.0,0.5,0.0] #0.3 #0.0 # approximate fraction of cells dividing in a given window in region 2 (anterior GZ)
+      self.r_mitosis_R2 = [0.0,0.0,0.0] #0.3 #0.0 # approximate fraction of cells dividing in a given window in region 2 (anterior GZ)
       self.r_mitosis_R3 = [0.5,0.5,0.5] #0.3 # approximate fraction of cells dividing in a given window in region 3 (posterior GZ)
       self.r_mitosis_list=[self.r_mitosis_R0[0],self.r_mitosis_R1[0],self.r_mitosis_R2[0],self.r_mitosis_R3[0]]
            
@@ -378,7 +386,7 @@ class RegionalMitosis(MitosisSteppableBase):
       
    def start(self):
       self.y_EN_pos=self.find_posterior_EN_stripe()
-      self.y_EN_ant=self.find_anterior_EN_stripe()
+      self.y_EN_ant=self.find_posterior_EN_stripe()
       self.y_GZ_border=self.find_y_GZ_mitosis_border()
       for cell in self.cellList:
          region=self.assign_cell_region(cell)
@@ -442,7 +450,7 @@ class RegionalMitosis(MitosisSteppableBase):
    
    def assign_cell_region(self,cell):
       cellDict=CompuCell.getPyAttrib(cell)
-      yCM=cell.yCM/float(cell.volume)
+      yCM=cell.yCOM
       if yCM > self.y_EN_ant: # if cell is anterior to EN stripes
          cellDict["region"]=0
          if (cell.type!=4 and cell.type!=2): # if cell is not En or mitosing
@@ -453,8 +461,8 @@ class RegionalMitosis(MitosisSteppableBase):
             cell.type=5 # Segmented
       elif yCM > self.y_GZ_border: # if cell is in anterior region of GZ
          cellDict["region"]=2
-         if (cell.type!=2 and cell.type!=4): # if cell is not En or mitosing
-            cell.type=3 #GZ
+         # if (cell.type!=2 and cell.type!=4): # if cell is not En or mitosing
+            # cell.type=3 #GZ
       else:                # if cell is in posterior region of GZ
          cellDict["region"]=3
          if cell.type!=4: #if cell is not mitosing
@@ -497,7 +505,7 @@ class RegionalMitosis(MitosisSteppableBase):
       y_EN_pos=9999
       for cell in self.cellList:
          if cell.type==2: # EN cell
-            yCM=cell.yCM/float(cell.volume)
+            yCM=cell.yCOM
             if yCM < y_EN_pos:
                y_EN_pos=yCM
       return y_EN_pos
@@ -506,7 +514,7 @@ class RegionalMitosis(MitosisSteppableBase):
       y_EN_ant=0
       for cell in self.cellList:
          if cell.type==2: # EN cell
-            yCM=cell.yCM/float(cell.volume)
+            yCM=cell.yCOM
             if yCM > y_EN_ant:
                y_EN_ant=yCM
       return y_EN_ant      
@@ -519,7 +527,7 @@ class RegionalMitosis(MitosisSteppableBase):
    def find_posterior_GZ(self):
       y_GZ_pos=9999
       for cell in self.cellList:
-         yCM=cell.yCM/float(cell.volume)
+         yCM=cell.yCOM
          if yCM < y_GZ_pos:
             y_GZ_pos=yCM
       return y_GZ_pos
@@ -579,8 +587,8 @@ class DyeCells(SteppablePy):
       for cell in self.cellList:
          if cell:
             cellDict=CompuCell.getPyAttrib(cell)
-            xCM=cell.xCM/float(cell.volume)
-            yCM=cell.yCM/float(cell.volume)
+            xCM=cell.xCOM
+            yCM=cell.yCOM
             if (xCM>=self.x0 and xCM<=self.xf and yCM>=self.y0 and yCM<=self.yf): ## if the cell is within the dye area
                cellDict["dye"]=dye  ## set initial dye load
                pixelList=CellPixelList(self.pixelTrackerPlugin,cell)

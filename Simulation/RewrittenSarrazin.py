@@ -23,16 +23,16 @@ global x0_dye; global xf_dye; global y0_dye
 global yf_dye; global dye_flag 
 
 ##  Set Simulation Dimension Parameters  ##
-Dx = 320
-Dy = 910 #750 #480
+Dx = 450
+Dy = 1800
 
 # Cell-labeling parameters
 dye_flag = 0 ## set to 1 to dye cells
 ## set the coordinates (in pixels) of the cells to be dyed
-x0_dye = 110
-xf_dye = 150
-y0_dye = 520
-yf_dye = 560
+x0_dye = 150
+xf_dye = 210
+y0_dye = 1260
+yf_dye = 1320
 
 ##******** Configure Simulation Flags ********##
 
@@ -67,9 +67,10 @@ def configureSimulation(sim):
     
     # Basic properties of CPM (GGH) algorithm
     PottsElmnt.ElementCC3D("Dimensions",{"x":Dx,"y":Dy,"z":1})
-    PottsElmnt.ElementCC3D("Steps",{},"3001")
+    PottsElmnt.ElementCC3D("Steps",{},"5001")
     PottsElmnt.ElementCC3D("Temperature",{},"10.0")
     PottsElmnt.ElementCC3D("NeighborOrder",{},"1")
+    # PottsElmnt.ElementCC3D("LatticeType",{},"Hexagonal")
     
     PluginElmnt=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"CellType"}) # Listing all cell types in the simulation
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"0","TypeName":"Medium"})
@@ -127,7 +128,7 @@ def configureSimulation(sim):
     SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"PIFInitializer"})
     
     # Initial layout of cells using PIFF file. Piff files can be generated using PIFGEnerator
-    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_3_19_2015.piff")
+    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_04_06_2015.piff")
 
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
             
