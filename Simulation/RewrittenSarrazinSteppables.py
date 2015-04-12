@@ -1,4 +1,5 @@
-from Stats import Stats
+from Stats import StatsReporter
+from Stats import ParamsContainer
 
 from PlayerPython import * 
 import CompuCellSetup
@@ -139,8 +140,8 @@ class SarrazinForces(SteppableBasePy):
 
     def start(self):
         self.posteriormost_cell = self.getSteppableByClassName('AssignCellAddresses').posteriormost_cell
-#        Stats.displayStats(['a1', 1, 'a2', 2, 'a3', 3])
-#        Stats.outputStats()
+#        StatsReporter.displayStats(['a1', 1, 'a2', 2, 'a3', 3])
+#        StatsReporter.outputStats()
 
     @staticmethod
     def setstripe_y(self,stripe_y):
@@ -152,7 +153,7 @@ class SarrazinForces(SteppableBasePy):
         target_coord_y = self.posteriormost_cell.yCOM + self.y_target_offset
 
 #        if (mcs % 50 == 0):
-#            Stats.displayStats('Number of cells=', len(self.cellList))
+#            StatsReporter.displayStats('Number of cells=', len(self.cellList))
 
 
         for cell in self.cellList:
@@ -295,6 +296,9 @@ class SarrazinCloneVisualizer(SteppableBasePy):
             
 class RegionalMitosis(MitosisSteppableBase):
    def __init__(self,_simulator,_frequency=1):
+      statsReporter = StatsReporter()
+
+#      Stats.inputParams('params')
       MitosisSteppableBase.__init__(self,_simulator, _frequency)
       self.y_GZ_mitosis_border_percent = 0.5 ## The position, in fraction of the GZ (from posteriormost EN stripe to posterior of GZ,
                                              ## of the border between mitosis regions in the GZ (measured from the posterior)
@@ -325,7 +329,7 @@ class RegionalMitosis(MitosisSteppableBase):
       
       self.fraction_AP_oriented=0.5
   
-      Stats.displayStats(['rg_RO', r_grow_R0, 'rg_R1', r_grow_R1, 'rg_R2', r_grow_R2, 'rg_R3', r_grow_R3])
+      statsReporter.displayStats(['rg_RO', r_grow_R0, 'rg_R1', r_grow_R1, 'rg_R2', r_grow_R2, 'rg_R3', r_grow_R3])
 
       
    def start(self):

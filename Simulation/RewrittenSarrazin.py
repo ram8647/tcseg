@@ -1,6 +1,13 @@
+#from newtests import *
+
 from PlayerPython import * 
 import CompuCellSetup
+
+
 ##******** Simulation Flags ********##
+
+# Parameter container, instantiated below in configureSimulation()
+global param_container
 
 # Simulation Dimension Parameters
 global Dx; global Dy
@@ -19,37 +26,70 @@ global stripe_y
 global regional_mitosis; global y_GZ_mitosis_border
 
 ##  Set Simulation Dimension Parameters  ##
-Dx = 320
-Dy = 750 #480
+# Dx = 320
+# Dy = 750 #480
 
 ##******** Configure Simulation Flags ********##
 
-speed_up_sim = False
-batch = False
-hinder_cells_near_EN = False  ## THIS PARAMETER IS CURRENTLY NOT DOING ANYTHING MECHANISTIC (sdh)
+# speed_up_sim = False
+# batch = False
+# hinder_cells_near_EN = False  ## THIS PARAMETER IS CURRENTLY NOT DOING ANYTHING MECHANISTIC (sdh)
+
 
 ## configure the sarrazin force steppable. Comments show default values.
 
-y_target_offset = 15 # 15
-pull_force_magnitude = 60 #60
-pinch_force_relative_center = 0.35 #0.35
-pinch_force_mag = 30 #17
-pinch_force_falloff_sharpness = 3.5 #3.5
+# y_target_offset = 15 # 15
+# pull_force_magnitude = 60 #60
+# pinch_force_relative_center = 0.35 #0.35
+# pinch_force_mag = 30 #17
+# pinch_force_falloff_sharpness = 3.5 #3.5
+
 
 ## Set Mitosis flag ##
-regional_mitosis=1 # RegionalMitosis steppable runs if nonzero
+#regional_mitosis=1 # RegionalMitosis steppable runs if nonzero
+
 ## Set Mitosis Steppable parameters in Steppables file ##
 
 ##******** Batch Run Configuration ********##
 
-if batch == True:
-    speed_up_sim = True
-    file = open("variables.txt", "r") # note, this should be relative to the location command from which the CC3D program was opened
-    i1, i2 = [float(i) for i in file.readlines()[0:2]] # this loads in a document with each variable to a line, in the order as seen on the left
+# if batch == True:
+#     speed_up_sim = True
+#     file = open("variables.txt", "r") # note, this should be relative to the location command from which the CC3D program was opened
+#     i1, i2 = [float(i) for i in file.readlines()[0:2]] # this loads in a document with each variable to a line, in the order as seen on the left
 
 def configureSimulation(sim):
     import CompuCellSetup
     from XMLUtils import ElementCC3D
+
+    ## ********** Import Parameters Here 
+    print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
+    print 'Current directory', os.getcwd()
+    from Stats import ParamsContainer
+    global params_container; params_container = ParamsContainer()
+    params_dict = params_container.inputParamsFromFile('../tcseg/Simulation/params')
+
+    # r_mitosis_R0 = params_container.getNumberParam(params_dict, 'r_mitosis_R0')
+    # r_mitosis_R1 = params_container.getNumberParam(params_dict, 'r_mitosis_R1') 
+    # r_mitosis_R2 = params_container.getNumberParam(params_dict, 'r_mitosis_R2')
+    # r_mitosis_R3 = params_container.getNumberParam(params_dict, 'r_mitosis_R3')
+    global Dx; Dx = params_container.getNumberParam(params_dict,'Dx')
+    global Dy; Dy = params_container.getNumberParam(params_dict,'Dy')
+    global speed_up_sim; speed_up_sim = params_container.getBooleanParam(params_dict,'speed_up_sim')
+    global batch; batch = params_container.getBooleanParam(params_dict,'batch')
+    global hinder_cells_near_EN; hinder_cells_near_EN = params_container.getBooleanParam(params_dict,'hinder_cells_near_EN')
+    global y_target_offset; y_target_offset = params_container.getNumberParam(params_dict,'y_target_offset')
+    global pull_force_magnitude; pull_force_magnitude = params_container.getNumberParam(params_dict,'pull_force_magnitude')
+    global pinch_force_relative_center; pinch_force_relative_center = params_container.getNumberParam(params_dict,'pinch_force_relative_center')
+    global pinch_force_mag; pinch_force_mag = params_container.getNumberParam(params_dict,'pinch_force_mag')
+    global pinch_force_falloff_sharpness; pinch_force_falloff_sharpness = params_container.getNumberParam(params_dict,'pinch_force_falloff_sharpness')
+    global regional_mitosis; regional_mitosis = params_container.getNumberParam(params_dict,'regional_mitosis')
+
+    if batch == True:
+        speed_up_sim = True
+        file = open("variables.txt", "r") # note, this should be relative to the location command from which the CC3D program was opened
+        i1, i2 = [float(i) for i in file.readlines()[0:2]] # this loads in a document with each variable to a line, in the order as seen on the left
+
+    print '>>>>>>>>>>>>>>>> After imports >>>>>>>>>>>>>>>>'
     CompuCell3DElmnt=ElementCC3D("CompuCell3D",{"Revision":"20140724","Version":"3.7.2"})
     PottsElmnt=CompuCell3DElmnt.ElementCC3D("Potts")
     
@@ -136,6 +176,7 @@ CompuCellSetup.initializeSimulationObjects(sim,simthread)
 steppableRegistry=CompuCellSetup.getSteppableRegistry()
 
 ## import my custom classes here
+
 
 from  RewrittenSarrazinSteppables import jeremyVector
 from  RewrittenSarrazinSteppables import EN_stripe
