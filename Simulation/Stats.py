@@ -40,6 +40,8 @@ class ParamsContainer:
    PARAMS_FOLDER = './'  # Root directory of params file
    RUNS_FOLDER = './'    
 
+   global dict
+
    def __init__(self):
      self.params = {}   # dictionary that stores the params
    
@@ -60,25 +62,28 @@ class ParamsContainer:
      if str in ("True", "true"):
        return True
 
-   @classmethod
-   def getNumberParam(self,params,key):
+   def getNumberParam(self, key, params = None):
      '''Returns the value for a number key or 0 if missing
 
      :params a dictionary of parameter (key,value) bindings
      :key a particular key in the dictionary, possibly absent
      '''
-     result = params[key] if key else 0     
+
+     if params == None:
+       params = dict
+     result = params[key] if key in params else 0     
      print '>>>> Parameter setting',key,'=',result
      return result
 
-   @classmethod
-   def getBooleanParam(self,params,key):
+   def getBooleanParam(self, key, params = None):
      '''Returns the value for a boolean key or 0 if missing
 
      :params a dictionary of parameter (key,value) bindings
      :key a particular key in the dictionary, possibly absent
      '''
-     result = params[key] if key else False     
+     if params == None:
+       params = dict
+     result = params[key] if key in params else False     
      print '>>>> Parameter setting',key,'=',result
      return result
 
@@ -86,7 +91,6 @@ class ParamsContainer:
    # Parameters are stored as rows in a text file. Each row takes the form
    #        attribute value
    # This method returns a dictionary with those associations
-   @classmethod
    def inputParamsFromFile(self, file):
      '''Inputs parameters from the designated file
 
@@ -95,7 +99,9 @@ class ParamsContainer:
      :return a dictionary with (key,value) parameter bindings
      '''
      print '---------------------- Stats: Reading params  -----------'
-     self.dict = {}
+#     self.dict = {}
+     global dict;
+     dict = {}
      fname = ParamsContainer.PARAMS_FOLDER + file + ".txt"
      with open(fname) as f:
        for line in f:    
@@ -105,27 +111,35 @@ class ParamsContainer:
            (key,val) = line.split()
            if ParamsContainer.is_number(val):
 #             print(val, 'is a number')
-             self.dict[key] = float(val)
+#            self.dict[key] = float(val)
+             dict[key] = float(val)
            elif val in ("False", "True"):
-             self.dict[key] = ParamsContainer.str2bool(val)
+#             self.dict[key] = ParamsContainer.str2bool(val)
+             dict[key] = ParamsContainer.str2bool(val)
            else:
-             self.dict[key] = val
+#             self.dict[key] = val
+             dict[key] = val
 
      print '\tReading data from file ', fname
 #     print '\tParams ', dict
-     for k,v in self.dict.items():
+#     for k,v in self.dict.items():
+     for k,v in dict.items():
        print '\t',k,'-->',v
      print '---------------------- Stats: Done  ---------------------'
-     return self.dict
+#     return self.dict
+     return dict
+
+    
 
 def main():
    params = ParamsContainer()
    params_dict = params.inputParamsFromFile('params')
-   r_mitosis_R0 = params.getNumberParam(params_dict, 'r_mitosis_R0')
-   r_mitosis_R1 = params.getNumberParam(params_dict, 'r_mitosis_R1') 
-   r_mitosis_R2 = params.getNumberParam(params_dict, 'r_mitosis_R2')
-   r_mitosis_R3 = params.getNumberParam(params_dict, 'r_mitosis_R3')
-   speed_up_sim = params.getBooleanParam(params_dict,'speed_up_sim')
+   r_mitosis_R0 = params.getNumberParam('r_mitosis_R0')
+   r_mitosis_R1 = params.getNumberParam('r_mitosis_R1') 
+   r_mitosis_R2 = params.getNumberParam('r_mitosis_R2')
+   r_mitosis_R3 = params.getNumberParam('r_mitosis_R3')
+   bogus = params.getBooleanParam('bogus')
+   speed_up_sim = params.getBooleanParam('speed_up_sim', params_dict)
 
    print speed_up_sim
    if bool(speed_up_sim) and speed_up_sim: 

@@ -128,15 +128,26 @@ class AssignCellAddresses(SteppableBasePy): # this steppable assigns each cell a
 
 class SarrazinForces(SteppableBasePy):
 
-    def __init__(self,_simulator,_frequency, _y_target_offset, _pull_force_magnitude, _pinch_force_relative_center, _pinch_force_mag, _pinch_force_falloff_sharpness):
+#    def __init__(self,_simulator,_frequency, _y_target_offset, _pull_force_magnitude, _pinch_force_relative_center, _pinch_force_mag, _pinch_force_falloff_sharpness):
+    def __init__(self, _simulator, _frequency, _params_container):
         SteppableBasePy.__init__(self,_simulator,_frequency)
-        self.y_target_offset = _y_target_offset
-        self.pull_force_magnitude = _pull_force_magnitude
-        self.pinch_force_relative_center = _pinch_force_relative_center
-        self.pinch_force_mag = _pinch_force_mag
-        self.pinch_force_falloff_sharpness = _pinch_force_falloff_sharpness
+        self.params_container = _params_container
+
+        self.y_target_offset = self.params_container.getNumberParam('y_target_offset')
+        self.pull_force_magnitude = self.params_container.getNumberParam('pull_force_magnitude')
+        self.pinch_force_relative_center = self.params_container.getNumberParam('pinch_force_relative_center')
+        self.pinch_force_mag = self.params_container.getNumberParam('pinch_force_mag')
+        self.pinch_force_falloff_sharpness = self.params_container.getNumberParam('pinch_force_falloff_sharpness')
         self.posteriormost_cell = None
         self.stripe_y = None
+
+#         self.y_target_offset = _y_target_offset
+#         self.pull_force_magnitude = _pull_force_magnitude
+#         self.pinch_force_relative_center = _pinch_force_relative_center
+#         self.pinch_force_mag = _pinch_force_mag
+#         self.pinch_force_falloff_sharpness = _pinch_force_falloff_sharpness
+#         self.posteriormost_cell = None
+#         self.stripe_y = None
 
     def start(self):
         self.posteriormost_cell = self.getSteppableByClassName('AssignCellAddresses').posteriormost_cell
@@ -295,17 +306,22 @@ class SarrazinCloneVisualizer(SteppableBasePy):
             self.sarrazin_path_field[int(cell.xCOM), int(cell.yCOM), 0] = 1
             
 class RegionalMitosis(MitosisSteppableBase):
-   def __init__(self,_simulator,_frequency=1):
-      statsReporter = StatsReporter()
 
-#      Stats.inputParams('params')
+   def __init__(self,_simulator,_frequency, _params_container ):
+      self.statsReporter = StatsReporter()
+      self.params_container = _params_container
+
       MitosisSteppableBase.__init__(self,_simulator, _frequency)
       self.y_GZ_mitosis_border_percent = 0.5 ## The position, in fraction of the GZ (from posteriormost EN stripe to posterior of GZ,
                                              ## of the border between mitosis regions in the GZ (measured from the posterior)
-      r_mitosis_R0 = 0.0 # approximate fraction of cells dividing in a given window in region 0 (anterior to EN)
-      r_mitosis_R1 = 0.0 # approximate fraction of cells dividing in a given window in region 1 (EN striped region)
-      r_mitosis_R2 = 0.0 # approximate fraction of cells dividing in a given window in region 2 (anterior GZ)
-      r_mitosis_R3 = 0.5 # approximate fraction of cells dividing in a given window in region 3 (posterior GZ)
+#       r_mitosis_R0 = 0.0 # approximate fraction of cells dividing in a given window in region 0 (anterior to EN)
+#       r_mitosis_R1 = 0.0 # approximate fraction of cells dividing in a given window in region 1 (EN striped region)
+#       r_mitosis_R2 = 0.0 # approximate fraction of cells dividing in a given window in region 2 (anterior GZ)
+#       r_mitosis_R3 = 0.5 # approximate fraction of cells dividing in a given window in region 3 (posterior GZ)
+      r_mitosis_R0 = self.params_container.getNumberParam('r_mitosis_R0')
+      r_mitosis_R1 = self.params_container.getNumberParam('r_mitosis_R1')
+      r_mitosis_R2 = self.params_container.getNumberParam('r_mitosis_R2')
+      r_mitosis_R3 = self.params_container.getNumberParam('r_mitosis_R3')
       self.r_mitosis_list=[r_mitosis_R0,r_mitosis_R1,r_mitosis_R2,r_mitosis_R3]
       
       self.window = 500 # length of window in MCS (see above)
@@ -329,7 +345,7 @@ class RegionalMitosis(MitosisSteppableBase):
       
       self.fraction_AP_oriented=0.5
   
-      statsReporter.displayStats(['rg_RO', r_grow_R0, 'rg_R1', r_grow_R1, 'rg_R2', r_grow_R2, 'rg_R3', r_grow_R3])
+      self.statsReporter.displayStats(['rg_RO', r_grow_R0, 'rg_R1', r_grow_R1, 'rg_R2', r_grow_R2, 'rg_R3', r_grow_R3])
 
       
    def start(self):

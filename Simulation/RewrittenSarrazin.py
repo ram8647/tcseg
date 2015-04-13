@@ -1,51 +1,26 @@
-#from newtests import *
-
 from PlayerPython import * 
 import CompuCellSetup
 
-
-##******** Simulation Flags ********##
-
 # Parameter container, instantiated below in configureSimulation()
-global param_container
+global params_container
 
 # Simulation Dimension Parameters
 global Dx; global Dy
 
-# general simulation flags
+# General simulation flags
 global batch; global speed_up_sim
 
-# sarrazin force flags
+# Sarrazin force flags
 global y_target_offset; global pull_force_magnitude; global pinch_force_relative_center
 global pinch_force_mag; global pinch_force_falloff_sharpness
-
 global hinder_cells_near_EN
 global stripe_y
 
 ## Mitosis parameters
 global regional_mitosis; global y_GZ_mitosis_border
 
-##  Set Simulation Dimension Parameters  ##
-# Dx = 320
-# Dy = 750 #480
-
 ##******** Configure Simulation Flags ********##
-
-# speed_up_sim = False
-# batch = False
-# hinder_cells_near_EN = False  ## THIS PARAMETER IS CURRENTLY NOT DOING ANYTHING MECHANISTIC (sdh)
-
-
 ## configure the sarrazin force steppable. Comments show default values.
-
-# y_target_offset = 15 # 15
-# pull_force_magnitude = 60 #60
-# pinch_force_relative_center = 0.35 #0.35
-# pinch_force_mag = 30 #17
-# pinch_force_falloff_sharpness = 3.5 #3.5
-
-
-## Set Mitosis flag ##
 #regional_mitosis=1 # RegionalMitosis steppable runs if nonzero
 
 ## Set Mitosis Steppable parameters in Steppables file ##
@@ -72,21 +47,23 @@ def configureSimulation(sim):
     # r_mitosis_R1 = params_container.getNumberParam(params_dict, 'r_mitosis_R1') 
     # r_mitosis_R2 = params_container.getNumberParam(params_dict, 'r_mitosis_R2')
     # r_mitosis_R3 = params_container.getNumberParam(params_dict, 'r_mitosis_R3')
-    global Dx; Dx = params_container.getNumberParam(params_dict,'Dx')
-    global Dy; Dy = params_container.getNumberParam(params_dict,'Dy')
-    global speed_up_sim; speed_up_sim = params_container.getBooleanParam(params_dict,'speed_up_sim')
-    global batch; batch = params_container.getBooleanParam(params_dict,'batch')
-    global hinder_cells_near_EN; hinder_cells_near_EN = params_container.getBooleanParam(params_dict,'hinder_cells_near_EN')
-    global y_target_offset; y_target_offset = params_container.getNumberParam(params_dict,'y_target_offset')
-    global pull_force_magnitude; pull_force_magnitude = params_container.getNumberParam(params_dict,'pull_force_magnitude')
-    global pinch_force_relative_center; pinch_force_relative_center = params_container.getNumberParam(params_dict,'pinch_force_relative_center')
-    global pinch_force_mag; pinch_force_mag = params_container.getNumberParam(params_dict,'pinch_force_mag')
-    global pinch_force_falloff_sharpness; pinch_force_falloff_sharpness = params_container.getNumberParam(params_dict,'pinch_force_falloff_sharpness')
-    global regional_mitosis; regional_mitosis = params_container.getNumberParam(params_dict,'regional_mitosis')
+    global Dx; Dx = params_container.getNumberParam('Dx')
+    global Dy; Dy = params_container.getNumberParam('Dy')
+    global speed_up_sim; speed_up_sim = params_container.getBooleanParam('speed_up_sim')
+    global batch; batch = params_container.getBooleanParam('batch')
+    global hinder_cells_near_EN; hinder_cells_near_EN = params_container.getBooleanParam('hinder_cells_near_EN')
+    global y_target_offset; y_target_offset = params_container.getNumberParam('y_target_offset')
+    global pull_force_magnitude; pull_force_magnitude = params_container.getNumberParam('pull_force_magnitude')
+    global pinch_force_relative_center; pinch_force_relative_center = params_container.getNumberParam('pinch_force_relative_center')
+    global pinch_force_mag; pinch_force_mag = params_container.getNumberParam('pinch_force_mag')
+    global pinch_force_falloff_sharpness; pinch_force_falloff_sharpness = params_container.getNumberParam('pinch_force_falloff_sharpness')
+    global regional_mitosis; regional_mitosis = params_container.getNumberParam('regional_mitosis')
 
+    # NOTE:  Not clear what this code is for; It crashes if batch is True b/c variables.txt is not found
     if batch == True:
         speed_up_sim = True
         file = open("variables.txt", "r") # note, this should be relative to the location command from which the CC3D program was opened
+        print '>>>>>>>>>>>>>>>> File', file
         i1, i2 = [float(i) for i in file.readlines()[0:2]] # this loads in a document with each variable to a line, in the order as seen on the left
 
     print '>>>>>>>>>>>>>>>> After imports >>>>>>>>>>>>>>>>'
@@ -175,8 +152,7 @@ configureSimulation(sim)
 CompuCellSetup.initializeSimulationObjects(sim,simthread)
 steppableRegistry=CompuCellSetup.getSteppableRegistry()
 
-## import my custom classes here
-
+## Import custom classes here
 
 from  RewrittenSarrazinSteppables import jeremyVector
 from  RewrittenSarrazinSteppables import EN_stripe
@@ -189,14 +165,19 @@ s1 = VolumeStabilizer(sim,_frequency = 1)
 from RewrittenSarrazinSteppables import AssignCellAddresses
 s2 = AssignCellAddresses(sim,_frequency = 1)
 
-
 from RewrittenSarrazinSteppables import SarrazinForces
-s3 = SarrazinForces(sim,_frequency = 1, _y_target_offset = y_target_offset, _pull_force_magnitude = pull_force_magnitude,
-                      _pinch_force_relative_center = pinch_force_relative_center, _pinch_force_mag = pinch_force_mag,
-                      _pinch_force_falloff_sharpness = pinch_force_falloff_sharpness)
+s3 = SarrazinForces(sim, _frequency = 1, _params_container=params_container)
+# s3 = SarrazinForces(sim,_frequency = 1, _y_target_offset = y_target_offset, _pull_force_magnitude = pull_force_magnitude,
+#                       _pinch_force_relative_center = pinch_force_relative_center, _pinch_force_mag = pinch_force_mag,
+#                       _pinch_force_falloff_sharpness = pinch_force_falloff_sharpness)
 
 #from RewrittenSarrazinSteppables import lobePincher
 #s4 = lobePincher(sim, _frequency = 10, _center_x = 152, _center_y = 35, _extent = 9)
+
+# EN_stripe parameters
+# The speeds and positions come from Brown et all, 1994. I measured the relative position of each stripe in ImageJ
+# and found that they move up ~ 6% of the relative body length in the period of interest. 90 is the number
+# of times this steppable is called during the simulation. So the speed is 6% body length / 90 steps, or 0.06/90 that is 0.0007.
 
 from RewrittenSarrazinSteppables import Engrailed
 s5 = Engrailed(sim, _frequency = 1,
@@ -205,18 +186,13 @@ s5 = Engrailed(sim, _frequency = 1,
                                   #EN_stripe(_relative_position = 0.45, _speed_mcs = 0.0007, _start_mcs = 0)], # stripe 2
                       _hinder_anterior_cells = hinder_cells_near_EN, height = s2.height)
 
-# The speeds and positions come from Brown et all, 1994. I measured the relative position of each stripe in ImageJ
-# and found that they move up ~ 6% of the relative body length in the period of interest. 90 is the number
-# of times this steppable is called during the simulation. So the speed is 6% body length / 90 steps, or 0.06/90 that is 0.0007.
-
-
 steppables = [s1,s2,s3,s5]
 for steppable in steppables: steppableRegistry.registerSteppable(steppable)
 
 ## ***** Declare the other steppables *****  ##
 if regional_mitosis:
    from RewrittenSarrazinSteppables import RegionalMitosis
-   mitosis = RegionalMitosis(sim,_frequency = 1)
+   mitosis = RegionalMitosis(sim,_frequency = 1, _params_container = params_container)
    steppableRegistry.registerSteppable(mitosis)
 
 '''
@@ -236,6 +212,5 @@ if speed_up_sim == False: # Disable the superfluous code for runs where efficien
     super_steppables = [SV, SCV]
     for steppable in super_steppables: steppableRegistry.registerSteppable(steppable)
 '''
-
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
         
