@@ -61,6 +61,12 @@ class ParamsContainer:
        return False
      if str in ("True", "true"):
        return True
+     raise ValueError(str + " cannot be converted to boolean")
+
+   def contains(self, key, params=None):
+     if params==None:
+       params = dict
+     return True if key in params else False
 
    def getNumberParam(self, key, params = None):
      '''Returns the value for a number key or 0 if missing
@@ -154,6 +160,12 @@ def main():
    reporter = StatsReporter()
    reporter.displayStats()
 
+def test(): 
+  params = ParamsContainer()
+  params.inputParamsFromFile('params')
+#  params.str2bool("ralp")
+  print params.contains("key")
 
 # To test the methods in this file, uncomment the next statement
 #main()  #  Run the tests
+#test()
