@@ -167,6 +167,10 @@ s2 = AssignCellAddresses(sim,_frequency = 1)
 
 from RewrittenSarrazinSteppables import SarrazinForces
 s3 = SarrazinForces(sim, _frequency = 1, _params_container=params_container)
+
+from RewrittenSarrazinSteppables import Measurements
+s4 = Measurements(sim,_frequency = 100)
+
 # s3 = SarrazinForces(sim,_frequency = 1, _y_target_offset = y_target_offset, _pull_force_magnitude = pull_force_magnitude,
 #                       _pinch_force_relative_center = pinch_force_relative_center, _pinch_force_mag = pinch_force_mag,
 #                       _pinch_force_falloff_sharpness = pinch_force_falloff_sharpness)
@@ -186,7 +190,7 @@ s5 = Engrailed(sim, _frequency = 1,
                                   #EN_stripe(_relative_position = 0.45, _speed_mcs = 0.0007, _start_mcs = 0)], # stripe 2
                       _hinder_anterior_cells = hinder_cells_near_EN, height = s2.height)
 
-steppables = [s1,s2,s3,s5]
+steppables = [s1,s2,s3,s4,s5]
 for steppable in steppables: steppableRegistry.registerSteppable(steppable)
 
 ## ***** Declare the other steppables *****  ##

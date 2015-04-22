@@ -512,3 +512,123 @@ class RegionalMitosis(MitosisSteppableBase):
             else:
                cellDict['mitosisVisualizationTimer']-=1
                
+class Measurements(SteppableBasePy):
+   def __init__(self,_simulator,_frequency):
+        SteppableBasePy.__init__(self,_simulator,_frequency)
+        
+   def start(self):
+      GB_cell_count=self.find_GB_cell_count()
+      GZ_cell_count=self.find_GZ_cell_count()
+      GB_length=self.find_GB_length()
+      GZ_length=self.find_GZ_length()
+      GB_area=self.find_GB_area()
+      GZ_area=self.find_GZ_area()
+      avg_cell_size=self.find_average_cell_size()
+      avg_diam=math.sqrt(avg_cell_size)
+      
+      print '\nGerm band:'
+      print 'cell count=' + str(GB_cell_count)
+      print 'length=' + str(GB_length) + ' pixels'
+      print 'area=' + str(GB_area) + ' pixels'
+      print '========='
+      print '\nGrowth zone:'
+      print 'cell count=' + str(GZ_cell_count)
+      print 'length=' + str(GZ_length) + ' pixels'
+      print 'area=' + str(GZ_area) + ' pixels'
+      print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
+      print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'
+      
+   def step(self,mcs):
+      GB_cell_count=self.find_GB_cell_count()
+      GZ_cell_count=self.find_GZ_cell_count()
+      GB_length=self.find_GB_length()
+      GZ_length=self.find_GZ_length()
+      GB_area=self.find_GB_area()
+      GZ_area=self.find_GZ_area()
+      avg_cell_size=self.find_average_cell_size()
+      avg_diam=math.sqrt(avg_cell_size)
+      
+      print '\nGerm band:'
+      print 'cell count=' + str(GB_cell_count)
+      print 'length=' + str(GB_length) + ' pixels'
+      print 'area=' + str(GB_area) + ' pixels'
+      print '========='
+      print '\nGrowth zone:'
+      print 'cell count=' + str(GZ_cell_count)
+      print 'length=' + str(GZ_length) + ' pixels'
+      print 'area=' + str(GZ_area) + ' pixels'
+      print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
+      print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'   
+      
+   def find_GB_cell_count(self):
+      cell_counter=0
+      for cell in self.cellList:
+         if cell:
+            cell_counter+=1
+      return cell_counter
+      
+   def find_GZ_cell_count(self):
+      cell_counter=0
+      y_EN_pos=self.find_posterior_EN_stripe()
+      for cell in self.cellList:
+         if cell.yCOM<y_EN_pos:
+            cell_counter+=1
+      return cell_counter
+      
+   def find_GB_length(self):
+      ant=self.find_anterior_GB()
+      pos=self.find_posterior_GB()
+      length=ant-pos
+      return length
+            
+   def find_GZ_length(self):
+      ant=self.find_posterior_EN_stripe()
+      pos=self.find_posterior_GB()
+      length=ant-pos
+      return length
+      
+   def find_GB_area(self):
+      area=0
+      for cell in self.cellList:
+         if cell:
+            area+=cell.volume
+      return area
+      
+   def find_GZ_area(self):
+      area=0
+      y_ant=self.find_posterior_EN_stripe()
+      for cell in self.cellList:
+         if cell.yCOM<y_ant:
+            area+=cell.volume
+      return area
+      
+   def find_average_cell_size(self):
+      area=self.find_GB_area()
+      cell_count=self.find_GB_cell_count()
+      avg_cell_volume=area/cell_count
+      return avg_cell_volume
+            
+   def find_posterior_EN_stripe(self):
+      y_EN_pos=9999
+      for cell in self.cellList:
+         if cell.type==2: # EN cell
+            yCM=cell.yCOM
+            if yCM < y_EN_pos:
+               y_EN_pos=yCM
+      return y_EN_pos
+      
+   def find_anterior_GB(self):
+      ant=0
+      for cell in self.cellList:
+         yCM=cell.yCOM
+         if yCM>ant:
+            ant=yCM
+      return ant
+      
+   def find_posterior_GB(self):
+      pos=9999
+      for cell in self.cellList:
+         yCM=cell.yCOM
+         if yCM<pos:
+            pos=yCM
+      return pos
