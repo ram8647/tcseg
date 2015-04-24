@@ -317,29 +317,34 @@ class Engrailed(SteppableBasePy):
         self.gene_product_secretor = None
         self.height = height
         self.stripe_y = None
+        # stripe positioning parameters
+        self.intial_stripe=805
+        self.stripe_width=10
+        self.stripe_period=300
+        self.stripe_spacing=50
 
     def start(self):
         if self.hinder_anterior_cells == True:
             self.gene_product_field = CompuCell.getConcentrationField(self.simulator,"EN_GENE_PRODUCT")
             self.gene_product_secretor = self.getFieldSecretor("EN_GENE_PRODUCT")
         for cell in self.cellList: # THIS BLOCK HAS BEEN JUSTIFIED OUTSIDE OF EARLIER "IF" STATEMENT (sdh)
-            self.stripe_y = 805 #645 #375
-            if cell.yCOM < self.stripe_y+5 and cell.yCOM > self.stripe_y-5:
+            self.stripe_y = self.initial_stripe 
+            if cell.yCOM < self.stripe_y+self.stripe_width/2 and cell.yCOM > self.stripe_y-self.stripe_width/2:
             # cellDict["En_ON"] = True
                 cell.type = 2 # EN cell
                 if self.hinder_anterior_cells == True:
                      self.gene_product_secretor.secreteInsideCell(cell, 1)
 
     def step(self, mcs):
-        if (mcs != 0) and (mcs % 300 == 0) :
-            self.stripe_y -= 50
+        if (mcs != 0) and (mcs % self.stripe_period == 0) :
+            self.stripe_y -= self.stripe_spacing
             #### SarrazinForces.setstripe_y(SarrazinForces, self.stripe_y)
             for cell in self.cellList:
                 ####cellDict = CompuCell.getPyAttrib(cell)
                 print "self.stripe_y:    ", self.stripe_y
                 ##### if cell.type == 1: #AnteriorLobe
                 if cell:
-                    if cell.yCOM < self.stripe_y + 6 and cell.yCOM > self.stripe_y - 6:
+                    if cell.yCOM < self.stripe_y + (self.stripe_width+1) and cell.yCOM > self.stripe_y - (self.stripe_width+1):
                         ######cellDict["En_ON"] = True
                         cell.type = 2 # EN
                         #####if self.hinder_anterior_cells == True:
