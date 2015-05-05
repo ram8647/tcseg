@@ -160,11 +160,14 @@ s1 = VolumeStabilizer(sim,_frequency = 1)
 from RewrittenSarrazinSteppables import AssignCellAddresses
 s2 = AssignCellAddresses(sim,_frequency = 1)
 
-# from RewrittenSarrazinSteppables import SimplifiedForces_GrowthZone
-# s3 = SimplifiedForces_GrowthZone(sim,_frequency = 10)
+from RewrittenSarrazinSteppables import SimplifiedForces_GrowthZone
+s3 = SimplifiedForces_GrowthZone(sim,_frequency = 10)
 
-from RewrittenSarrazinSteppables import SimplifiedForces_EntireEmbryo
-s3 = SimplifiedForces_EntireEmbryo(sim,_frequency = 10)
+# from RewrittenSarrazinSteppables import SimplifiedForces_EntireEmbryo
+# s3 = SimplifiedForces_EntireEmbryo(sim,_frequency = 10)
+
+from RewrittenSarrazinSteppables import Measurements
+s4 = Measurements(sim,_frequency = 100)
 
 from RewrittenSarrazinSteppables import Engrailed
 s5 = Engrailed(sim, _frequency = 1,
@@ -178,7 +181,7 @@ s5 = Engrailed(sim, _frequency = 1,
 # of times this steppable is called during the simulation. So the speed is 6% body length / 90 steps, or 0.06/90 that is 0.0007.
 
 
-steppables = [s1,s2,s3,s5]
+steppables = [s1,s2,s3,s4,s5]
 for steppable in steppables: steppableRegistry.registerSteppable(steppable)
 
 ## ***** Declare the other steppables *****  ##
