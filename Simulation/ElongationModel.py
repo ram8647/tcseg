@@ -191,13 +191,11 @@ if dye_flag:
   #### Label02Field=simthread.createFloatFieldPy(dim,"CellLabel02")
   #### Label03Field=simthread.createFloatFieldPy(dim,"CellLabel03")   
 
-super_steppables = [SV, SCV]
-'''
 if dye_flag:
    from RewrittenSarrazinSteppables import DyeCells
    dyeCells=DyeCells(_simulator=sim,_frequency=20,_x0=x0_dye,_y0=y0_dye,_xf=xf_dye,_yf=yf_dye)
    dyeCells.setScalarField(Label01Field)
    steppableRegistry.registerSteppable(dyeCells) 
-'''
+
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
         
