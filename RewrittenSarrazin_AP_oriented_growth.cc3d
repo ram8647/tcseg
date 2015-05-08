@@ -1,0 +1,4 @@
+<Simulation version="3.6.2">
+   <PythonScript Type="PythonScript">Simulation/RewrittenSarrazin_AP_oriented_growth.py</PythonScript>
+   <Resource Type="Python">Simulation/RewrittenSarrazinSteppables_AP_oriented_growth.py</Resource>
+</Simulation>
