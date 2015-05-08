@@ -191,8 +191,7 @@ if dye_flag:
   #### Label02Field=simthread.createFloatFieldPy(dim,"CellLabel02")
   #### Label03Field=simthread.createFloatFieldPy(dim,"CellLabel03")   
 
-    super_steppables = [SV, SCV]
-    for steppable in super_steppables: steppableRegistry.registerSteppable(steppable)
+super_steppables = [SV, SCV]
 '''
 if dye_flag:
    from RewrittenSarrazinSteppables import DyeCells
