@@ -19,19 +19,6 @@ global stripe_y
 ## Mitosis parameters
 global regional_mitosis; global y_GZ_mitosis_border
 
-##******** Configure Simulation Flags ********##
-## configure the sarrazin force steppable. Comments show default values.
-#regional_mitosis=1 # RegionalMitosis steppable runs if nonzero
-
-## Set Mitosis Steppable parameters in Steppables file ##
-
-##******** Batch Run Configuration ********##
-
-# if batch == True:
-#     speed_up_sim = True
-#     file = open("variables.txt", "r") # note, this should be relative to the location command from which the CC3D program was opened
-#     i1, i2 = [float(i) for i in file.readlines()[0:2]] # this loads in a document with each variable to a line, in the order as seen on the left
-
 def configureSimulation(sim):
     import CompuCellSetup
     from XMLUtils import ElementCC3D
@@ -43,10 +30,6 @@ def configureSimulation(sim):
     global params_container; params_container = ParamsContainer()
     params_dict = params_container.inputParamsFromFile('../tcseg/Simulation/params')
 
-    # r_mitosis_R0 = params_container.getNumberParam(params_dict, 'r_mitosis_R0')
-    # r_mitosis_R1 = params_container.getNumberParam(params_dict, 'r_mitosis_R1') 
-    # r_mitosis_R2 = params_container.getNumberParam(params_dict, 'r_mitosis_R2')
-    # r_mitosis_R3 = params_container.getNumberParam(params_dict, 'r_mitosis_R3')
     global Dx; Dx = params_container.getNumberParam('Dx')
     global Dy; Dy = params_container.getNumberParam('Dy')
     global speed_up_sim; speed_up_sim = params_container.getBooleanParam('speed_up_sim')
@@ -58,13 +41,6 @@ def configureSimulation(sim):
     global pinch_force_mag; pinch_force_mag = params_container.getNumberParam('pinch_force_mag')
     global pinch_force_falloff_sharpness; pinch_force_falloff_sharpness = params_container.getNumberParam('pinch_force_falloff_sharpness')
     global regional_mitosis; regional_mitosis = params_container.getNumberParam('regional_mitosis')
-
-    # NOTE:  Not clear what this code is for; It crashes if batch is True b/c variables.txt is not found
-    if batch == True:
-        speed_up_sim = True
-        file = open("variables.txt", "r") # note, this should be relative to the location command from which the CC3D program was opened
-        print '>>>>>>>>>>>>>>>> File', file
-        i1, i2 = [float(i) for i in file.readlines()[0:2]] # this loads in a document with each variable to a line, in the order as seen on the left
 
     print '>>>>>>>>>>>>>>>> After imports >>>>>>>>>>>>>>>>'
     CompuCell3DElmnt=ElementCC3D("CompuCell3D",{"Revision":"20140724","Version":"3.7.2"})
@@ -170,10 +146,6 @@ s3 = SarrazinForces(sim, _frequency = 1, _params_container=params_container)
 
 from RewrittenSarrazinSteppables import Measurements
 s4 = Measurements(sim,_frequency = 100)
-
-# s3 = SarrazinForces(sim,_frequency = 1, _y_target_offset = y_target_offset, _pull_force_magnitude = pull_force_magnitude,
-#                       _pinch_force_relative_center = pinch_force_relative_center, _pinch_force_mag = pinch_force_mag,
-#                       _pinch_force_falloff_sharpness = pinch_force_falloff_sharpness)
 
 #from RewrittenSarrazinSteppables import lobePincher
 #s4 = lobePincher(sim, _frequency = 10, _center_x = 152, _center_y = 35, _extent = 9)

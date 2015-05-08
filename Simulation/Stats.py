@@ -1,20 +1,34 @@
-# Test the param methods and functions
+# Utility classes for inputting params and reporting stats
 
 import time
 import datetime
+import sys
+
+global PARAMS_FOLDER; PARAMS_FOLDER  = './'  # Root directory of params file
+global RUNS_FOLDER;  RUNS_FOLDER  = './'    
+
 
 class StatsReporter: 
    '''Utility class for reporting stats'''
-#   def __init__(self):
+   def __init__(self):
+      '''Initializes the output file for reporting stats'''
+      self.stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%y%m%d-%H%M%S')
+      self.fname = RUNS_FOLDER + 'run' + self.stamp
+      outfile = open(self.fname, 'w')
+      outfile.write('---- Starting Run @ yymmdd-hhmmss ' + self.stamp + '--------\n')
+      outfile.close()
 
-   def outputStats(self):
-     '''Outputs stats to a file'''
-     stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%y%m%d-%H%M%S')
-     fname = Params.RUNS_FOLDER + 'run' + stamp
-     outfile = open(fname, 'w')
-     outfile.write('---------------------- Stats --------------------\n')
-     outfile.write(stamp + '\n')
-     outfile.close()
+   def beginOutputStats(self):
+     '''Appends output to the current file'''
+     sys.stdout = open(self.fname, 'a')
+     print("Appending text")
+#     with open(self.fname, "a") as outfile:
+#       outfile.write("appended text")
+#       outfile.close()
+     
+   def endOutputStats(self):
+     '''Appends output to the current file'''
+     sys.stdout = sys.__stdout__
 
    def displayStats(self, list=[]):
      '''Displays stats in the terminal
@@ -37,13 +51,11 @@ class StatsReporter:
 class ParamsContainer:
    '''Manages inputting parameter settings from a file'''
 
-   PARAMS_FOLDER = './'  # Root directory of params file
-   RUNS_FOLDER = './'    
-
    global dict
 
    def __init__(self):
      self.params = {}   # dictionary that stores the params
+     self.reporter = StatsReporter()     
    
    @classmethod
    def is_number(self,str):
@@ -93,10 +105,6 @@ class ParamsContainer:
      print '>>>> Parameter setting',key,'=',result
      return result
 
-   # Inputs parameter settings from file and returns them as a dictionary
-   # Parameters are stored as rows in a text file. Each row takes the form
-   #        attribute value
-   # This method returns a dictionary with those associations
    def inputParamsFromFile(self, file):
      '''Inputs parameters from the designated file
 
@@ -105,10 +113,9 @@ class ParamsContainer:
      :return a dictionary with (key,value) parameter bindings
      '''
      print '---------------------- Stats: Reading params  -----------'
-#     self.dict = {}
      global dict;
      dict = {}
-     fname = ParamsContainer.PARAMS_FOLDER + file + ".txt"
+     fname = PARAMS_FOLDER + file + ".txt"
      with open(fname) as f:
        for line in f:    
          line = line.strip('\n')
@@ -117,27 +124,26 @@ class ParamsContainer:
            (key,val) = line.split()
            if ParamsContainer.is_number(val):
 #             print(val, 'is a number')
-#            self.dict[key] = float(val)
              dict[key] = float(val)
            elif val in ("False", "True"):
-#             self.dict[key] = ParamsContainer.str2bool(val)
              dict[key] = ParamsContainer.str2bool(val)
            else:
-#             self.dict[key] = val
              dict[key] = val
 
      print '\tReading data from file ', fname
-#     print '\tParams ', dict
-#     for k,v in self.dict.items():
      for k,v in dict.items():
        print '\t',k,'-->',v
      print '---------------------- Stats: Done  ---------------------'
-#     return self.dict
      return dict
 
-    
 
 def main():
+   ''' Code to test methods in this class.'''
+     
+   reporter = StatsReporter()
+   reporter.beginOutputStats()
+   print 'Reporting output stats'
+
    params = ParamsContainer()
    params_dict = params.inputParamsFromFile('params')
    r_mitosis_R0 = params.getNumberParam('r_mitosis_R0')
@@ -155,10 +161,9 @@ def main():
 
    print r_mitosis_R0, r_mitosis_R1, r_mitosis_R2, r_mitosis_R3
    print r_mitosis_R0 + r_mitosis_R3
+   reporter.endOutputStats()
+   print 'End of the test run'
 
-   print 'Reporting output stats'
-   reporter = StatsReporter()
-   reporter.displayStats()
 
 def test(): 
   params = ParamsContainer()
@@ -167,5 +172,5 @@ def test():
   print params.contains("key")
 
 # To test the methods in this file, uncomment the next statement
-#main()  #  Run the tests
+main()  #  Run the tests
 #test()

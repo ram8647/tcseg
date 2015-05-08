@@ -128,7 +128,6 @@ class AssignCellAddresses(SteppableBasePy): # this steppable assigns each cell a
 
 class SarrazinForces(SteppableBasePy):
 
-#    def __init__(self,_simulator,_frequency, _y_target_offset, _pull_force_magnitude, _pinch_force_relative_center, _pinch_force_mag, _pinch_force_falloff_sharpness):
     def __init__(self, _simulator, _frequency, _params_container):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         self.params_container = _params_container
@@ -141,18 +140,8 @@ class SarrazinForces(SteppableBasePy):
         self.posteriormost_cell = None
         self.stripe_y = None
 
-#         self.y_target_offset = _y_target_offset
-#         self.pull_force_magnitude = _pull_force_magnitude
-#         self.pinch_force_relative_center = _pinch_force_relative_center
-#         self.pinch_force_mag = _pinch_force_mag
-#         self.pinch_force_falloff_sharpness = _pinch_force_falloff_sharpness
-#         self.posteriormost_cell = None
-#         self.stripe_y = None
-
     def start(self):
         self.posteriormost_cell = self.getSteppableByClassName('AssignCellAddresses').posteriormost_cell
-#        StatsReporter.displayStats(['a1', 1, 'a2', 2, 'a3', 3])
-#        StatsReporter.outputStats()
 
     @staticmethod
     def setstripe_y(self,stripe_y):
@@ -162,10 +151,6 @@ class SarrazinForces(SteppableBasePy):
 
         target_coord_x = 160
         target_coord_y = self.posteriormost_cell.yCOM + self.y_target_offset
-
-#        if (mcs % 50 == 0):
-#            StatsReporter.displayStats('Number of cells=', len(self.cellList))
-
 
         for cell in self.cellList:
             cell.lambdaVecX = 0; cell.lambdaVecY = 0 #reset forces from the MCS
@@ -273,7 +258,7 @@ class Engrailed(SteppableBasePy):
             SarrazinForces.setstripe_y(SarrazinForces, self.stripe_y)
             for cell in self.cellList:
                 #cellDict = CompuCell.getPyAttrib(cell)
-                print "self.stripe_y:    ", self.stripe_y
+                #print "self.stripe_y:    ", self.stripe_y
                 # if cell.type == 1: #AnteriorLobe
                 if cell:
                     if cell.yCOM < self.stripe_y + 6 and cell.yCOM > self.stripe_y - 6:
@@ -314,10 +299,6 @@ class RegionalMitosis(MitosisSteppableBase):
       MitosisSteppableBase.__init__(self,_simulator, _frequency)
       self.y_GZ_mitosis_border_percent = 0.5 ## The position, in fraction of the GZ (from posteriormost EN stripe to posterior of GZ,
                                              ## of the border between mitosis regions in the GZ (measured from the posterior)
-#       r_mitosis_R0 = 0.0 # approximate fraction of cells dividing in a given window in region 0 (anterior to EN)
-#       r_mitosis_R1 = 0.0 # approximate fraction of cells dividing in a given window in region 1 (EN striped region)
-#       r_mitosis_R2 = 0.0 # approximate fraction of cells dividing in a given window in region 2 (anterior GZ)
-#       r_mitosis_R3 = 0.5 # approximate fraction of cells dividing in a given window in region 3 (posterior GZ)
       r_mitosis_R0 = self.params_container.getNumberParam('r_mitosis_R0')
       r_mitosis_R1 = self.params_container.getNumberParam('r_mitosis_R1')
       r_mitosis_R2 = self.params_container.getNumberParam('r_mitosis_R2')
