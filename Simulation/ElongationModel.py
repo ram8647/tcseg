@@ -142,21 +142,21 @@ steppableRegistry=CompuCellSetup.getSteppableRegistry()
 
 ## Import custom classes here
 
-from  RewrittenSarrazinSteppables import jeremyVector
-from  RewrittenSarrazinSteppables import EN_stripe
+from  ElongationModelSteppables import jeremyVector
+from  ElongationModelSteppables import EN_stripe
 
 ## ***** Declare Steppables Here ***** ##
 
-from RewrittenSarrazinSteppables import VolumeStabilizer
+from ElongationModelSteppables import VolumeStabilizer
 s1 = VolumeStabilizer(sim,_frequency = 1)
 
-from RewrittenSarrazinSteppables import AssignCellAddresses
+from ElongationModelSteppables import AssignCellAddresses
 s2 = AssignCellAddresses(sim,_frequency = 1)
 
-from RewrittenSarrazinSteppables import SimplifiedForces_GrowthZone
+from ElongationModelSteppables import SimplifiedForces_GrowthZone
 s3 = SimplifiedForces_GrowthZone(sim,_frequency = 10)
 
-from RewrittenSarrazinSteppables import Measurements
+from ElongationModelSteppables import Measurements
 s4 = Measurements(sim,_frequency = 100)
 
 # EN_stripe parameters
@@ -164,7 +164,7 @@ s4 = Measurements(sim,_frequency = 100)
 # and found that they move up ~ 6% of the relative body length in the period of interest. 90 is the number
 # of times this steppable is called during the simulation. So the speed is 6% body length / 90 steps, or 0.06/90 that is 0.0007.
 
-from RewrittenSarrazinSteppables import Engrailed
+from ElongationModelSteppables import Engrailed
 s5 = Engrailed(sim, _frequency = 1,
                       _stripes = [EN_stripe(_relative_position = 0.25, _speed_mcs = 0.0007, _start_mcs = 0)], # stripe 0.
                                   #EN_stripe(_relative_position = 0.35, _speed_mcs = 0.0007, _start_mcs = 0), # stripe 1
@@ -180,7 +180,7 @@ for steppable in steppables: steppableRegistry.registerSteppable(steppable)
 
 ## ***** Declare the other steppables *****  ##
 if regional_mitosis:
-   from RewrittenSarrazinSteppables import RegionalMitosis
+   from ElongationModelSteppables import RegionalMitosis
    mitosis = RegionalMitosis(sim,_frequency = 1, _params_container = params_container)
    steppableRegistry.registerSteppable(mitosis)
 
@@ -192,7 +192,7 @@ if dye_flag:
   #### Label03Field=simthread.createFloatFieldPy(dim,"CellLabel03")   
 
 if dye_flag:
-   from RewrittenSarrazinSteppables import DyeCells
+   from ElongationModelSteppables import DyeCells
    dyeCells=DyeCells(_simulator=sim,_frequency=20,_x0=x0_dye,_y0=y0_dye,_xf=xf_dye,_yf=yf_dye)
    dyeCells.setScalarField(Label01Field)
    steppableRegistry.registerSteppable(dyeCells) 
