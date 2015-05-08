@@ -38,9 +38,14 @@ def configureSimulation(sim):
     ## ********** Import Parameters Here 
     print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
     print 'Current directory', os.getcwd()
-    from Stats import ParamsContainer
+##    os.chdir('../tcseg/Simulation')
+##    print 'Changed to directory', os.getcwd()
+    from Stats import ParamsContainer, StatsReporter
     global params_container; params_container = ParamsContainer()
-    params_dict = params_container.inputParamsFromFile('../tcseg/Simulation/params')
+    global stats_reporter; stats_reporter = StatsReporter()
+    
+    stats_reporter.beginOutputStats()
+    params_dict = params_container.inputParamsFromFile('params')
 
     global Dx; Dx = params_container.getNumberParam('Dx')
     global Dy; Dy = params_container.getNumberParam('Dy')
@@ -53,6 +58,7 @@ def configureSimulation(sim):
     global pinch_force_mag; pinch_force_mag = params_container.getNumberParam('pinch_force_mag')
     global pinch_force_falloff_sharpness; pinch_force_falloff_sharpness = params_container.getNumberParam('pinch_force_falloff_sharpness')
     global regional_mitosis; regional_mitosis = params_container.getNumberParam('regional_mitosis')
+    stats_reporter.endOutputStats()
 
     print '>>>>>>>>>>>>>>>> After imports >>>>>>>>>>>>>>>>'
     CompuCell3DElmnt=ElementCC3D("CompuCell3D",{"Revision":"20140724","Version":"3.7.2"})
@@ -120,7 +126,8 @@ def configureSimulation(sim):
     SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"PIFInitializer"})
     
     # Initial layout of cells using PIFF file. Piff files can be generated using PIFGEnerator
-    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_3_19_2015.piff")
+##    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_3_19_2015.piff")
+    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/Dec2014_V02.piff")
 
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
             

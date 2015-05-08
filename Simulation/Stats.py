@@ -3,9 +3,12 @@
 import time
 import datetime
 import sys
+from os import environ
+from os import getcwd
 
-global PARAMS_FOLDER; PARAMS_FOLDER  = './'  # Root directory of params file
-global RUNS_FOLDER;  RUNS_FOLDER  = './'    
+#  NOTE: These paths assume that tcseg is a sibling directory to CC3D_3.7.1
+global PARAMS_FOLDER; PARAMS_FOLDER  =  '../tcseg/Simulation/'    # Root directory of params file
+global RUNS_FOLDER;  RUNS_FOLDER  =  '../tcseg/Simulation/runs/'    
 
 
 class StatsReporter: 
@@ -14,20 +17,22 @@ class StatsReporter:
       '''Initializes the output file for reporting stats'''
       self.stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%y%m%d-%H%M%S')
       self.fname = RUNS_FOLDER + 'run' + self.stamp
-      outfile = open(self.fname, 'w')
-      outfile.write('---- Starting Run @ yymmdd-hhmmss ' + self.stamp + '--------\n')
-      outfile.close()
+##      self.fname = os.getcwd() + '/runs/'  + 'run' + self.stamp
+      print 'Creating StatsReporter opening file ', self.fname
+      self.outfile = open(self.fname, 'w')
+      self.outfile.write('---- Starting Run @ yymmdd-hhmmss ' + self.stamp + '--------\n')
+      self.outfile.close()
 
    def beginOutputStats(self):
-     '''Appends output to the current file'''
+     '''Redirects output to the current run file'''
+     print "<<<<<<< Redirecting output to ", self.fname
      sys.stdout = open(self.fname, 'a')
-     print("Appending text")
-#     with open(self.fname, "a") as outfile:
-#       outfile.write("appended text")
-#       outfile.close()
      
    def endOutputStats(self):
-     '''Appends output to the current file'''
+     '''Redirects output to stdout'''
+     print "<<<<<<< Redirecting output to stdout"
+     self.outfile.close()
+#     sys.stdout.close()
      sys.stdout = sys.__stdout__
 
    def displayStats(self, list=[]):
@@ -59,7 +64,7 @@ class ParamsContainer:
    
    @classmethod
    def is_number(self,str):
-     '''Returns treu if str is a number'''
+     '''Returns true if str is a number'''
      try:
        float(str)
        return True
@@ -112,10 +117,13 @@ class ParamsContainer:
            parameters are stored as rows of the form: attr value
      :return a dictionary with (key,value) parameter bindings
      '''
+     self.reporter.beginOutputStats()
      print '---------------------- Stats: Reading params  -----------'
      global dict;
      dict = {}
      fname = PARAMS_FOLDER + file + ".txt"
+##     fname = os.getcwd() + '/'  + file + ".txt"
+     print 'params file = ', fname
      with open(fname) as f:
        for line in f:    
          line = line.strip('\n')
@@ -134,6 +142,7 @@ class ParamsContainer:
      for k,v in dict.items():
        print '\t',k,'-->',v
      print '---------------------- Stats: Done  ---------------------'
+     self.reporter.endOutputStats()
      return dict
 
 
@@ -172,5 +181,5 @@ def test():
   print params.contains("key")
 
 # To test the methods in this file, uncomment the next statement
-main()  #  Run the tests
+#main()  #  Run the tests
 #test()
