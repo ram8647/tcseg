@@ -38,14 +38,11 @@ def configureSimulation(sim):
     ## ********** Import Parameters Here 
     print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
     print 'Current directory', os.getcwd()
-##    os.chdir('../tcseg/Simulation')
-##    print 'Changed to directory', os.getcwd()
     from Stats import ParamsContainer, StatsReporter
-    global params_container; params_container = ParamsContainer()
-    global stats_reporter; stats_reporter = StatsReporter()
+    global reporter; reporter = StatsReporter('../tcseg/Simulation/runs/')
+    global params_container; params_container = ParamsContainer(reporter)
     
-    stats_reporter.beginOutputStats()
-    params_dict = params_container.inputParamsFromFile('params')
+    params_dict = params_container.inputParamsFromFile('params', folder='../tcseg/Simulation/')
 
     global Dx; Dx = params_container.getNumberParam('Dx')
     global Dy; Dy = params_container.getNumberParam('Dy')
@@ -58,7 +55,6 @@ def configureSimulation(sim):
     global pinch_force_mag; pinch_force_mag = params_container.getNumberParam('pinch_force_mag')
     global pinch_force_falloff_sharpness; pinch_force_falloff_sharpness = params_container.getNumberParam('pinch_force_falloff_sharpness')
     global regional_mitosis; regional_mitosis = params_container.getNumberParam('regional_mitosis')
-    stats_reporter.endOutputStats()
 
     print '>>>>>>>>>>>>>>>> After imports >>>>>>>>>>>>>>>>'
     CompuCell3DElmnt=ElementCC3D("CompuCell3D",{"Revision":"20140724","Version":"3.7.2"})
