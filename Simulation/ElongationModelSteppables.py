@@ -248,8 +248,9 @@ class SimplifiedForces_EntireEmbryo(SteppableBasePy):
 
       
 class AssignCellAddresses(SteppableBasePy): # this steppable assigns each cell an address along the AP axis
-    def __init__(self,_simulator,_frequency):
+    def __init__(self,_simulator,_frequency, _reporter):
         SteppableBasePy.__init__(self,_simulator,_frequency)
+        self.reporter = _reporter
 
         self.height = 0
         self.anteriormost_cell_y = None
@@ -269,6 +270,7 @@ class AssignCellAddresses(SteppableBasePy): # this steppable assigns each cell a
             
         self.height = abs(self.anteriormost_cell_y - self.posteriormost_cell_y)
         print "self.anteriormost_cell_y: ", self.anteriormost_cell_y
+        self.reporter.printToReport("self.anteriormost_cell_y: ", self.anteriormost_cell_y)
 
     def percentBodyLengthFromAnteriorToCell(self, target_cell): # delete me if not needed!
         distance_from_anterior = abs(self.anteriormost_cell_y - target_cell.yCOM)
@@ -344,7 +346,7 @@ class Engrailed(SteppableBasePy):
             #### SarrazinForces.setstripe_y(SarrazinForces, self.stripe_y)
             for cell in self.cellList:
                 ####cellDict = CompuCell.getPyAttrib(cell)
-                print "self.stripe_y:    ", self.stripe_y
+                ##### print "self.stripe_y:    ", self.stripe_y
                 ##### if cell.type == 1: #AnteriorLobe
 
                 if cell:
@@ -357,39 +359,34 @@ class Engrailed(SteppableBasePy):
             
 class RegionalMitosis(MitosisSteppableBase):
 
-   def __init__(self,_simulator,_frequency, _params_container ):
-      self.statsReporter = StatsReporter()
+   def __init__(self,_simulator,_frequency, _params_container, _stats_reporter):
+      self.reporter = _stats_reporter
       self.params_container = _params_container
 
       MitosisSteppableBase.__init__(self,_simulator, _frequency)
-      self.y_GZ_mitosis_border_percent = 0.5 ## The position, in fraction of the GZ (from posteriormost EN stripe to posterior of GZ,
-                                             ## of the border between mitosis regions in the GZ (measured from the posterior)
-
+      self.y_GZ_mitosis_border_percent = self.params_container.getNumberParam('y_GZ_mitosis_border_percent')
+      self.transition_times = self.params_container.getListParam('mitosis_transition_times')
+  
       self.transition_counter = 0                ## keeps track of which time window simulation is in
-      self.transition_times = [0,200,500]   ## A list of times at which the mitosis rates for the regions will change
-                                             ## NOTE: You can add or subtract to the number of transition times, as long as 
-                                             ## parameters below agree (e.g., if three times are set, there must be three entries for each)                                                                                        
-      self.r_mitosis_R0 = [0.0,0.0,0.0] # approximate fraction of cells dividing in a given window in region 0 (anterior to EN)
-      self.r_mitosis_R1 = [0.0,0.0,0.0] # approximate fraction of cells dividing in a given window in region 1 (EN striped region)
-      self.r_mitosis_R2 = [0.0,0.5,0.0] #0.3 #0.0 # approximate fraction of cells dividing in a given window in region 2 (anterior GZ)
-      self.r_mitosis_R3 = [0.5,0.5,0.5] #0.3 # approximate fraction of cells dividing in a given window in region 3 (posterior GZ)
-      self.r_mitosis_list=[self.r_mitosis_R0[0],self.r_mitosis_R1[0],self.r_mitosis_R2[0],self.r_mitosis_R3[0]]
+      self.r_mitosis_R0 = self.params_container.getListParam('r_mitosis_R0')   # e.g. [0.0, 0.0, 0.0]
+      self.r_mitosis_R1 = self.params_container.getListParam('r_mitosis_R1')   # e.g. [0.0, 0.0, 0.0]
+      self.r_mitosis_R2 = self.params_container.getListParam('r_mitosis_R2')   # e.g. [0.0, 0.5, 0.0]
+      self.r_mitosis_R3 = self.params_container.getListParam('r_mitosis_R3')   # e.g. [0.5, 0.5, 0.5]
            
       # Set r_grow for each region: pixels per MCS added to cell's volume
-      self.r_grow_R0=[0.0,0.0,0.0]
-      self.r_grow_R1=[0.0,0.0,0.0]
-      self.r_grow_R2=[0.0,0.0,0.0] #0.05 #0
-      self.r_grow_R3=[0.05,0.05,0.05]
+      self.r_grow_R0 = self.r_mitosis_R0  # [0.0,0.0,0.0]
+      self.r_grow_R1 = self.r_mitosis_R1  #[0.0,0.0,0.0]
+      self.r_grow_R2 = self.r_mitosis_R2  #[0.0,0.0,0.0] #0.05 #0
+      self.r_grow_R3 = self.r_mitosis_R3  #[0.05,0.05,0.05]
       self.r_grow_list=[self.r_grow_R0[0],self.r_grow_R1[0],self.r_grow_R2[0],self.r_grow_R3[0]]      
       
-      self.fraction_AP_oriented=0 #0.5
+      self.fraction_AP_oriented = self.params_container.getNumberParam('mitosis_fraction_AP_oriented') # 0 #0.5
       
-      self.window = 500 # length of window in MCS (see above)
-      self.Vmin_divide = 60 # minimum volume, in pixels, at which cells can divide
-      self.Vmax = 90 # maximum volume to which cells can grow
-      self.mitosisVisualizationFlag = 1 # if nonzero, turns on mitosis visualization
-
-      self.mitosisVisualizationWindow = 100 # number of MCS that cells stay labeled as having divided      
+      self.window = self.params_container.getNumberParam('mitosis_window') # 500 
+      self.Vmin_divide =  self.params_container.getNumberParam('mitosis_Vmin_divide') # 60 
+      self.Vmax = self.params_container.getNumberParam('mitosis_Vmax')    # 90 
+      self.mitosisVisualizationFlag = self.params_container.getNumberParam('mitosis_visualization_flag')     # 1 
+      self.mitosisVisualizationWindow = self.params_container.getNumberParam('mitosis_visualization_window') # 100
       
    def start(self):
       self.y_EN_pos=self.find_posterior_EN_stripe()
@@ -403,8 +400,10 @@ class RegionalMitosis(MitosisSteppableBase):
    
    def step(self,mcs):
       print 'Executing Mitosis Steppable'
+      self.reporter.printLnToReport('Executing Mitosis Steppable')
       if mcs in self.transition_times:
          print '*******************TRANSITIONING MITOSIS TIME WINDOW**********************'
+         self.reporter.printLnToReport( '*******************TRANSITIONING MITOSIS TIME WINDOW**********************')
          self.r_mitosis_list=[self.r_mitosis_R0[self.transition_counter],self.r_mitosis_R1[self.transition_counter],self.r_mitosis_R2[self.transition_counter],self.r_mitosis_R3[self.transition_counter]]
          self.r_grow_list=[self.r_grow_R0[self.transition_counter],self.r_grow_R1[self.transition_counter],self.r_grow_R2[self.transition_counter],self.r_grow_R3[self.transition_counter]]      
          self.transition_counter+=1
@@ -617,8 +616,9 @@ class DyeCells(SteppableBasePy):
                
 
 class Measurements(SteppableBasePy):
-   def __init__(self,_simulator,_frequency):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+   def __init__(self,_simulator,_frequency, _reporter):
+      SteppableBasePy.__init__(self,_simulator,_frequency)
+      self.reporter = _reporter
         
    def start(self):
       GB_cell_count=self.find_GB_cell_count()
@@ -630,6 +630,18 @@ class Measurements(SteppableBasePy):
       avg_cell_size=self.find_average_cell_size()
       avg_diam=math.sqrt(avg_cell_size)
       
+      self.reporter.printToReport( '\nGerm band:')
+      self.reporter.printToReport( 'cell count=' + str(GB_cell_count))
+      self.reporter.printToReport( 'length=' + str(GB_length) + ' pixels')
+      self.reporter.printToReport( 'area=' + str(GB_area) + ' pixels')
+      self.reporter.printToReport( '=========')
+      self.reporter.printToReport( '\nGrowth zone:')
+      self.reporter.printToReport( 'cell count=' + str(GZ_cell_count))
+      self.reporter.printToReport( 'length=' + str(GZ_length) + ' pixels')
+      self.reporter.printToReport( 'area=' + str(GZ_area) + ' pixels')
+      self.reporter.printToReport( '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels')
+      self.reporter.printToReport( 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n')
+
       print '\nGerm band:'
       print 'cell count=' + str(GB_cell_count)
       print 'length=' + str(GB_length) + ' pixels'
@@ -652,6 +664,18 @@ class Measurements(SteppableBasePy):
       avg_cell_size=self.find_average_cell_size()
       avg_diam=math.sqrt(avg_cell_size)
       
+      self.reporter.printToReport( '\nGerm band:')
+      self.reporter.printToReport( 'cell count=' + str(GB_cell_count))
+      self.reporter.printToReport( 'length=' + str(GB_length) + ' pixels')
+      self.reporter.printToReport( 'area=' + str(GB_area) + ' pixels')
+      self.reporter.printToReport( '=========')
+      self.reporter.printToReport( '\nGrowth zone:')
+      self.reporter.printToReport( 'cell count=' + str(GZ_cell_count))
+      self.reporter.printToReport( 'length=' + str(GZ_length) + ' pixels')
+      self.reporter.printToReport( 'area=' + str(GZ_area) + ' pixels')
+      self.reporter.printToReport( '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels')
+      self.reporter.printToReport( 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n')
+
       print '\nGerm band:'
       print 'cell count=' + str(GB_cell_count)
       print 'length=' + str(GB_length) + ' pixels'

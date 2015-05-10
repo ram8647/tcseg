@@ -10,51 +10,34 @@ global Dx; global Dy
 # General simulation flags
 global batch; global speed_up_sim
 
-# Sarrazin force flags
-global y_target_offset; global pull_force_magnitude; global pinch_force_relative_center
-global pinch_force_mag; global pinch_force_falloff_sharpness
-global hinder_cells_near_EN
-global stripe_y
-
 ## Mitosis parameters
-global regional_mitosis; global y_GZ_mitosis_border
+global regional_mitosis_flag; global y_GZ_mitosis_border
 
 # Cell labeling parameters
-global x0_dye; global xf_dye; global y0_dye
-global yf_dye; global dye_flag 
-
-# Cell-labeling parameters
-dye_flag = 0 ## set to 1 to dye cells
-## set the coordinates (in pixels) of the cells to be dyed
-x0_dye = 110
-xf_dye = 150
-y0_dye = 520
-yf_dye = 560
+global dye_flag 
 
 def configureSimulation(sim):
     import CompuCellSetup
     from XMLUtils import ElementCC3D
 
-    ## ********** Import Parameters Here 
+    ## ********** Import Some Parameters Here ************** ##
     print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
     print 'Current directory', os.getcwd()
+
     from Stats import ParamsContainer, StatsReporter
     global reporter; reporter = StatsReporter('../tcseg/Simulation/runs/')
     global params_container; params_container = ParamsContainer(reporter)
     
+    ##  ********* Dictionary that stores the parameters   ********** ##
     params_dict = params_container.inputParamsFromFile('params', folder='../tcseg/Simulation/')
 
     global Dx; Dx = params_container.getNumberParam('Dx')
     global Dy; Dy = params_container.getNumberParam('Dy')
+    global dye_flag; dye_flag = params_container.getNumberParam('dye_flag')
     global speed_up_sim; speed_up_sim = params_container.getBooleanParam('speed_up_sim')
     global batch; batch = params_container.getBooleanParam('batch')
     global hinder_cells_near_EN; hinder_cells_near_EN = params_container.getBooleanParam('hinder_cells_near_EN')
-    global y_target_offset; y_target_offset = params_container.getNumberParam('y_target_offset')
-    global pull_force_magnitude; pull_force_magnitude = params_container.getNumberParam('pull_force_magnitude')
-    global pinch_force_relative_center; pinch_force_relative_center = params_container.getNumberParam('pinch_force_relative_center')
-    global pinch_force_mag; pinch_force_mag = params_container.getNumberParam('pinch_force_mag')
-    global pinch_force_falloff_sharpness; pinch_force_falloff_sharpness = params_container.getNumberParam('pinch_force_falloff_sharpness')
-    global regional_mitosis; regional_mitosis = params_container.getNumberParam('regional_mitosis')
+    global regional_mitosis_flag; regional_mitosis_flag = params_container.getNumberParam('regional_mitosis_flag')
 
     print '>>>>>>>>>>>>>>>> After imports >>>>>>>>>>>>>>>>'
     CompuCell3DElmnt=ElementCC3D("CompuCell3D",{"Revision":"20140724","Version":"3.7.2"})
@@ -122,8 +105,7 @@ def configureSimulation(sim):
     SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"PIFInitializer"})
     
     # Initial layout of cells using PIFF file. Piff files can be generated using PIFGEnerator
-##    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_3_19_2015.piff")
-    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/Dec2014_V02.piff")
+    SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_3_19_2015.piff")
 
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
             
@@ -148,19 +130,19 @@ steppableRegistry=CompuCellSetup.getSteppableRegistry()
 from  ElongationModelSteppables import jeremyVector
 from  ElongationModelSteppables import EN_stripe
 
-## ***** Declare Steppables Here ***** ##
+## ***** Create Steppable Instances  ***** ##
 
 from ElongationModelSteppables import VolumeStabilizer
 s1 = VolumeStabilizer(sim,_frequency = 1)
 
 from ElongationModelSteppables import AssignCellAddresses
-s2 = AssignCellAddresses(sim,_frequency = 1)
+s2 = AssignCellAddresses(sim,_frequency = 1, _reporter = reporter)
 
 from ElongationModelSteppables import SimplifiedForces_GrowthZone
 s3 = SimplifiedForces_GrowthZone(sim,_frequency = 10)
 
 from ElongationModelSteppables import Measurements
-s4 = Measurements(sim,_frequency = 100)
+s4 = Measurements(sim,_frequency = 100, _reporter=reporter)
 
 # EN_stripe parameters
 # The speeds and positions come from Brown et all, 1994. I measured the relative position of each stripe in ImageJ
@@ -178,13 +160,15 @@ s5 = Engrailed(sim, _frequency = 1,
 # and found that they move up ~ 6% of the relative body length in the period of interest. 90 is the number
 # of times this steppable is called during the simulation. So the speed is 6% body length / 90 steps, or 0.06/90 that is 0.0007.
 
+
+## *****  Add steppables to the model **********  ##
 steppables = [s1,s2,s3,s4,s5]
 for steppable in steppables: steppableRegistry.registerSteppable(steppable)
 
 ## ***** Declare the other steppables *****  ##
-if regional_mitosis:
+if regional_mitosis_flag:
    from ElongationModelSteppables import RegionalMitosis
-   mitosis = RegionalMitosis(sim,_frequency = 1, _params_container = params_container)
+   mitosis = RegionalMitosis(sim,_frequency = 1, _params_container = params_container, _stats_reporter = reporter)
    steppableRegistry.registerSteppable(mitosis)
 
 ###### Add extra player fields here
@@ -196,9 +180,15 @@ if dye_flag:
 
 if dye_flag:
    from ElongationModelSteppables import DyeCells
-   dyeCells=DyeCells(_simulator=sim,_frequency=20,_x0=x0_dye,_y0=y0_dye,_xf=xf_dye,_yf=yf_dye)
+   dyeCells=DyeCells(_simulator=sim,_frequency=20,
+#     _x0=x0_dye,_y0=y0_dye,_xf=xf_dye,_yf=yf_dye)
+     _x0 = params_container.getNumberParam('x0_dye'),
+     _y0 = params_container.getNumberParam('y0_dye'),
+     _xf = params_container.getNumberParam('xf_dye'),
+     _yf = params_container.getNumberParam('yf_dye'))
    dyeCells.setScalarField(Label01Field)
    steppableRegistry.registerSteppable(dyeCells) 
 
+##  ****  Start the Simulation  *****  ##
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
         

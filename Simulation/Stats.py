@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import time
+import json
 import datetime
 import sys
 from os import environ
@@ -143,13 +144,16 @@ class ParamsContainer:
              dict[key] = float(val)
            elif val in ("False", "True"):
              dict[key] = ParamsContainer.str2bool(val)
+           elif ParamsContainer.is_list(val):
+             dict[key] = ParamsContainer.str2list(val)
            else:
              dict[key] = val
 
      myprint(self.reporter, '\tReading data from file ', fname)
-     for k,v in dict.items():
+
+     for k,v in sorted(dict.items()):
        myprint(self.reporter,'\t',k,'-->',v)
-     myprint(self.reporter, '---------------------- Stats: Done  ---------------------')
+     myprint(self.reporter, '---------------------- Stats: Done Reading params ---------------------')
      return dict
 
    def getNumberParam(self, key, params = None):
@@ -162,6 +166,19 @@ class ParamsContainer:
      if params == None:
        params = dict
      result = params[key] if key in params else 0     
+     myprint(self.reporter, '>>>> Parameter setting',key,'=',result)
+     return result
+
+   def getListParam(self, key, params = None):
+     '''Returns the value for a number key or 0 if missing
+
+     :params a dictionary of parameter (key,value) bindings
+     :key a particular key in the dictionary, possibly absent
+     '''
+
+     if params == None:
+       params = dict
+     result = params[key] if key in params else []     
      myprint(self.reporter, '>>>> Parameter setting',key,'=',result)
      return result
 
@@ -185,6 +202,17 @@ class ParamsContainer:
        return True
      except ValueError:
        return False
+
+   @classmethod
+   def is_list(self,str):
+     '''Returns true if str is a list'''
+     str = str.strip()
+     return str.startswith('[') and str.endswith(']')
+
+   @classmethod
+   def str2list(self,str):
+     '''Converts string of form [1,2,3] into a list'''
+     return json.loads(str)
 
    @classmethod
    def str2bool(self,str):
