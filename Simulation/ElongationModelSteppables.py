@@ -270,7 +270,7 @@ class AssignCellAddresses(SteppableBasePy): # this steppable assigns each cell a
             
         self.height = abs(self.anteriormost_cell_y - self.posteriormost_cell_y)
         print "self.anteriormost_cell_y: ", self.anteriormost_cell_y
-        self.reporter.printToReport("self.anteriormost_cell_y: ", self.anteriormost_cell_y)
+#        self.reporter.rprint("self.anteriormost_cell_y: ", self.anteriormost_cell_y)
 
     def percentBodyLengthFromAnteriorToCell(self, target_cell): # delete me if not needed!
         distance_from_anterior = abs(self.anteriormost_cell_y - target_cell.yCOM)
@@ -400,15 +400,13 @@ class RegionalMitosis(MitosisSteppableBase):
    
    def step(self,mcs):
       print 'Executing Mitosis Steppable'
-      self.reporter.printLnToReport('Executing Mitosis Steppable')
       if mcs in self.transition_times:
          print '*******************TRANSITIONING MITOSIS TIME WINDOW**********************'
-         self.reporter.printLnToReport( '*******************TRANSITIONING MITOSIS TIME WINDOW**********************')
+         self.reporter.printLn( '*******************TRANSITIONING MITOSIS TIME WINDOW**********************')
          self.r_mitosis_list=[self.r_mitosis_R0[self.transition_counter],self.r_mitosis_R1[self.transition_counter],self.r_mitosis_R2[self.transition_counter],self.r_mitosis_R3[self.transition_counter]]
          self.r_grow_list=[self.r_grow_R0[self.transition_counter],self.r_grow_R1[self.transition_counter],self.r_grow_R2[self.transition_counter],self.r_grow_R3[self.transition_counter]]      
          self.transition_counter+=1
 
-         
       mitosis_list=self.make_mitosis_list()
       self.perform_mitosis(mitosis_list)
       self.y_EN_pos=self.find_posterior_EN_stripe()
@@ -630,17 +628,10 @@ class Measurements(SteppableBasePy):
       avg_cell_size=self.find_average_cell_size()
       avg_diam=math.sqrt(avg_cell_size)
       
-      self.reporter.printToReport( '\nGerm band:')
-      self.reporter.printToReport( 'cell count=' + str(GB_cell_count))
-      self.reporter.printToReport( 'length=' + str(GB_length) + ' pixels')
-      self.reporter.printToReport( 'area=' + str(GB_area) + ' pixels')
-      self.reporter.printToReport( '=========')
-      self.reporter.printToReport( '\nGrowth zone:')
-      self.reporter.printToReport( 'cell count=' + str(GZ_cell_count))
-      self.reporter.printToReport( 'length=' + str(GZ_length) + ' pixels')
-      self.reporter.printToReport( 'area=' + str(GZ_area) + ' pixels')
-      self.reporter.printToReport( '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels')
-      self.reporter.printToReport( 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n')
+      self.reporter.rprint('Germ band (pixels): ')
+      self.reporter.printAttrValue(GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
+      self.reporter.rprint( 'Growth zone (pixels): ')
+      self.reporter.printAttrValue(GZ_cell_count=GZ_cell_count, GZ_length=GZ_length, GZ_area=GZ_area, avg_cell_size=avg_cell_size, avg_diam=avg_diam)
 
       print '\nGerm band:'
       print 'cell count=' + str(GB_cell_count)
@@ -664,17 +655,10 @@ class Measurements(SteppableBasePy):
       avg_cell_size=self.find_average_cell_size()
       avg_diam=math.sqrt(avg_cell_size)
       
-      self.reporter.printToReport( '\nGerm band:')
-      self.reporter.printToReport( 'cell count=' + str(GB_cell_count))
-      self.reporter.printToReport( 'length=' + str(GB_length) + ' pixels')
-      self.reporter.printToReport( 'area=' + str(GB_area) + ' pixels')
-      self.reporter.printToReport( '=========')
-      self.reporter.printToReport( '\nGrowth zone:')
-      self.reporter.printToReport( 'cell count=' + str(GZ_cell_count))
-      self.reporter.printToReport( 'length=' + str(GZ_length) + ' pixels')
-      self.reporter.printToReport( 'area=' + str(GZ_area) + ' pixels')
-      self.reporter.printToReport( '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels')
-      self.reporter.printToReport( 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n')
+      self.reporter.rprint('Germ band (pixels): ')
+      self.reporter.printAttrValue(mcs=mcs, GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
+      self.reporter.rprint( 'Growth zone (pixels): ')
+      self.reporter.printAttrValue(mcs=mcs,GZ_cell_count=GZ_cell_count, GZ_length=GZ_length, GZ_area=GZ_area, avg_cell_size=avg_cell_size, avg_diam=avg_diam)
 
       print '\nGerm band:'
       print 'cell count=' + str(GB_cell_count)

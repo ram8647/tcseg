@@ -20,7 +20,7 @@ def myprint(reporter=None, *args):
     # are present in kwargs
     # print('myprint reporter = ', reporter)
     if reporter:
-       return reporter.printToReport(*args)
+       return reporter.rprint(*args)
     else:
        return __builtins__.print(*args)
 
@@ -29,8 +29,8 @@ class StatsReporter:
 
    Each instance (object) of this class opens an output file. To
    create multiple reports during a run, create multiple instances.
-   The methods, printToReport(), printLnToReport(), and
-   printAttrValueToReport() print their arguments to the output file.
+   The methods, print(), printLn(), and
+   printAttrValue() print their arguments to the output file.
    
    """
    def __init__(self, folder='./'):
@@ -50,54 +50,53 @@ class StatsReporter:
       self.outfile.write('---- Starting Run @ yymmdd-hhmmss ' + self.stamp + '--------\n')
       self.outfile.close()
 
-   def printToReport(self, *args):
+   def rprint(self, *args):
       """Prints a variable list of arguments, space separated, to this object's outfile.
 
       :args is a Python list.
+      :newline Set to True to print newline at end
 
-      E.g., Where obj is a reference to a StatsPrinter object,  obj.printToReport(1, 2, 3)  
+      E.g., Where obj is a reference to a StatsPrinter object,  obj.print(1, 2, 3)  
       will print its args on a single line followed  by a new line.
 
           1 2 3
       """
-      print('printToReport filename = ', self.fname)
       try:
         self.outfile = open(self.fname, 'a', 1)
         for arg in args:
            self.outfile.write( str(arg) + " ")
-           print('printToReport filename = ', self.fname, str(arg), " ")
-        self.outfile.write( '\n')
-        self.outfile.flush()
         self.outfile.close()
       except IOError:
         print("I/O error")
 
-   def printAttrValueToReport(self, **args):
+   def printAttrValue(self, newline=False, **args):
       """Prints a variable list of attr=value pairs, one per line, to this object's outfile.
 
       :args is a Python dictionary.
+      :newline set to true if printing attr=value per line
 
       E.g., Where obj is a reference to a StatsPrinter object, and a1=1 and a2=2, 
-               obj.printToReport(a1=a1, a2=a2)  
+               obj.print(a1=a1, a2=a2)  
       will print its args on a single line followed  by a new line.
 
           a1=1
           a2=1
 
       """
+      nl = '\n' if newline else ' '
       self.outfile = open(self.fname, 'a', 1)
       for k,v in args.iteritems():
-         self.outfile.write( str(k) + "=" + str(v) + '\n')
+         self.outfile.write( str(k) + "=" + str(v) + nl)
       self.outfile.write( '\n')
       self.outfile.close()
 
 
-   def printLnToReport(self, *args):
+   def printLn(self, *args):
       """Prints a variable list of arguments, one per line, to this object's outfile.
 
       :args is a Python list.
 
-      E.g., Where obj is a reference to a StatsPrinter object,  obj.printLnToReport(1, 2)  
+      E.g., Where obj is a reference to a StatsPrinter object,  obj.printLn(1, 2)  
       will print its args on a single line followed  by a new line.
 
           1
@@ -127,12 +126,12 @@ class ParamsContainer:
      :return a dictionary with (key,value) parameter bindings
      '''
      print('Reading params: reporter = ', self.reporter)
-     myprint(self.reporter, '---------------------- Stats: Reading params  -----------')
+     myprint(self.reporter, '---------------------- Stats: Reading params  -----------\n')
      global dict;
      dict = {}
      fname = folder + file + ".txt"
      print('params file = ' , fname)
-     myprint(self.reporter, 'params file = ', fname)
+     myprint(self.reporter, 'params file = ', fname, '\n')
 
      # Read the parameters file into the dictionary, dict
      with open(fname) as f:
@@ -149,54 +148,57 @@ class ParamsContainer:
            else:
              dict[key] = val
 
-     myprint(self.reporter, '\tReading data from file ', fname)
+     myprint(self.reporter, '\tReading data from file ', fname, '\n')
 
      for k,v in sorted(dict.items()):
-       myprint(self.reporter,'\t',k,'-->',v)
-     myprint(self.reporter, '---------------------- Stats: Done Reading params ---------------------')
+       myprint(self.reporter,'\t',k,'-->',v, '\n')
+     myprint(self.reporter, '---------------------- Stats: Done Reading params ---------------------\n')
      return dict
 
    def getNumberParam(self, key, params = None):
-     '''Returns the value for a number key or 0 if missing
+     """
+     Returns the value for a number key or 0 if missing
 
      :params a dictionary of parameter (key,value) bindings
      :key a particular key in the dictionary, possibly absent
-     '''
+     """
 
      if params == None:
        params = dict
      result = params[key] if key in params else 0     
-     myprint(self.reporter, '>>>> Parameter setting',key,'=',result)
+     myprint(self.reporter, '>>>> Parameter setting',key,'=',result, '\n')
      return result
 
    def getListParam(self, key, params = None):
-     '''Returns the value for a number key or 0 if missing
+     """
+     Returns the value for a number key or 0 if missing
 
      :params a dictionary of parameter (key,value) bindings
      :key a particular key in the dictionary, possibly absent
-     '''
+     """
 
      if params == None:
        params = dict
      result = params[key] if key in params else []     
-     myprint(self.reporter, '>>>> Parameter setting',key,'=',result)
+     myprint(self.reporter, '>>>> Parameter setting',key,'=',result, '\n')
      return result
 
    def getBooleanParam(self, key, params = None):
-     '''Returns the value for a boolean key or 0 if missing
+     """
+     Returns the value for a boolean key or 0 if missing
 
      :params a dictionary of parameter (key,value) bindings
      :key a particular key in the dictionary, possibly absent
-     '''
+     """
      if params == None:
        params = dict
      result = params[key] if key in params else False     
-     myprint(self.reporter, '>>>> Parameter setting',key,'=',result)
+     myprint(self.reporter, '>>>> Parameter setting',key,'=',result,'\n')
      return result
 
    @classmethod
    def is_number(self,str):
-     '''Returns true if str is a number'''
+     """Returns true if str is a number"""
      try:
        float(str)
        return True
@@ -234,7 +236,7 @@ def main():
    ''' Code to test methods in this class.'''
      
    reporter = StatsReporter()
-   #reporter.printToReport('Reporting output stats')
+   reporter.rprint('Reporting output stats')
 
    params = ParamsContainer(reporter)
    params_dict = params.inputParamsFromFile('params')
@@ -245,16 +247,16 @@ def main():
    bogus = params.getBooleanParam('bogus')
    speed_up_sim = params.getBooleanParam('speed_up_sim', params_dict)
 
-   reporter.printToReport(r0, r1, r2, r3)
-   reporter.printLnToReport(r0, r1, r2, r3)
-   reporter.printAttrValueToReport(r0=r0, r1=r1, r2=r2, r3=r3)
-   reporter.printToReport( r0 + r3)
+   reporter.rprint("Rs: ", r0, r1, r2, r3)
+   reporter.printLn(r0, r1, r2, r3)
+   reporter.printAttrValue(r0=r0, r1=r1, r2=r2, r3=r3)
+   reporter.rprint( r0 + r3)
 
-   reporter.printToReport(speed_up_sim)
+   reporter.rprint(speed_up_sim)
    if bool(speed_up_sim) and speed_up_sim: 
-     reporter.printToReport('Speeding up')
+     reporter.rprint('Speeding up')
    else:
-     reporter.printToReport('Not speeding up')
+     reporter.rprint('Not speeding up')
 
    myprint(None, 'End of the test run')
 
