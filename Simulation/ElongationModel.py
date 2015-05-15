@@ -138,9 +138,6 @@ s1 = VolumeStabilizer(sim,_frequency = 1)
 from ElongationModelSteppables import AssignCellAddresses
 s2 = AssignCellAddresses(sim,_frequency = 1, _reporter = reporter)
 
-from ElongationModelSteppables import SimplifiedForces_GrowthZone
-s3 = SimplifiedForces_GrowthZone(sim,_frequency = 10)
-
 from ElongationModelSteppables import Measurements
 s4 = Measurements(sim,_frequency = 100, _reporter=reporter)
 
@@ -162,14 +159,28 @@ s5 = Engrailed(sim, _frequency = 1,
 
 
 ## *****  Add steppables to the model **********  ##
-steppables = [s1,s2,s3,s4,s5]
+steppables = [s1,s2,s4,s5]
 for steppable in steppables: steppableRegistry.registerSteppable(steppable)
 
-## ***** Declare the other steppables *****  ##
+## ***** Register the Mitosis Steppable
 if regional_mitosis_flag:
    from ElongationModelSteppables import RegionalMitosis
    mitosis = RegionalMitosis(sim,_frequency = 1, _params_container = params_container, _stats_reporter = reporter)
    steppableRegistry.registerSteppable(mitosis)
+
+##  Register one of the Simplified Forces Steppables
+simplified_forces_flag = params_container.getNumberParam('simplified_forces_flag')
+if simplified_forces_flag != 0:
+   if simplified_forces_flag == 1:
+      from ElongationModelSteppables import SimplifiedForces_GrowthZone
+      simplified_forces = SimplifiedForces_GrowthZone(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)
+   else:
+      from ElongationModelSteppables import SimplifiedForces_EntireEmbryo
+      simplified_forces = SimplifiedForces_EntireEmbryo(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)
+   steppableRegistry.registerSteppable(simplified_forces)
+
+###  s3 = SimplifiedForces_GrowthZone(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)
+
 
 ###### Add extra player fields here
 if dye_flag:

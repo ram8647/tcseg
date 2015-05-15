@@ -80,11 +80,18 @@ class VolumeStabilizer(SteppableBasePy):
             # In effect, these above two lines allow the cells to travel without squeezing, which would be unrealistic.
 
 class SimplifiedForces_GrowthZone(SteppableBasePy):
-    def __init__(self,_simulator,_frequency):
+    def __init__(self,_simulator,_frequency, _params_container, _stats_reporter):
       SteppableBasePy.__init__(self,_simulator,_frequency)
-      # Uncomment 1 of the following:
-      self.position = "normalized"    # normalizes position between 0 and 1 to calculate force
-      # position = "absolute"    # calculates force based on absolute distance from posterior
+      self.reporter = _stats_reporter
+      self.params_container = _params_container
+      self.V = self.params_container.getNumberParam('V')
+      self.normalized_position = self.params_container.getBooleanParam('position_normalized')
+      
+      # Set whether force is normalized or based on absolute distance from posterior
+      if self.normalized_position:
+          self.position = "normalized"  # normalizes position between 0 and 1 to calculate force
+      else:
+          self.position = "absolute"    # calculates force based on absolute distance from posterior
       
     def start(self):pass
 
@@ -95,16 +102,16 @@ class SimplifiedForces_GrowthZone(SteppableBasePy):
       # k2=-(1.0/500)
       # k3=0
       # V=k1*math.exp(k2*(y-self.posterior))+k3
-      V=50
+      V = self.V  #50
       # V=0
       return V
       
    # Define the ML force function
     def ML_potential_function(self,x,y):
       # Set the constants for the ML force function
-      k1=100.0
-      k2=-(1.0/80)
-      k3=0
+      k1 = self.params_container.getNumberParam('k1')  # 100.0
+      k2 = self.params_container.getNumberParam('k2')  # -(1.0/80)
+      k3 = self.params_container.getNumberParam('k3')  # 0
       
       if x<self.midline:
          k1=-1*k1
@@ -164,11 +171,18 @@ class SimplifiedForces_GrowthZone(SteppableBasePy):
       return y_GZ_pos       
 
 class SimplifiedForces_EntireEmbryo(SteppableBasePy):
-    def __init__(self,_simulator,_frequency):
+    def __init__(self,_simulator,_frequency, _params_container, _stats_reporter):
       SteppableBasePy.__init__(self,_simulator,_frequency)
-      # Uncomment 1 of the following:
-      self.position = "normalized"    # normalizes position between 0 and 1 to calculate force
-      # position = "absolute"    # calculates force based on absolute distance from posterior
+      self.reporter = _stats_reporter
+      self.params_container = _params_container
+      self.V = self.params_container.getNumberParam('V')
+      self.normalized_position = self.params_container.getBooleanParam('position_normalized')
+      
+      # Set whether force is normalized or based on absolute distance from posterior
+      if self.normalized_position:
+          self.position = "normalized"  # normalizes position between 0 and 1 to calculate force
+      else:
+          self.position = "absolute"    # calculates force based on absolute distance from posterior
       
     def start(self):pass
 
@@ -179,17 +193,18 @@ class SimplifiedForces_EntireEmbryo(SteppableBasePy):
       # k2=-(1.0/500)
       # k3=0
       # V=k1*math.exp(k2*(y-self.posterior))+k3
-      V=50
+      V = self.V  #50
+##      V=50
       # V=0
       return V
       
    # Define the ML force function
     def ML_potential_function(self,x,y):
       # Set the constants for the ML force function
-      k1=100.0
-      k2=-(1.0/80)
-      k3=0
-      
+      k1 = self.params_container.getNumberParam('k1')  # 100.0
+      k2 = self.params_container.getNumberParam('k2')  # -(1.0/80)
+      k3 = self.params_container.getNumberParam('k3')  # 0
+
       if x<self.midline:
          k1=-1*k1
       
