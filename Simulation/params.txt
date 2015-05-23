@@ -1,0 +1,76 @@
+# Control Parameters
+
+Dx 320
+Dy 910
+speed_up_sim False
+batch False
+hinder_cells_near_EN False
+
+# Dye Labeling parameters
+dye_flag 0
+x0_dye  110
+xf_dye  150
+y0_dye  520
+yf_dye  560
+
+## ************* Simplified Forces Parameters ***********
+# Simplified Forces flag  0 = Off 1 = Growth Zone and 2 = Whole Embryo
+simplified_forces_flag 2
+
+# If true, normalizes position between 0 and 1 to calculate force
+# If false, calculates force based on absolute distance from posterior
+position_normalized true    
+
+# Parameters for the force function (should probably have more descriptive names)
+V 50
+k1 100.0
+k2 -0.0125
+k3 0
+
+
+## *************** Mitosis Parameters  **************
+regional_mitosis_flag 1
+
+## Mitosis Border Percent
+## **********************
+## The position, in fraction of the GZ (from posteriormost EN stripe to posterior of GZ,
+## of the border between mitosis regions in the GZ (measured from the posterior)
+
+y_GZ_mitosis_border_percent 0.5  
+
+## Mitosis Transition Times
+## ************************
+## A list of times at which the mitosis rates for the regions will change
+## NOTE: You can add or subtract to the number of transition times, as long as 
+## parameters below agree (e.g., if three times are set, there must be three entries for each)
+
+mitosis_transition_times [0,200,500]
+
+## Mitosis Transition Regions
+## **************************
+# Approximate fraction of cells dividing in a given window in region 0 (anterior to EN)
+r_mitosis_R0 [0.0,0.0,0.0] 
+# approximate fraction of cells dividing in a given window in region 1 (EN striped region)
+r_mitosis_R1 [0.0,0.0,0.0] 
+# approximate fraction of cells dividing in a given window in region 2 (anterior GZ)
+r_mitosis_R2 [0.0,0.5,0.0] 
+# approximate fraction of cells dividing in a given window in region 3 (posterior GZ)
+r_mitosis_R3 [0.5,0.5,0.5] 
+
+mitosis_fraction_AP_oriented 0
+
+#length of window in MCS
+mitosis_window 500  
+
+# minimum volume, in pixels, at which cells can divide
+mitosis_Vmin_divide 60
+
+# maximum volume to which cells can grow
+mitosis_Vmax 90
+
+# Turns on mitosis visualization
+mitosis_visualization_flag 1
+
+# Number of MCS that cells stay labeled as having divided
+mitosis_visualization_window 100
+
