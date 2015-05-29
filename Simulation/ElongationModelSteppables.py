@@ -86,6 +86,12 @@ class SimplifiedForces_GrowthZone(SteppableBasePy):
       self.params_container = _params_container
       self.V = self.params_container.getNumberParam('V')
       self.normalized_position = self.params_container.getBooleanParam('position_normalized')
+
+      # Set the constants for the ML force function
+      self.k1 = self.params_container.getNumberParam('k1')  # 100.0
+      self.k2 = self.params_container.getNumberParam('k2')  # -(1.0/80)
+      self.k3 = self.params_container.getNumberParam('k3')  # 0
+     
       
       # Set whether force is normalized or based on absolute distance from posterior
       if self.normalized_position:
@@ -97,28 +103,15 @@ class SimplifiedForces_GrowthZone(SteppableBasePy):
 
    # Define the AP force function
     def AP_potential_function(self,x,y):
-      # Set the constants for the AP force function
-      # k1=50.0
-      # k2=-(1.0/500)
-      # k3=0
-      # V=k1*math.exp(k2*(y-self.posterior))+k3
       V = self.V  #50
-      # V=0
       return V
       
    # Define the ML force function
     def ML_potential_function(self,x,y):
-      # Set the constants for the ML force function
-      k1 = self.params_container.getNumberParam('k1')  # 100.0
-      k2 = self.params_container.getNumberParam('k2')  # -(1.0/80)
-      k3 = self.params_container.getNumberParam('k3')  # 0
+      if x < self.midline:
+         self.k1 = -1 * self.k1
       
-      if x<self.midline:
-         k1=-1*k1
-      
-      V=k1*math.exp(k2*abs(self.anterior-y))+k3
-      # V=k1*math.exp(k2*abs(self.posterior-y))+k3
-      # V=50
+      V= self.k1 * math.exp(self.k2 * abs(self.anterior-y)) + self.k3
       return V       
       
     def step(self,mcs):
@@ -177,6 +170,11 @@ class SimplifiedForces_EntireEmbryo(SteppableBasePy):
       self.params_container = _params_container
       self.V = self.params_container.getNumberParam('V')
       self.normalized_position = self.params_container.getBooleanParam('position_normalized')
+
+      # Set the constants for the ML force function
+      self.k1 = self.params_container.getNumberParam('k1')  # 100.0
+      self.k2 = self.params_container.getNumberParam('k2')  # -(1.0/80)
+      self.k3 = self.params_container.getNumberParam('k3')  # 0
       
       # Set whether force is normalized or based on absolute distance from posterior
       if self.normalized_position:
@@ -189,28 +187,16 @@ class SimplifiedForces_EntireEmbryo(SteppableBasePy):
    # Define the AP force function
     def AP_potential_function(self,x,y):
       # Set the constants for the AP force function
-      # k1=50.0
-      # k2=-(1.0/500)
-      # k3=0
-      # V=k1*math.exp(k2*(y-self.posterior))+k3
       V = self.V  #50
-##      V=50
-      # V=0
       return V
       
    # Define the ML force function
     def ML_potential_function(self,x,y):
-      # Set the constants for the ML force function
-      k1 = self.params_container.getNumberParam('k1')  # 100.0
-      k2 = self.params_container.getNumberParam('k2')  # -(1.0/80)
-      k3 = self.params_container.getNumberParam('k3')  # 0
 
-      if x<self.midline:
-         k1=-1*k1
+      if x < self.midline:
+         self.k1 = -1 * self.k1
       
-      V=k1*math.exp(k2*abs(self.anterior-y))+k3
-      # V=k1*math.exp(k2*abs(self.posterior-y))+k3
-      # V=50
+      V = self.k1 * math.exp(self.k2 * abs(self.anterior-y)) + self.k3
       return V       
       
     def step(self,mcs):
