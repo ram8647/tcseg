@@ -192,7 +192,6 @@ if dye_flag:
 if dye_flag:
    from ElongationModelSteppables import DyeCells
    dyeCells=DyeCells(_simulator=sim,_frequency=20,
-#     _x0=x0_dye,_y0=y0_dye,_xf=xf_dye,_yf=yf_dye)
      _x0 = params_container.getNumberParam('x0_dye'),
      _y0 = params_container.getNumberParam('y0_dye'),
      _xf = params_container.getNumberParam('xf_dye'),
