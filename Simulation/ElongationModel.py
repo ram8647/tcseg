@@ -25,11 +25,11 @@ def configureSimulation(sim):
     print 'Current directory', os.getcwd()
 
     from Stats import ParamsContainer, StatsReporter
-    global reporter; reporter = StatsReporter('../tcseg/Simulation/runs/')
+    global reporter; reporter = StatsReporter('C:/CompuCell3D/Simulations/tseg_GitCopy/Output/')
     global params_container; params_container = ParamsContainer(reporter)
     
     ##  ********* Dictionary that stores the parameters   ********** ##
-    params_dict = params_container.inputParamsFromFile('params', folder='../tcseg/Simulation/')
+    params_dict = params_container.inputParamsFromFile('params', folder='C:/CompuCell3D/Simulations/tseg_GitCopy/Simulation/')
 
     global Dx; Dx = params_container.getNumberParam('Dx')
     global Dy; Dy = params_container.getNumberParam('Dy')
@@ -174,10 +174,14 @@ if simplified_forces_flag != 0:
    if simplified_forces_flag == 1:
       from ElongationModelSteppables import SimplifiedForces_GrowthZone
       simplified_forces = SimplifiedForces_GrowthZone(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)
-   else:
+   elif simplified_forces_flag ==2:
       from ElongationModelSteppables import SimplifiedForces_EntireEmbryo
       simplified_forces = SimplifiedForces_EntireEmbryo(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)
+   else:
+      from ElongationModelSteppables import SimplifiedForces_SmoothedForces
+      simplified_forces = SimplifiedForces_SmoothedForces(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)  
    steppableRegistry.registerSteppable(simplified_forces)
+   
 
 ###  s3 = SimplifiedForces_GrowthZone(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)
 

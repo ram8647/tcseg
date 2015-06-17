@@ -247,6 +247,109 @@ class SimplifiedForces_EntireEmbryo(SteppableBasePy):
             y_GZ_pos=yCM
       return y_GZ_pos       
 
+
+class SimplifiedForces_SmoothedForces(SteppableBasePy):
+    def __init__(self,_simulator,_frequency, _params_container, _stats_reporter):
+      SteppableBasePy.__init__(self,_simulator,_frequency)
+      self.reporter = _stats_reporter
+      self.params_container = _params_container
+
+      # Set the constants for the AP force function
+      self.V_AP_GZposterior = self.params_container.getNumberParam('V_AP_GZposterior')
+      self.k1_AP_GZanterior = self.params_container.getNumberParam('k1_AP_GZanterior')  
+      self.k2_AP_GZanterior = self.params_container.getNumberParam('k2_AP_GZanterior')  
+      self.k1_AP_Segments = self.params_container.getNumberParam('k1_AP_Segments')  
+      self.k2_AP_Segments = self.params_container.getNumberParam('k2_AP_Segments')
+      
+      # Set the constants for the ML force function
+      self.k1_ML_GZ = self.params_container.getNumberParam('k1_ML_GZ')  
+      self.k2_ML_GZ = self.params_container.getNumberParam('k2_ML_GZ')
+      self.k1_ML_Segments = self.params_container.getNumberParam('k1_ML_Segments')  
+      self.k2_ML_Segments = self.params_container.getNumberParam('k2_ML_Segments')
+      
+    def start(self):
+      self.anterior0=self.find_posterior_EN()
+      self.posterior0=self.find_posterior_GZ()
+      
+    
+   # Define the AP force function
+    def AP_potential_function(self,mcs,x,y):
+      # Set the constants for the AP force function
+
+      if y < self.anterior: # if posterior to first EN stripe
+         if (y-self.posterior)/(self.anterior-self.posterior) < 0.5:
+            V=self.V_AP_GZposterior # 70
+         else:
+            k1=self.k1_AP_GZanterior
+            k2=self.k2_AP_GZanterior
+              
+            V=k1/0.5*((self.anterior-y)/(self.anterior-self.posterior))+k2
+         
+      else:
+         k1=self.k1_AP_Segments
+         k2=self.k2_AP_Segments
+         V=k1*math.exp(k2*abs((y-self.anterior)))
+      return V
+      
+   # Define the ML force function
+    def ML_potential_function(self,mcs,x,y):
+      # Set the constants for the ML force function
+      if y < self.anterior: # if posterior to first EN stripe
+         k1=self.k1_ML_GZ
+         k2=self.k2_ML_GZ
+      else:
+         k1=self.k1_ML_Segments
+         k2=self.k2_ML_Segments         
+            
+      if x<self.midline:
+         k1=-1*k1
+      
+      V=k1*math.exp(k2*abs(self.anterior-y))
+      # V=0
+      return V       
+      
+    def step(self,mcs):
+      self.midline=self.find_midline()
+      self.anterior=self.find_posterior_EN()
+      self.posterior=self.find_posterior_GZ()
+      for cell in self.cellList:
+         x=cell.xCOM
+         y=cell.yCOM
+         V_y=self.AP_potential_function(mcs,x,y)
+         V_x=self.ML_potential_function(mcs,x,y)
+         cell.lambdaVecX=V_x
+         cell.lambdaVecY=V_y
+
+      
+    def find_midline(self):
+      x0=999999
+      x_max=0
+      for cell in self.cellList:
+         xCM=cell.xCOM
+         if xCM>x_max:
+            x_max=xCM
+         elif xCM<x0:
+            x0=xCM
+      midline=x0+0.5*(x_max-x0)
+      return midline
+      
+    def find_posterior_EN(self):
+      y_EN_pos=999999
+      for cell in self.cellList:
+         if cell.type==2: #Anterior
+            yCM=cell.yCOM
+            if yCM < y_EN_pos:
+               y_EN_pos=yCM
+      return y_EN_pos    
+
+    def find_posterior_GZ(self):
+      y_GZ_pos=999999
+      for cell in self.cellList:
+         yCM=cell.yCOM
+         if yCM < y_GZ_pos:
+            y_GZ_pos=yCM
+      return y_GZ_pos       
+
       
 class AssignCellAddresses(SteppableBasePy): # this steppable assigns each cell an address along the AP axis
     def __init__(self,_simulator,_frequency, _reporter):

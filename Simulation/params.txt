@@ -14,8 +14,8 @@ y0_dye  520
 yf_dye  560
 
 ## ************* Simplified Forces Parameters ***********
-# Simplified Forces flag  0 = Off 1 = Growth Zone and 2 = Whole Embryo
-simplified_forces_flag 2
+# Simplified Forces flag  0 = Off 1 = Growth Zone 2 = Whole Embryo and 3 = Smoothed forces
+simplified_forces_flag 3
 
 # If true, normalizes position between 0 and 1 to calculate force
 # If false, calculates force based on absolute distance from posterior
@@ -26,6 +26,18 @@ V 50
 k1 100.0
 k2 -0.0125
 k3 0
+
+# Parameters for Smoothed forces
+V_AP_GZposterior 70
+k1_AP_GZanterior 65
+k2_AP_GZanterior 5
+k1_AP_Segments 5
+k2_AP_Segments -0.02
+
+k1_ML_GZ 50
+k2_ML_GZ -0.004167
+k1_ML_Segments 50
+k2_ML_Segments -0.2
 
 
 ## *************** Mitosis Parameters  **************
