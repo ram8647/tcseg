@@ -23,13 +23,13 @@ def configureSimulation(sim):
     ## ********** Import Some Parameters Here ************** ##
     print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
     print 'Current directory', os.getcwd()
-
+    
     from Stats import ParamsContainer, StatsReporter
     global reporter; reporter = StatsReporter('C:/CompuCell3D/Simulations/tseg_GitCopy/Output/')
     global params_container; params_container = ParamsContainer(reporter)
     
     ##  ********* Dictionary that stores the parameters   ********** ##
-    params_dict = params_container.inputParamsFromFile('params', folder='C:/CompuCell3D/Simulations/tseg_GitCopy/Simulation/')
+    params_dict = params_container.inputParamsFromFile('params', folder='C:/Users/sdhester/Desktop/tcseg/Simulation/')
 
     global Dx; Dx = params_container.getNumberParam('Dx')
     global Dy; Dy = params_container.getNumberParam('Dy')
@@ -38,6 +38,7 @@ def configureSimulation(sim):
     global batch; batch = params_container.getBooleanParam('batch')
     global hinder_cells_near_EN; hinder_cells_near_EN = params_container.getBooleanParam('hinder_cells_near_EN')
     global regional_mitosis_flag; regional_mitosis_flag = params_container.getNumberParam('regional_mitosis_flag')
+    global AP_growth_constraint_flag; AP_growth_constraint_flag = params_container.getNumberParam('AP_growth_constraint_flag')
 
     print '>>>>>>>>>>>>>>>> After imports >>>>>>>>>>>>>>>>'
     CompuCell3DElmnt=ElementCC3D("CompuCell3D",{"Revision":"20140724","Version":"3.7.2"})
@@ -62,7 +63,10 @@ def configureSimulation(sim):
     extPotential=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"ExternalPotential"})
     PluginElmnt_4=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"CenterOfMass"})
     PluginElmnt_6=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"NeighborTracker"})
-    PluginElmnt_6=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Secretion"})
+    PluginElmnt_7=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Secretion"})
+    PluginElmnt_8=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"OrientedGrowth"})
+    PluginElmnt_8.ElementCC3D("Penalty",{},9999)
+    PluginElmnt_8.ElementCC3D("Falloff",{},2)
     
     PluginElmnt_5=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Contact"}) # Specification of adhesion energies
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"Medium"},"100.0")
@@ -134,6 +138,12 @@ from  ElongationModelSteppables import EN_stripe
 
 from ElongationModelSteppables import VolumeStabilizer
 s1 = VolumeStabilizer(sim,_frequency = 1)
+
+if AP_growth_constraint_flag:
+   OrientedGrowthPlugin = CompuCell.getOrientedGrowthPlugin()
+   from ElongationModelSteppables import OrientedConstraintSteppable
+   OrientedConstraintSteppableInstance=OrientedConstraintSteppable(sim,_frequency=1,_OGPlugin=OrientedGrowthPlugin)
+   steppableRegistry.registerSteppable(OrientedConstraintSteppableInstance)
 
 from ElongationModelSteppables import AssignCellAddresses
 s2 = AssignCellAddresses(sim,_frequency = 1, _reporter = reporter)

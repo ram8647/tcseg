@@ -71,6 +71,7 @@ class VolumeStabilizer(SteppableBasePy):
         for cell in self.cellList:
             cell.targetVolume = cell.volume
             cell.targetSurface = cell.surface
+            # print 'cell volume=' + str(cell.volume) + ' cell surface=' + str(cell.surface)
 
             # This above code prevents the cells from immediately shrinking to nothing.
 
@@ -662,6 +663,27 @@ class RegionalMitosis(MitosisSteppableBase):
                cell.type=cellDict['returnToCellType']
             else:
                cellDict['mitosisVisualizationTimer']-=1
+
+### Constrains a subpopulation of cells to grow along a particular axis by biasing the 
+### addition of new pixels and constraining the width of cells orthogonal to the axis of growth 
+### Developed by Jeremy Fisher (2015)              
+class OrientedConstraintSteppable(SteppableBasePy):
+   def __init__(self,_simulator,_frequency,_OGPlugin):
+      SteppableBasePy.__init__(self,_simulator,_frequency)
+      self.OGPlugin = _OGPlugin
+        
+   def start(self):
+      for cell in self.cellList:
+         if cell:
+            #### cell.lambdaVolume=2.0
+            cell.targetVolume=cell.volume
+            
+            #### self.OGPlugin.setElongationAxis(cell, math.cos(math.pi / 3), math.sin(math.pi / 3)) # Here, we define the axis of elongatino.
+            self.OGPlugin.setElongationAxis(cell, 0, 1) # Here, we define the axis of elongation.
+            self.OGPlugin.setConstraintWidth(cell, 4.0) # And this function gives a width constraint to each cell
+            self.OGPlugin.setElongationEnabled(cell, True) # Make sure to enable or disable elongation in all cells
+                                                            # Or unexpected results may occur.
+
                
 ## Labels a population of cells and outputs to a Player visualization field   
 class DyeCells(SteppableBasePy):

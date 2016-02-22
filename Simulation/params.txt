@@ -13,9 +13,13 @@ xf_dye  150
 y0_dye  520
 yf_dye  560
 
+## ************* Growth Constraint Parameters ***********
+# AP Growth constraint 0 = Off 1 = On
+AP_growth_constraint_flag 1
+
 ## ************* Simplified Forces Parameters ***********
 # Simplified Forces flag  0 = Off 1 = Growth Zone 2 = Whole Embryo and 3 = Smoothed forces
-simplified_forces_flag 3
+simplified_forces_flag 0
 
 # If true, normalizes position between 0 and 1 to calculate force
 # If false, calculates force based on absolute distance from posterior
@@ -69,7 +73,7 @@ r_mitosis_R2 [0.0,0.5,0.0]
 # approximate fraction of cells dividing in a given window in region 3 (posterior GZ)
 r_mitosis_R3 [0.5,0.5,0.5] 
 
-mitosis_fraction_AP_oriented 0
+mitosis_fraction_AP_oriented 1
 
 #length of window in MCS
 mitosis_window 500  
