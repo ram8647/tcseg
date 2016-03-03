@@ -64,9 +64,10 @@ def configureSimulation(sim):
     PluginElmnt_4=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"CenterOfMass"})
     PluginElmnt_6=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"NeighborTracker"})
     PluginElmnt_7=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Secretion"})
-    PluginElmnt_8=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"OrientedGrowth"})
-    PluginElmnt_8.ElementCC3D("Penalty",{},9999)
-    PluginElmnt_8.ElementCC3D("Falloff",{},2)
+    if AP_growth_constraint_flag:
+      PluginElmnt_8=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"OrientedGrowth"})
+      PluginElmnt_8.ElementCC3D("Penalty",{},9999)
+      PluginElmnt_8.ElementCC3D("Falloff",{},2)
     
     PluginElmnt_5=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Contact"}) # Specification of adhesion energies
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"Medium"},"100.0")
