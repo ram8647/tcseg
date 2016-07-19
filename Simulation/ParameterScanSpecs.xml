@@ -1,0 +1,8 @@
+<ParameterScan version="3.7.0">
+   <OutputDirectory>tcseg_ParameterScan</OutputDirectory>
+   <ParameterList Resource="Simulation/ElongationModel.py">
+      <Parameter CurrentIteration="1" Name="batch_run_index" Type="PYTHON_GLOBAL" ValueType="int">
+         <Values>0,1,2,3,5</Values>
+      </Parameter>
+   </ParameterList>
+</ParameterScan>
