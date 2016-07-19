@@ -18,19 +18,29 @@ global dye_flag
 
 def configureSimulation(sim):
     import CompuCellSetup
+    import os
     from XMLUtils import ElementCC3D
 
     ## ********** Import Some Parameters Here ************** ##
     print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
     print 'Current directory', os.getcwd()
-    
+
+    stats_reporter_path = '{}/Simulations/tcseg/Stats_Output/'.format(os.getcwd())
+    params_path = '{}/Simulations/tcseg/'.format(os.getcwd())
+
+    if not os.path.exists(stats_reporter_path):
+        print('No stats output path exsists. Creating one at {}'.format(stats_reporter_path))
+        os.makedirs(stats_reporter_path)
+    if not os.path.exists('{}/params.txt'.format(params_path)):
+        raise NameError('No parameter container found! Please put one in the ')
+
     from Stats import ParamsContainer, StatsReporter
-    global reporter; reporter = StatsReporter('/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/')
+    global reporter; reporter = StatsReporter(stats_reporter_path)
     global params_container; params_container = ParamsContainer(reporter)
 
 
     ##  ********* Dictionary that stores the parameters   ********** ##
-    params_dict = params_container.inputParamsFromFile('params', folder='/Applications/CC3D_3.7.5_new/Simulations/tcseg/Simulation/')
+    params_dict = params_container.inputParamsFromFile('params', folder=params_path)
 
     global embryo_size; embryo_size = params_container.getNumberParam('embryo_size')
     global Dx; global Dy
@@ -76,6 +86,7 @@ def configureSimulation(sim):
     PluginElmnt_4=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"CenterOfMass"})
     PluginElmnt_6=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"NeighborTracker"})
     PluginElmnt_7=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Secretion"})
+
     if AP_growth_constraint_flag:
         PluginElmnt_8=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"OrientedGrowth"})
         PluginElmnt_8.ElementCC3D("Penalty",{},9999)
@@ -126,8 +137,6 @@ def configureSimulation(sim):
         SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_3_19_2015.piff")
     elif embryo_size==2:
         SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_04_06_2015.piff")
-#         SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_05_01_2016_straight.piff")
-
     
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
             
