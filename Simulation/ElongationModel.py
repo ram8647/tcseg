@@ -20,7 +20,7 @@ def configureSimulation(sim):
     params_path = os.getcwd() + '/Simulations/tcseg/'
 
     if not os.path.exists(stats_reporter_path):
-        print('No stats output path exsists. Creating one at {}'.format(stats_reporter_path))
+        print('No stats output path exists. Creating one at {}'.format(stats_reporter_path))
         os.makedirs(stats_reporter_path)
     if not os.path.exists('{}/params.txt'.format(params_path)):
         raise NameError('No parameter file found! Please put one in the \'Simulations/tcseg\' folder')
@@ -38,6 +38,7 @@ def configureSimulation(sim):
     ## ASSIGN GLOBAL SIMULATION VARIABLES FROM THIS DICTIONARY
 
     global embryo_size; embryo_size = params_container.getNumberParam('embryo_size')
+    global Dx; global Dy
     global dye_flag; dye_flag = params_container.getNumberParam('dye_flag')
     global AP_growth_constraint_flag; AP_growth_constraint_flag = params_container.getNumberParam('AP_growth_constraint_flag')
     global dye_mitosis_clones; dye_mitosis_clones=params_container.getNumberParam('dye_mitosis_clones')
@@ -231,5 +232,5 @@ if dye_mitosis_clones:
     dyeMitosisClones.setScalarField(MitosisClonesField)
     steppableRegistry.registerSteppable(dyeMitosisClones)
 
-##  START THE SIMULATION
+## START THE SIMULATION
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
