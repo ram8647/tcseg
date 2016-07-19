@@ -1,6 +1,6 @@
-from PlayerPython import * 
-import CompuCellSetup
-import os
+from PlayerPython import *
+import sys
+from os import environ
 
 # Parameter container, instantiated below in configureSimulation()
 global params_container
@@ -15,7 +15,7 @@ global batch; global speed_up_sim
 global regional_mitosis_flag; global y_GZ_mitosis_border
 
 # Cell labeling parameters
-global dye_flag 
+global dye_flag
 
 def configureSimulation(sim):
     import CompuCellSetup
@@ -36,7 +36,6 @@ def configureSimulation(sim):
     global reporter; reporter = StatsReporter(stats_reporter_path)
     global params_container; params_container = ParamsContainer(reporter)
 
-    ## ********** Import  Parameters Here ************** ##
     print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
     print 'Current directory', os.getcwd()
 
@@ -44,14 +43,13 @@ def configureSimulation(sim):
     params_dict = params_container.inputParamsFromFile('params', folder=params_path)
 
     global embryo_size; embryo_size = params_container.getNumberParam('embryo_size')
-    global Dx; global Dy # is this declared twice?
     if embryo_size==1:
         Dx = 320
         Dy = 910
     elif embryo_size==2:
         Dx = 450
-#         Dx = 900
         Dy = 1800
+
     global dye_flag; dye_flag = params_container.getNumberParam('dye_flag')
 #     global speed_up_sim; speed_up_sim = params_container.getBooleanParam('speed_up_sim')
 #     global batch; batch = params_container.getBooleanParam('batch')
@@ -64,16 +62,16 @@ def configureSimulation(sim):
     global mitosis_dye_window; mitosis_dye_window=params_container.getListParam('mitosis_dye_window')
     
     print '>>>>>>>>>>>>>>>> After imports >>>>>>>>>>>>>>>>'
+
     CompuCell3DElmnt=ElementCC3D("CompuCell3D",{"Revision":"20140724","Version":"3.7.2"})
     PottsElmnt=CompuCell3DElmnt.ElementCC3D("Potts")
-    
-    # Basic properties of CPM (GGH) algorithm
-    PottsElmnt.ElementCC3D("Dimensions",{"x":Dx,"y":Dy,"z":1})
+
+    PottsElmnt.ElementCC3D("Dimensions",{"x":Dx,"y":Dy,"z":1}) # Basic properties of the simulation
     PottsElmnt.ElementCC3D("Steps",{},"3601")
     PottsElmnt.ElementCC3D("Temperature",{},"10.0")
     PottsElmnt.ElementCC3D("NeighborOrder",{},"1")
     
-    PluginElmnt=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"CellType"}) # Listing all cell types in the simulation
+    PluginElmnt=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"CellType"}) # Cell types in the simulation
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"0","TypeName":"Medium"})
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"1","TypeName":"AnteriorLobe"})
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"2","TypeName":"EN"})
@@ -87,13 +85,12 @@ def configureSimulation(sim):
     PluginElmnt_4=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"CenterOfMass"})
     PluginElmnt_6=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"NeighborTracker"})
     PluginElmnt_7=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Secretion"})
-
     if AP_growth_constraint_flag:
         PluginElmnt_8=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"OrientedGrowth"})
         PluginElmnt_8.ElementCC3D("Penalty",{},9999)
         PluginElmnt_8.ElementCC3D("Falloff",{},2)
     
-    PluginElmnt_5=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Contact"}) # Specification of adhesion energies
+    PluginElmnt_5=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Contact"}) # Cell-type to cell-type adhesion energies
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"Medium"},"100.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"AnteriorLobe"},"100.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"EN"},"100.0")
@@ -129,22 +126,14 @@ def configureSimulation(sim):
         DiffusionDataElmnt.ElementCC3D("GlobalDiffusionConstant",{},"10.0") # 0.05 for anterior retardation; 0.5 for bidirectional retardation
         DiffusionDataElmnt.ElementCC3D("GlobalDecayConstant",{},"0.05") # 0.005 for anterior retardation; 0.05 for bidirectional retardation
 
-    ## ***** ##
-    
-    SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"PIFInitializer"})
-    
     # Initial layout of cells using PIFF file. Piff files can be generated using PIFGEnerator
+    SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"PIFInitializer"})
     if embryo_size==1:
         SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/IC1.piff")
     elif embryo_size==2:
         SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_04_06_2015.piff")
     
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
-            
-import sys
-from os import environ
-from os import getcwd
-import string
 
 sys.path.append(environ["PYTHON_MODULE_PATH"])
 
