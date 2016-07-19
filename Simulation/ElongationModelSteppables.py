@@ -1,11 +1,8 @@
 from Stats import StatsReporter
 from Stats import ParamsContainer
 import datetime
-
 from PlayerPython import * 
 import CompuCellSetup
-## General Note: Cell Address is relative to the anterior. So, a 0.0 address means that it is on the anterior tip.
-
 from PySteppables import *
 from PySteppablesExamples import MitosisSteppableBase
 import CompuCell
@@ -14,8 +11,13 @@ import math
 from random import random
 from copy import deepcopy
 
+## General Note: Cell Address is relative to the anterior. So, a 0.0 address means that it is on the anterior tip.
 
 class VolumeStabilizer(SteppableBasePy):
+    '''
+    VolumeStabilizer prevents the cells from immediately shrinking to nothing,
+    which usually happens by default, for some reason...
+    '''
     def __init__(self,_simulator,_frequency=1):
         SteppableBasePy.__init__(self,_simulator,_frequency)
 
@@ -23,14 +25,9 @@ class VolumeStabilizer(SteppableBasePy):
         for cell in self.cellList:
             cell.targetVolume = cell.volume
             cell.targetSurface = cell.surface
-#             print 'cell volume=' + str(cell.volume) + ' cell surface=' + str(cell.surface)
-
-            # This above code prevents the cells from immediately shrinking to nothing.
-
             cell.lambdaVolume = 50.0 # A high lambdaVolume makes the cells resist changing volume.
             cell.lambdaSurface = 2.0 # However, a low lambdaSurface still allows them to move easily.
-
-            # In effect, these above two lines allow the cells to travel without squeezing, which would be unrealistic.
+            #These above two lines allow the cells to travel without squeezing unrealistically.
 
 
 class SimplifiedForces_SmoothedForces(SteppableBasePy):
