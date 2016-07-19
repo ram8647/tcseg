@@ -4,6 +4,7 @@ from os import environ
 
 ## DECLARE GLOBAL PARAMETERS
 
+batch_run_index = 0                                         # If doing batch runs, this keeps track of which run it is on
 global params_container                                     # Parameter container, instantiated below in configureSimulation()
 global Dx; global Dy                                        # Simulation Dimension Parameters
 global batch                                                # Batch run parameter
@@ -15,7 +16,11 @@ def configureSimulation(sim):
     import CompuCellSetup
     from XMLUtils import ElementCC3D
 
+    print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
+    print 'Current directory', os.getcwd()
+
     ## CONFIRM PROPER FILE STRUCTURE AND CREATE IT IF NECESSARY
+
     stats_reporter_path = os.getcwd() + '/Simulations/tcseg/Stats_Output/'
     params_path = os.getcwd() + '/Simulations/tcseg/'
 
@@ -24,9 +29,6 @@ def configureSimulation(sim):
         os.makedirs(stats_reporter_path)
     if not os.path.exists('{}/params.txt'.format(params_path)):
         raise NameError('No parameter file found! Please put one in the \'Simulations/tcseg\' folder')
-
-    print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
-    print 'Current directory', os.getcwd()
 
     ## CREATE THE DICTIONARY THAT STORES THE PARAMETERS
 
@@ -125,7 +127,7 @@ def configureSimulation(sim):
     if embryo_size==1:
         Dx = 320
         Dy = 910
-        SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/IC1.piff")
+        SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_3_19_2015.piff")
     elif embryo_size==2:
         Dx = 450
         Dy = 1800
@@ -133,6 +135,7 @@ def configureSimulation(sim):
     
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
 
+# Boiler plate code, here
 sys.path.append(environ["PYTHON_MODULE_PATH"])
 import CompuCellSetup
 sim, simthread = CompuCellSetup.getCoreSimulationObjects()
@@ -172,7 +175,7 @@ steppableRegistry.registerSteppable(MeasurementsInstance)
 '''
 Engrailed implements a diffusion field to simulate EN gene products.
 
-## CURRENTLY, EN GENE PRODUCT FIELD NOT ACCOMPLISHING ANYTHING MECHANISTIC AND SLOWING DOWN SIMULATION A LOT
+CURRENTLY, EN GENE PRODUCT FIELD NOT ACCOMPLISHING ANYTHING MECHANISTIC AND SLOWING DOWN SIMULATION A LOT
 
 The speeds and positions come from Brown et all, 1994. I measured the relative position of each stripe in ImageJ
 and found that they move up ~ 6% of the relative body length in the period of interest. 90 is the number
