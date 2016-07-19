@@ -2,27 +2,20 @@ from PlayerPython import *
 import sys
 from os import environ
 
-# Parameter container, instantiated below in configureSimulation()
-global params_container
+## DECLARE GLOBAL PARAMETERS
 
-# Simulation Dimension Parameters
-global Dx; global Dy
-
-# General simulation flags
-global batch; global speed_up_sim
-
-# Mitosis parameters
-global regional_mitosis_flag; global y_GZ_mitosis_border
-
-# Cell labeling parameters
-global dye_flag
+global params_container                                     # Parameter container, instantiated below in configureSimulation()
+global Dx; global Dy                                        # Simulation Dimension Parameters
+global batch                                                #
+global speed_up_sim                                         # Defunct parameter
+global regional_mitosis_flag; global y_GZ_mitosis_border    # Mitosis parameters
+global dye_flag                                             # Cell labeling parameters
 
 def configureSimulation(sim):
     import CompuCellSetup
     from XMLUtils import ElementCC3D
 
-    ## ********** Check if proper files and folders exists  ************** ##
-
+    ## CONFIRM PROPER FILE STRUCTURE AND CREATE IT IF NECESSARY
     stats_reporter_path = os.getcwd() + '/Simulations/tcseg/Stats_Output/'
     params_path = os.getcwd() + '/Simulations/tcseg/'
 
@@ -32,54 +25,56 @@ def configureSimulation(sim):
     if not os.path.exists('{}/params.txt'.format(params_path)):
         raise NameError('No parameter file found! Please put one in the \'Simulations/tcseg\' folder')
 
-    from Stats import ParamsContainer, StatsReporter
-    global reporter; reporter = StatsReporter(stats_reporter_path)
-    global params_container; params_container = ParamsContainer(reporter)
-
     print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
     print 'Current directory', os.getcwd()
 
-    ##  ********* Create the dictionary that stores the parameters   ********** ##
+    ## CREATE THE DICTIONARY THAT STORES THE PARAMETERS
+
+    from Stats import ParamsContainer, StatsReporter
+    global reporter;reporter = StatsReporter(stats_reporter_path)
+    global params_container; params_container = ParamsContainer(reporter)
     params_dict = params_container.inputParamsFromFile('params', folder=params_path)
 
-    global embryo_size; embryo_size = params_container.getNumberParam('embryo_size')
-    if embryo_size==1:
-        Dx = 320
-        Dy = 910
-    elif embryo_size==2:
-        Dx = 450
-        Dy = 1800
+    ## ASSIGN GLOBAL SIMULATION VARIABLES FROM THIS DICTIONARY
 
+    global embryo_size; embryo_size = params_container.getNumberParam('embryo_size')
     global dye_flag; dye_flag = params_container.getNumberParam('dye_flag')
-#     global speed_up_sim; speed_up_sim = params_container.getBooleanParam('speed_up_sim')
-#     global batch; batch = params_container.getBooleanParam('batch')
-#     global hinder_cells_near_EN; hinder_cells_near_EN = params_container.getBooleanParam('hinder_cells_near_EN')
-    global speed_up_sim; speed_up_sim=False
-    global batch; batch=False
-    global hinder_cells_near_EN; hinder_cells_near_EN=False
     global AP_growth_constraint_flag; AP_growth_constraint_flag = params_container.getNumberParam('AP_growth_constraint_flag')
     global dye_mitosis_clones; dye_mitosis_clones=params_container.getNumberParam('dye_mitosis_clones')
     global mitosis_dye_window; mitosis_dye_window=params_container.getListParam('mitosis_dye_window')
-    
+    '''
+    # these parameters are not currently supported; the following code preventing them from being invoked.
+    global speed_up_sim; speed_up_sim = params_container.getBooleanParam('speed_up_sim')
+    global batch; batch = params_container.getBooleanParam('batch')
+    global hinder_cells_near_EN; hinder_cells_near_EN = params_container.getBooleanParam('hinder_cells_near_EN')
+    '''
+    global speed_up_sim; speed_up_sim = False
+    global batch; batch = False
+    global hinder_cells_near_EN; hinder_cells_near_EN = False
+
     print '>>>>>>>>>>>>>>>> After imports >>>>>>>>>>>>>>>>'
 
+    ## CONFIGURE MODULES...
+
+    # ...to configure basic properties of the simulation
     CompuCell3DElmnt=ElementCC3D("CompuCell3D",{"Revision":"20140724","Version":"3.7.2"})
     PottsElmnt=CompuCell3DElmnt.ElementCC3D("Potts")
-
-    PottsElmnt.ElementCC3D("Dimensions",{"x":Dx,"y":Dy,"z":1}) # Basic properties of the simulation
+    PottsElmnt.ElementCC3D("Dimensions",{"x":Dx,"y":Dy,"z":1})
     PottsElmnt.ElementCC3D("Steps",{},"3601")
     PottsElmnt.ElementCC3D("Temperature",{},"10.0")
     PottsElmnt.ElementCC3D("NeighborOrder",{},"1")
-    
-    PluginElmnt=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"CellType"}) # Cell types in the simulation
+
+    # ...to configure cell types in the simulation
+    PluginElmnt=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"CellType"})
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"0","TypeName":"Medium"})
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"1","TypeName":"AnteriorLobe"})
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"2","TypeName":"EN"})
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"3","TypeName":"GZ"})
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"4","TypeName":"Mitosing"})
     PluginElmnt.ElementCC3D("CellType",{"TypeId":"5","TypeName":"Segmented"})
-    
-    PluginElmnt_1=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Volume"}) # Cell property trackers and manipulators
+
+    # ...to initialize property trackers and manipulators
+    PluginElmnt_1=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Volume"})
     PluginElmnt_2=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Surface"})
     extPotential=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"ExternalPotential"})
     PluginElmnt_4=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"CenterOfMass"})
@@ -89,8 +84,9 @@ def configureSimulation(sim):
         PluginElmnt_8=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"OrientedGrowth"})
         PluginElmnt_8.ElementCC3D("Penalty",{},9999)
         PluginElmnt_8.ElementCC3D("Falloff",{},2)
-    
-    PluginElmnt_5=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Contact"}) # Cell-type to cell-type adhesion energies
+
+    # ...to configure cell-type to cell-type adhesion energies
+    PluginElmnt_5=CompuCell3DElmnt.ElementCC3D("Plugin",{"Name":"Contact"})
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"Medium"},"100.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"AnteriorLobe"},"100.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"EN"},"100.0")
@@ -115,7 +111,7 @@ def configureSimulation(sim):
     PluginElmnt_5.ElementCC3D("NeighborOrder",{},"1")
 
     
-    ## EN GENE PRODUCT FIELD NOT ACCOMPLISHING ANYTHING MECHANISTIC, AND SLOWING DOWN SIMULATION A LOT
+    ## EN GENE PRODUCT FIELD NOT ACCOMPLISHING ANYTHING MECHANISTIC AND SLOWING DOWN SIMULATION A LOT
     ## ***** Define the properties of the Engrailed gene product ***** ##
 
     if hinder_cells_near_EN: # THIS IS TO AVOID SLOWDOWN WHEN FIELD NOT NECESSARY (sdh)
@@ -126,31 +122,31 @@ def configureSimulation(sim):
         DiffusionDataElmnt.ElementCC3D("GlobalDiffusionConstant",{},"10.0") # 0.05 for anterior retardation; 0.5 for bidirectional retardation
         DiffusionDataElmnt.ElementCC3D("GlobalDecayConstant",{},"0.05") # 0.005 for anterior retardation; 0.05 for bidirectional retardation
 
-    # Initial layout of cells using PIFF file. Piff files can be generated using PIFGEnerator
+    # Initial layout of cells using PIFF file. (Piff files can be generated using PIFGEnerator)
     SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"PIFInitializer"})
     if embryo_size==1:
+        Dx = 320
+        Dy = 910
         SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/IC1.piff")
     elif embryo_size==2:
+        Dx = 450
+        Dy = 1800
         SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_04_06_2015.piff")
     
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
 
 sys.path.append(environ["PYTHON_MODULE_PATH"])
-
-##******** Configure Simulation Flags ********##
-
 import CompuCellSetup
 sim, simthread = CompuCellSetup.getCoreSimulationObjects()
 configureSimulation(sim)
 CompuCellSetup.initializeSimulationObjects(sim, simthread)
 steppableRegistry=CompuCellSetup.getSteppableRegistry()
 
-## Import custom classes here
-
-## ***** Create Steppable Instances  ***** ##
+## INITIALIZE CUSTOM STEPPABLES
 
 from ElongationModelSteppables import VolumeStabilizer
-s1 = VolumeStabilizer(sim,_frequency = 1)
+VolumeStabilizerInstance = VolumeStabilizer(sim,_frequency = 1)
+steppableRegistry.registerSteppable(VolumeStabilizerInstance)
 
 if AP_growth_constraint_flag:
     OrientedGrowthPlugin = CompuCell.getOrientedGrowthPlugin()
@@ -162,26 +158,23 @@ from ElongationModelSteppables import Measurements
 
 output_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/CSV_files/'
 if not os.path.exists(output_path):
-    print('No result CSV file exists. Creating one at {}'.format(output_path))
-    makedirs(output_path)
-s4 = Measurements(sim,_frequency = 100, _reporter=reporter, _output_path = output_path)
+    print('No result CSV file exists to output measurements! Creating one at {}'.format(output_path))
+    os.makedirs(output_path)
+MeasurementsInstance = Measurements(sim,_frequency = 100, _reporter=reporter, _output_path = output_path)
+steppableRegistry.registerSteppable(MeasurementsInstance)
 
-# EN_stripe parameters
-# The speeds and positions come from Brown et all, 1994. I measured the relative position of each stripe in ImageJ
-# and found that they move up ~ 6% of the relative body length in the period of interest. 90 is the number
-# of times this steppable is called during the simulation. So the speed is 6% body length / 90 steps, or 0.06/90 that is 0.0007.
+'''
+EN_stripe parameters
+The speeds and positions come from Brown et all, 1994. I measured the relative position of each stripe in ImageJ
+and found that they move up ~ 6% of the relative body length in the period of interest. 90 is the number
+of times this steppable is called during the simulation. So the speed is 6% body length / 90 steps, or 0.06/90 that is 0.0007.
+'''
 
 from ElongationModelSteppables import Engrailed
 s5 = Engrailed(sim, _frequency = 1,_params_container = params_container,_hinder_anterior_cells = hinder_cells_near_EN,_embryo_size=embryo_size)
 
-# The speeds and positions come from Brown et all, 1994. I measured the relative position of each stripe in ImageJ
-# and found that they move up ~ 6% of the relative body length in the period of interest. 90 is the number
-# of times this steppable is called during the simulation. So the speed is 6% body length / 90 steps, or 0.06/90 that is 0.0007.
-
-
 ## *****  Add steppables to the model **********  ##
 steppables = [s1,s4,s5]
-# steppables = [s1,s5]
 for steppable in steppables: steppableRegistry.registerSteppable(steppable)
 
 ## ***** Register the Mitosis Steppable
@@ -206,7 +199,8 @@ if params_container.getNumberParam('forces_on'):
     simplified_forces = SimplifiedForces_SmoothedForces(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)  
     steppableRegistry.registerSteppable(simplified_forces)
 
-###### Add extra player fields here
+## CONFIGURE EXTRA PLAYER FIELDS
+
 if dye_flag:
     dim=sim.getPotts().getCellFieldG().getDim()
     Label01Field=simthread.createFloatFieldPy(dim,"CellLabel01")
@@ -223,12 +217,13 @@ if dye_flag:
         _yf = params_container.getListParam('yf_dye'),
         _reporter = reporter)
     dyeCells.setScalarField(Label01Field)
-    steppableRegistry.registerSteppable(dyeCells) 
+    steppableRegistry.registerSteppable(dyeCells)
+
 if dye_mitosis_clones:
     from ElongationModelSteppables import DyeMitosisClones
     dyeMitosisClones=DyeMitosisClones(_simulator=sim,_frequency=50,_window=mitosis_dye_window)
     dyeMitosisClones.setScalarField(MitosisClonesField)
     steppableRegistry.registerSteppable(dyeMitosisClones)
 
-##  ****  Start the Simulation  *****  ##
+##  START THE SIMULATION
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
