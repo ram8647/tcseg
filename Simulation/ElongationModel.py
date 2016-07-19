@@ -30,7 +30,7 @@ def configureSimulation(sim):
         print('No stats output path exsists. Creating one at {}'.format(stats_reporter_path))
         os.makedirs(stats_reporter_path)
     if not os.path.exists('{}/params.txt'.format(params_path)):
-        raise NameError('No parameter file found! Please put one in the \'Simulations/tcse\' folder')
+        raise NameError('No parameter file found! Please put one in the \'Simulations/tcseg\' folder')
 
     from Stats import ParamsContainer, StatsReporter
     global reporter; reporter = StatsReporter(stats_reporter_path)
