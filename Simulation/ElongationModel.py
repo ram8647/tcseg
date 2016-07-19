@@ -1,5 +1,7 @@
 from PlayerPython import * 
 import CompuCellSetup
+import os.path
+from os import makedirs
 
 # Parameter container, instantiated below in configureSimulation()
 global params_container
@@ -18,7 +20,6 @@ global dye_flag
 
 def configureSimulation(sim):
     import CompuCellSetup
-    import os
     from XMLUtils import ElementCC3D
 
     ## ********** Import Some Parameters Here ************** ##
@@ -30,9 +31,9 @@ def configureSimulation(sim):
 
     if not os.path.exists(stats_reporter_path):
         print('No stats output path exsists. Creating one at {}'.format(stats_reporter_path))
-        os.makedirs(stats_reporter_path)
+        os.path.makedirs(stats_reporter_path)
     if not os.path.exists('{}/params.txt'.format(params_path)):
-        raise NameError('No parameter container found! Please put one in the ')
+        raise NameError('No parameter file found! Please put one in the \'Simulations\' folder')
 
     from Stats import ParamsContainer, StatsReporter
     global reporter; reporter = StatsReporter(stats_reporter_path)
@@ -150,9 +151,9 @@ sys.path.append(environ["PYTHON_MODULE_PATH"])
 ##******** Configure Simulation Flags ********##
 
 import CompuCellSetup
-sim,simthread = CompuCellSetup.getCoreSimulationObjects()
+sim, simthread = CompuCellSetup.getCoreSimulationObjects()
 configureSimulation(sim)
-CompuCellSetup.initializeSimulationObjects(sim,simthread)
+CompuCellSetup.initializeSimulationObjects(sim, simthread)
 steppableRegistry=CompuCellSetup.getSteppableRegistry()
 
 ## Import custom classes here
@@ -169,7 +170,12 @@ if AP_growth_constraint_flag:
     steppableRegistry.registerSteppable(OrientedConstraintSteppableInstance)
 
 from ElongationModelSteppables import Measurements
-s4 = Measurements(sim,_frequency = 100, _reporter=reporter)
+
+output_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/CSV_files/'
+if not os.path.exists(output_path):
+    print('No result CSV file exists. Creating one at {}'.format(output_path))
+    makedirs(output_path)
+s4 = Measurements(sim,_frequency = 100, _reporter=reporter, _output_path = output_path)
 
 # EN_stripe parameters
 # The speeds and positions come from Brown et all, 1994. I measured the relative position of each stripe in ImageJ

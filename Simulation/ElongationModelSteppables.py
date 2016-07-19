@@ -859,17 +859,21 @@ class DyeMitosisClones(SteppableBasePy):
                         fillScalarValue(self.dyeField,pt.x,pt.y,pt.z,dye)
 
 class Measurements(SteppableBasePy):
-   def __init__(self,_simulator,_frequency, _reporter):
+   def __init__(self,_simulator,_frequency, _reporter, _output_path):
       SteppableBasePy.__init__(self,_simulator,_frequency)
       self.reporter = _reporter
+      self.outp = _output_path
         
    def start(self):
-      output_folder='/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/CSV_files/'
-      stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%y%m%d-%H%M%S')
-      self.output_filename=output_folder + 'run' + stamp + '.csv'
-      self.output_file=open(self.output_filename,'w')
-      self.output_file.write('MCS,GB cell count,GB length,GB area,GB cell divisions,GZ cell count,GZ length,GZ area,GZ cell divisions,avg division cycle time\n')
-      self.output_file.close()
+      try:
+          output_folder=self.outp
+          stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%y%m%d-%H%M%S')
+          self.output_filename=output_folder + 'run' + stamp + '.csv'
+          self.output_file=open(self.output_filename,'w')
+          self.output_file.write('MCS,GB cell count,GB length,GB area,GB cell divisions,GZ cell count,GZ length,GZ area,GZ cell divisions,avg division cycle time\n')
+          self.output_file.close()
+      except IOError:
+          raise NameError('Could not output to a csv file properly! Aborting.')
    
       GB_cell_count=self.find_GB_cell_count()
       GZ_cell_count=self.find_GZ_cell_count()
