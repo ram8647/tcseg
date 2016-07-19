@@ -1,7 +1,6 @@
 from PlayerPython import * 
 import CompuCellSetup
-import os.path
-from os import makedirs
+import os
 
 # Parameter container, instantiated below in configureSimulation()
 global params_container
@@ -22,29 +21,30 @@ def configureSimulation(sim):
     import CompuCellSetup
     from XMLUtils import ElementCC3D
 
-    ## ********** Import Some Parameters Here ************** ##
-    print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
-    print 'Current directory', os.getcwd()
+    ## ********** Check if proper files and folders exists  ************** ##
 
-    stats_reporter_path = '{}/Simulations/tcseg/Stats_Output/'.format(os.getcwd())
-    params_path = '{}/Simulations/tcseg/'.format(os.getcwd())
+    stats_reporter_path = os.getcwd() + '/Simulations/tcseg/Stats_Output/'
+    params_path = os.getcwd() + '/Simulations/tcseg/'
 
     if not os.path.exists(stats_reporter_path):
         print('No stats output path exsists. Creating one at {}'.format(stats_reporter_path))
-        os.path.makedirs(stats_reporter_path)
+        os.makedirs(stats_reporter_path)
     if not os.path.exists('{}/params.txt'.format(params_path)):
-        raise NameError('No parameter file found! Please put one in the \'Simulations\' folder')
+        raise NameError('No parameter file found! Please put one in the \'Simulations/tcse\' folder')
 
     from Stats import ParamsContainer, StatsReporter
     global reporter; reporter = StatsReporter(stats_reporter_path)
     global params_container; params_container = ParamsContainer(reporter)
 
+    ## ********** Import  Parameters Here ************** ##
+    print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
+    print 'Current directory', os.getcwd()
 
-    ##  ********* Dictionary that stores the parameters   ********** ##
+    ##  ********* Create the dictionary that stores the parameters   ********** ##
     params_dict = params_container.inputParamsFromFile('params', folder=params_path)
 
     global embryo_size; embryo_size = params_container.getNumberParam('embryo_size')
-    global Dx; global Dy
+    global Dx; global Dy # is this declared twice?
     if embryo_size==1:
         Dx = 320
         Dy = 910
