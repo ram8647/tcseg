@@ -6,7 +6,7 @@ from os import environ
 
 global params_container                                     # Parameter container, instantiated below in configureSimulation()
 global Dx; global Dy                                        # Simulation Dimension Parameters
-global batch                                                #
+global batch                                                # Batch run parameter
 global speed_up_sim                                         # Defunct parameter
 global regional_mitosis_flag; global y_GZ_mitosis_border    # Mitosis parameters
 global dye_flag                                             # Cell labeling parameters
@@ -110,11 +110,8 @@ def configureSimulation(sim):
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Segmented","Type2":"Segmented"},"10.0")
     PluginElmnt_5.ElementCC3D("NeighborOrder",{},"1")
 
-    
-    ## EN GENE PRODUCT FIELD NOT ACCOMPLISHING ANYTHING MECHANISTIC AND SLOWING DOWN SIMULATION A LOT
-    ## ***** Define the properties of the Engrailed gene product ***** ##
-
-    if hinder_cells_near_EN: # THIS IS TO AVOID SLOWDOWN WHEN FIELD NOT NECESSARY (sdh)
+    ## ...to define the properties of the Engrailed gene product
+    if hinder_cells_near_EN: # DISABLING AVOIDS SLOWDOWN WHEN FIELD NOT NECESSARY (sdh)
         SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"DiffusionSolverFE"})
         DiffusionFieldElmnt=SteppableElmnt.ElementCC3D("DiffusionField",{"Name":"EN_GENE_PRODUCT"})
         DiffusionDataElmnt=DiffusionFieldElmnt.ElementCC3D("DiffusionData")
@@ -122,7 +119,7 @@ def configureSimulation(sim):
         DiffusionDataElmnt.ElementCC3D("GlobalDiffusionConstant",{},"10.0") # 0.05 for anterior retardation; 0.5 for bidirectional retardation
         DiffusionDataElmnt.ElementCC3D("GlobalDecayConstant",{},"0.05") # 0.005 for anterior retardation; 0.05 for bidirectional retardation
 
-    # Initial layout of cells using PIFF file. (Piff files can be generated using PIFGEnerator)
+    # To initial layout of cells using PIFF file. (Piff files can be generated using PIFGEnerator)
     SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"PIFInitializer"})
     if embryo_size==1:
         Dx = 320
@@ -144,19 +141,27 @@ steppableRegistry=CompuCellSetup.getSteppableRegistry()
 
 ## INITIALIZE CUSTOM STEPPABLES
 
+'''
+Volume stabilizer prevents cells from vanishing at the beginning of the simulation
+'''
 from ElongationModelSteppables import VolumeStabilizer
 VolumeStabilizerInstance = VolumeStabilizer(sim,_frequency = 1)
 steppableRegistry.registerSteppable(VolumeStabilizerInstance)
 
+'''
+OrientedConstraintSteppable implements oriented growth on certain cells
+'''
 if AP_growth_constraint_flag:
     OrientedGrowthPlugin = CompuCell.getOrientedGrowthPlugin()
     from ElongationModelSteppables import OrientedConstraintSteppable
     OrientedConstraintSteppableInstance=OrientedConstraintSteppable(sim,_frequency=1,_OGPlugin=OrientedGrowthPlugin)
     steppableRegistry.registerSteppable(OrientedConstraintSteppableInstance)
 
+'''
+Measurements outputs
+'''
 from ElongationModelSteppables import Measurements
-
-output_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/CSV_files/'
+output_path = os.getcwd() + 'Simulations/tcseg/Stats_Output/CSV_files/'
 if not os.path.exists(output_path):
     print('No result CSV file exists to output measurements! Creating one at {}'.format(output_path))
     os.makedirs(output_path)
@@ -164,20 +169,21 @@ MeasurementsInstance = Measurements(sim,_frequency = 100, _reporter=reporter, _o
 steppableRegistry.registerSteppable(MeasurementsInstance)
 
 '''
-EN_stripe parameters
+Engrailed implements a diffusion field to simulate EN gene products.
+
+## CURRENTLY, EN GENE PRODUCT FIELD NOT ACCOMPLISHING ANYTHING MECHANISTIC AND SLOWING DOWN SIMULATION A LOT
+
 The speeds and positions come from Brown et all, 1994. I measured the relative position of each stripe in ImageJ
 and found that they move up ~ 6% of the relative body length in the period of interest. 90 is the number
 of times this steppable is called during the simulation. So the speed is 6% body length / 90 steps, or 0.06/90 that is 0.0007.
 '''
-
 from ElongationModelSteppables import Engrailed
-s5 = Engrailed(sim, _frequency = 1,_params_container = params_container,_hinder_anterior_cells = hinder_cells_near_EN,_embryo_size=embryo_size)
+EngrailedInstance = Engrailed(sim, _frequency = 1,_params_container = params_container,_hinder_anterior_cells = hinder_cells_near_EN,_embryo_size=embryo_size)
+steppableRegistry.registerSteppable(EngrailedInstance)
 
-## *****  Add steppables to the model **********  ##
-steppables = [s1,s4,s5]
-for steppable in steppables: steppableRegistry.registerSteppable(steppable)
-
-## ***** Register the Mitosis Steppable
+'''
+The Mitosis steppable implements cell divison in one of several fashions.
+'''
 mitosis_on=params_container.getNumberParam('mitosis_on')
 
 if mitosis_on==0:
@@ -193,8 +199,8 @@ else:
     mitosis = RegionalMitosis(sim,_frequency = 1, _params_container = params_container, _stats_reporter = reporter)
     steppableRegistry.registerSteppable(mitosis)    
 
+'''The simflified forces steppable implements the Sarrazin forces'''
 if params_container.getNumberParam('forces_on'):
-##  Register the Simplified Forces Steppable
     from ElongationModelSteppables import SimplifiedForces_SmoothedForces
     simplified_forces = SimplifiedForces_SmoothedForces(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)  
     steppableRegistry.registerSteppable(simplified_forces)
