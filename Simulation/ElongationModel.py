@@ -4,38 +4,38 @@ from os import environ
 
 ## DECLARE GLOBAL PARAMETERS
 
-batch_run_index = 0                                         # If doing batch runs, this keeps track of which run it is on
+global batch_run_index; batch_run_index = 0                 # If doing batch runs, this keeps track of which run it is on
 global params_container                                     # Parameter container, instantiated below in configureSimulation()
-global Dx; global Dy                                        # Simulation Dimension Parameters
 global batch                                                # Batch run parameter
 global speed_up_sim                                         # Defunct parameter
 global regional_mitosis_flag; global y_GZ_mitosis_border    # Mitosis parameters
 global dye_flag                                             # Cell labeling parameters
 
-def configureSimulation(sim):
+## SPECIFY INPUT AND OUTPUT DIRECTORIES HERE
+
+global params_path; params_path = '/Users/jeremyfisher/Desktop/TC Model/Simulation/params.txt'
+global stats_reporter_path; stats_reporter_path = '/Users/jeremyfisher/Desktop/TC Model/tcseg_ParameterScan/'
+global measurements_output_path; measurements_output_path = '/Users/jeremyfisher/Desktop/TC Model/tcseg_ParameterScan/'
+
+def configureSimulation(sim):    
     import CompuCellSetup
     from XMLUtils import ElementCC3D
 
-    print '>>>>>>>>>>>>>>>> Before imports >>>>>>>>>>>>>>>>'
-    print 'Current directory', os.getcwd()
-
     ## CONFIRM PROPER FILE STRUCTURE AND CREATE IT IF NECESSARY
-
-    stats_reporter_path = os.getcwd() + '/Simulations/tcseg/Stats_Output/'
-    params_path = os.getcwd() + '/Simulations/tcseg/'
 
     if not os.path.exists(stats_reporter_path):
         print('No stats output path exists. Creating one at {}'.format(stats_reporter_path))
         os.makedirs(stats_reporter_path)
-    if not os.path.exists('{}/params.txt'.format(params_path)):
-        raise NameError('No parameter file found! Please put one in the \'Simulations/tcseg\' folder')
+    if not os.path.exists(params_path):
+        raise NameError('No parameter file found! Please specify one in ElongationModel.py')
 
     ## CREATE THE DICTIONARY THAT STORES THE PARAMETERS
 
     from Stats import ParamsContainer, StatsReporter
     global reporter;reporter = StatsReporter(stats_reporter_path)
     global params_container; params_container = ParamsContainer(reporter)
-    params_dict = params_container.inputParamsFromFile('params', folder=params_path)
+    params_parent_directory = os.path.dirname(params_path) + '/'
+    params_dict = params_container.inputParamsFromFile('params', folder=params_parent_directory)
 
     ## ASSIGN GLOBAL SIMULATION VARIABLES FROM THIS DICTIONARY
 
@@ -60,8 +60,6 @@ def configureSimulation(sim):
     global speed_up_sim; speed_up_sim = False
     global batch; batch = False
     global hinder_cells_near_EN; hinder_cells_near_EN = False
-
-    print '>>>>>>>>>>>>>>>> After imports >>>>>>>>>>>>>>>>'
 
     ## CONFIGURE MODULES...
 
@@ -164,14 +162,13 @@ if AP_growth_constraint_flag:
     steppableRegistry.registerSteppable(OrientedConstraintSteppableInstance)
 
 '''
-Measurements outputs
+Measurements outputs relevant statistics from the current run
 '''
 from ElongationModelSteppables import Measurements
-output_path = os.getcwd() + 'Simulations/tcseg/Stats_Output/CSV_files/'
-if not os.path.exists(output_path):
-    print('No result CSV file exists to output measurements! Creating one at {}'.format(output_path))
+if not os.path.exists(measurements_output_path):
+    print('No result CSV file exists to output measurements! Creating one at {}'.format(measurements_output_path))
     os.makedirs(output_path)
-MeasurementsInstance = Measurements(sim,_frequency = 100, _reporter=reporter, _output_path = output_path)
+MeasurementsInstance = Measurements(sim,_frequency = 100, _reporter=reporter, _output_path = measurements_output_path)
 steppableRegistry.registerSteppable(MeasurementsInstance)
 
 '''
@@ -188,7 +185,7 @@ EngrailedInstance = Engrailed(sim, _frequency = 1,_params_container = params_con
 steppableRegistry.registerSteppable(EngrailedInstance)
 
 '''
-The Mitosis steppable implements cell divison in one of several fashions.
+The mitosis steppable implements cell divison in one of several fashions.
 '''
 mitosis_on=params_container.getNumberParam('mitosis_on')
 
@@ -205,7 +202,9 @@ else:
     mitosis = RegionalMitosis(sim,_frequency = 1, _params_container = params_container, _stats_reporter = reporter)
     steppableRegistry.registerSteppable(mitosis)    
 
-'''The simflified forces steppable implements the Sarrazin forces'''
+'''
+The simflified forces steppable implements the Sarrazin forces
+'''
 if params_container.getNumberParam('forces_on'):
     from ElongationModelSteppables import SimplifiedForces_SmoothedForces
     simplified_forces = SimplifiedForces_SmoothedForces(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)  
