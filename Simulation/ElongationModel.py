@@ -13,9 +13,9 @@ global dye_flag                                             # Cell labeling para
 
 ## SPECIFY INPUT AND OUTPUT DIRECTORIES HERE
 
-global params_path; params_path = '/Users/jeremyfisher/Desktop/TC Model/Simulation/params.txt'
-global stats_reporter_path; stats_reporter_path = '/Users/jeremyfisher/Desktop/TC Model/tcseg_ParameterScan/'
-global measurements_output_path; measurements_output_path = '/Users/jeremyfisher/Desktop/TC Model/tcseg_ParameterScan/'
+global params_path; params_path = '~/Desktop/TC Model/Simulation/params.txt'
+global stats_reporter_path; stats_reporter_path = '~/Desktop/TC Model/tcseg_ParameterScan/'
+global measurements_output_path; measurements_output_path = '~/Desktop/TC Model/tcseg_ParameterScan/'
 
 def configureSimulation(sim):    
     import CompuCellSetup
