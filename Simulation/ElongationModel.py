@@ -21,20 +21,6 @@ global measurements_output_path
 import getpass
 usrname = getpass.getuser()
 
-if usrname == 'jeremyfisher':
-    params_path = '~/Dropbox/Summer \'16/TcSeg/TC Model/Simulation/params.txt'
-    stats_reporter_path = '~/Dropbox/Summer \'16/TcSeg/TC Model/tcseg_ParameterScan/'
-    measurements_output_path = '~/Dropbox/Summer \'16/TcSeg/TC Model/tcseg_ParameterScan/'
-elif usrname == 'Susans username':
-    params_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Simulation/params.txt'
-    stats_reporter_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/'
-    measurements_output_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/CSV_files/'
-elif usrname == 'Terris username':
-    pass
-elif usrname == 'Lisas username':
-    pass
-else:
-    raise NameError('It looks like you havent specified the locations of params.txt and the output directories in ElongationModel.py. Please do so before running the simulation.')
 
 def checkFileStructure():
     if not os.path.exists(params_path):
