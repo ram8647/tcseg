@@ -13,21 +13,42 @@ global dye_flag                                             # Cell labeling para
 
 ## SPECIFY INPUT AND OUTPUT DIRECTORIES HERE
 
-global params_path; params_path = '/Users/jeremyfisher/Desktop/TC Model/Simulation/params.txt'
-global stats_reporter_path; stats_reporter_path = '/Users/jeremyfisher/Desktop/TC Model/tcseg_ParameterScan/'
-global measurements_output_path; measurements_output_path = '/Users/jeremyfisher/Desktop/TC Model/tcseg_ParameterScan/'
+global params_path
+global stats_reporter_path
+global measurements_output_path
+
+import getpass
+usrname = getpass.getuser()
+
+if usrname == 'jeremyfisher':
+    params_path = '/Users/jeremyfisher/Dropbox/Summer \'16/TcSeg/TC Model/Simulation/params.txt'
+    stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer \'16/TcSeg/TC Model/tcseg_ParameterScan/'
+    measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer \'16/TcSeg/TC Model/tcseg_ParameterScan/'
+elif usrname == 'Susans username':
+    params_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Simulation/params.txt'
+    stats_reporter_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/'
+    measurements_output_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/CSV_files/'
+elif usrname == 'Terris username':
+    pass
+elif usrname == 'Lisas username':
+    pass
+else:
+    raise NameError('It looks like you havent specified the locations of params.txt and the output directories in ElongationModel.py. Please do so before running the simulation.')
+
+## CONFIRM PROPER FILE STRUCTURE AND CREATE IT IF NECESSARY
+
+if not os.path.exists(stats_reporter_path):
+    print('No stats output path exists. Creating one at ', stats_reporter_path)
+    os.makedirs(stats_reporter_path)
+if not os.path.exists(params_path):
+    raise NameError('No parameter file found! Please specify one in ElongationModel.py')
+if not os.path.exists(measurements_output_path):
+    print('No result CSV file exists to output measurements! Creating one at ', measurements_output_path)
+    os.makedirs(output_path)
 
 def configureSimulation(sim):    
     import CompuCellSetup
     from XMLUtils import ElementCC3D
-
-    ## CONFIRM PROPER FILE STRUCTURE AND CREATE IT IF NECESSARY
-
-    if not os.path.exists(stats_reporter_path):
-        print('No stats output path exists. Creating one at {}'.format(stats_reporter_path))
-        os.makedirs(stats_reporter_path)
-    if not os.path.exists(params_path):
-        raise NameError('No parameter file found! Please specify one in ElongationModel.py')
 
     ## CREATE THE DICTIONARY THAT STORES THE PARAMETERS
 
@@ -165,9 +186,6 @@ if AP_growth_constraint_flag:
 Measurements outputs relevant statistics from the current run
 '''
 from ElongationModelSteppables import Measurements
-if not os.path.exists(measurements_output_path):
-    print('No result CSV file exists to output measurements! Creating one at {}'.format(measurements_output_path))
-    os.makedirs(output_path)
 MeasurementsInstance = Measurements(sim,_frequency = 100, _reporter=reporter, _output_path = measurements_output_path)
 steppableRegistry.registerSteppable(MeasurementsInstance)
 
