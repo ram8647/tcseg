@@ -11,23 +11,17 @@ global speed_up_sim                                         # Defunct parameter
 global regional_mitosis_flag; global y_GZ_mitosis_border    # Mitosis parameters
 global dye_flag                                             # Cell labeling parameters
 
-## SPECIFY INPUT AND OUTPUT DIRECTORIES HERE
+## CONFIRM PROPER FILE STRUCTURE AND CREATE IT IF NECESSARY
 
-global params_path; params_path = '~/Desktop/TC Model/Simulation/params.txt'
-global stats_reporter_path; stats_reporter_path = '~/Desktop/TC Model/tcseg_ParameterScan/'
-global measurements_output_path; measurements_output_path = '~/Desktop/TC Model/tcseg_ParameterScan/'
+import TcSegIOManager
+Manager = TcSegIOManager()
+global params_path; params_path = Manager.params_path
+global stats_reporter_path; stats_reporter_path = Manager.stats_reporter_path
+global measurements_output_path; measurements_output_path = Manager.measurements_output_path
 
 def configureSimulation(sim):    
     import CompuCellSetup
     from XMLUtils import ElementCC3D
-
-    ## CONFIRM PROPER FILE STRUCTURE AND CREATE IT IF NECESSARY
-
-    if not os.path.exists(stats_reporter_path):
-        print('No stats output path exists. Creating one at {}'.format(stats_reporter_path))
-        os.makedirs(stats_reporter_path)
-    if not os.path.exists(params_path):
-        raise NameError('No parameter file found! Please specify one in ElongationModel.py')
 
     ## CREATE THE DICTIONARY THAT STORES THE PARAMETERS
 
@@ -165,9 +159,6 @@ if AP_growth_constraint_flag:
 Measurements outputs relevant statistics from the current run
 '''
 from ElongationModelSteppables import Measurements
-if not os.path.exists(measurements_output_path):
-    print('No result CSV file exists to output measurements! Creating one at {}'.format(measurements_output_path))
-    os.makedirs(output_path)
 MeasurementsInstance = Measurements(sim,_frequency = 100, _reporter=reporter, _output_path = measurements_output_path)
 steppableRegistry.registerSteppable(MeasurementsInstance)
 
@@ -237,4 +228,5 @@ if dye_mitosis_clones:
     steppableRegistry.registerSteppable(dyeMitosisClones)
 
 ## START THE SIMULATION
+
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
