@@ -18,7 +18,11 @@ k1_ML_Segments 70
 k2_ML_Segments -0.02
 mitosis_on 1
 y_GZ_mitosis_border_percent 0.5
+<<<<<<< HEAD
 mitosis_transition_times [0,200,500]
+=======
+mitosis_transition_times [0,1800,2400]
+>>>>>>> fixed_io
 r_mitosis_R0 [0.0,0.0,0.0]
 r_mitosis_R1 [0.0,0.0,0.0]
 r_mitosis_R2 [0.0,0.0,0.0]
