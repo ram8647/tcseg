@@ -3,9 +3,11 @@ from PlayerPython import *
 from os import environ
 import os.path
 
-## DECLARE GLOBAL PARAMETERS
+## CHECK IF THIS IS A BATCH RUN
 
-global batch
+global batch; batch = False
+
+## DECLARE GLOBAL PARAMETERS
 
 global params_container                                     # Parameter container, instantiated below in configureSimulation()
 global speed_up_sim                                         # Defunct parameter
@@ -18,17 +20,17 @@ global dye_flag                                             # Cell labeling para
 ## CONFIRM PROPER FILE STRUCTURE AND CREATE IT IF NECESSARY
 
 params_path = ''
-stats_reporter_path = ''
-measurements_output_path = ''
+global stats_reporter_path
+global measurements_output_path
 
 import getpass
 usrname = getpass.getuser()
 
 if usrname == 'jeremyfisher':
     if not batch:
-        params_path = '/Users/jeremyfisher/Dropbox/Summer \'16/TcSeg/TC Model/Simulation/params.txt'
-    stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer \'16/TcSeg/TC Model/Output/'
-    measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer \'16/TcSeg/TC Model/Output/'
+        params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.txt'
+    stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
+    measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
 elif usrname == 'Susans username':
     if not batch:
         params_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Simulation/params.txt'
@@ -52,9 +54,7 @@ if not os.path.exists(measurements_output_path):
     print('No result CSV file exists to output measurements! Creating one at ', measurements_output_path)
     os.makedirs(measurements_output_path)
 
-#checkFileStructure()
-
-def configureSimulation(sim):
+def configureSimulation(sim, params_path):
     import CompuCellSetup
     from XMLUtils import ElementCC3D
 
@@ -167,7 +167,7 @@ def configureSimulation(sim):
 sys.path.append(environ["PYTHON_MODULE_PATH"])
 import CompuCellSetup
 sim, simthread = CompuCellSetup.getCoreSimulationObjects()
-configureSimulation(sim)
+configureSimulation(sim, params_path)
 CompuCellSetup.initializeSimulationObjects(sim, simthread)
 steppableRegistry=CompuCellSetup.getSteppableRegistry()
 
