@@ -133,18 +133,21 @@ class ParamsContainer:
 
      # Read the parameters file into the dictionary, dict
      with open(fname) as f:
-       for line in f:    
-         line = line.strip('\n')
-         if line and not line[0] == '#':
-           (key,val) = line.split()
-           if ParamsContainer.is_number(val):
-             dict[key] = float(val)
-           elif val in ("False", "True"):
-             dict[key] = ParamsContainer.str2bool(val)
-           elif ParamsContainer.is_list(val):
-             dict[key] = ParamsContainer.str2list(val)
-           else:
-             dict[key] = val
+       for line in f:
+         try:
+           line = line.strip('\n')
+           if line and not line[0] == '#':
+             (key,val) = line.split()
+             if ParamsContainer.is_number(val):
+               dict[key] = float(val)
+             elif val in ("False", "True"):
+               dict[key] = ParamsContainer.str2bool(val)
+             elif ParamsContainer.is_list(val):
+               dict[key] = ParamsContainer.str2list(val)
+             else:
+               dict[key] = val
+         except:
+             raise NameError('Could not parse line: \'{}\''.format(line))
 
      myprint(self.reporter, '\tReading data from file ', fname, '\n')
 
