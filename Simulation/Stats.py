@@ -117,7 +117,7 @@ class ParamsContainer:
      self.params = {}   # dictionary that stores the params
      self.reporter = reporter    
    
-   def inputParamsFromFile(self, file, folder='./'):
+   def inputParamsFromFile(self, fname):
      '''Inputs parameters from the designated file
 
      :file the file name (just the file, not complete path)
@@ -127,9 +127,7 @@ class ParamsContainer:
      '''
      print('Reading params: reporter = ', self.reporter)
      myprint(self.reporter, '---------------------- Stats: Reading params  -----------\n')
-     global dict;
-     dict = {}
-     fname = folder + file + ".txt"
+     global dict; dict = {}
      print('params file = ' , fname)
      myprint(self.reporter, 'params file = ', fname, '\n')
 

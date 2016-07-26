@@ -5,32 +5,33 @@ import os.path
 
 ## DECLARE GLOBAL PARAMETERS
 
-global batch_run_index; batch_run_index = 0                 # If doing batch runs, this keeps track of which run it is on
+global batch
+
 global params_container                                     # Parameter container, instantiated below in configureSimulation()
-global batch                                                # Batch run parameter
 global speed_up_sim                                         # Defunct parameter
 global regional_mitosis_flag; global y_GZ_mitosis_border    # Mitosis parameters
 global dye_flag                                             # Cell labeling parameters
-global params_path                                          # Important file paths
-global stats_reporter_path
-global measurements_output_path
+# global params_path                                          # Important file paths
+# global stats_reporter_path
+# global measurements_output_path
 
 ## CONFIRM PROPER FILE STRUCTURE AND CREATE IT IF NECESSARY
 
-global params_path
-global stats_reporter_path
-global measurements_output_path
+params_path = ''
+stats_reporter_path = ''
+measurements_output_path = ''
 
 import getpass
-
 usrname = getpass.getuser()
 
 if usrname == 'jeremyfisher':
-    params_path = '/Users/jeremyfisher/Dropbox/Summer \'16/TcSeg/TC Model/Simulation/params.txt'
+    if not batch:
+        params_path = '/Users/jeremyfisher/Dropbox/Summer \'16/TcSeg/TC Model/Simulation/params.txt'
     stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer \'16/TcSeg/TC Model/Output/'
     measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer \'16/TcSeg/TC Model/Output/'
 elif usrname == 'Susans username':
-    params_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Simulation/params.txt'
+    if not batch:
+        params_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Simulation/params.txt'
     stats_reporter_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/'
     measurements_output_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/CSV_files/'
 elif usrname == 'Terris username':
@@ -38,8 +39,7 @@ elif usrname == 'Terris username':
 elif usrname == 'Lisas username':
     pass
 else:
-    raise NameError(
-        'It looks like you havent specified the locations of params.txt and the output directories in ElongationModel.py. Please do so before running the simulation.')
+    raise NameError('It looks like you havent specified the locations of params.txt and the output directories in ElongationModel.py. Please do so before running the simulation.')
 
 ## CONFIRM PROPER FILE STRUCTURE EXISTS AND CREATE IT IF NECESSARY
 
@@ -47,24 +47,23 @@ if not os.path.exists(stats_reporter_path):
     print('No stats output path exists. Creating one at ', stats_reporter_path)
     os.makedirs(stats_reporter_path)
 if not os.path.exists(params_path):
-    raise NameError('No parameter file found! Please specify one in ElongationModel.py')
+    raise NameError('No parameter file found! Please specify the path to one in ElongationModel.py')
 if not os.path.exists(measurements_output_path):
     print('No result CSV file exists to output measurements! Creating one at ', measurements_output_path)
     os.makedirs(measurements_output_path)
 
 #checkFileStructure()
 
-def configureSimulation(sim):    
+def configureSimulation(sim):
     import CompuCellSetup
     from XMLUtils import ElementCC3D
 
     ## CREATE THE DICTIONARY THAT STORES THE PARAMETERS
 
     from Stats import ParamsContainer, StatsReporter
-    global reporter;reporter = StatsReporter(stats_reporter_path)
+    global reporter; reporter = StatsReporter(stats_reporter_path)
     global params_container; params_container = ParamsContainer(reporter)
-    params_parent_directory = os.path.dirname(params_path) + '/'
-    params_dict = params_container.inputParamsFromFile('params', folder=params_parent_directory)
+    params_dict = params_container.inputParamsFromFile(params_path)
 
     ## ASSIGN GLOBAL SIMULATION VARIABLES FROM THIS DICTIONARY
 
@@ -83,12 +82,12 @@ def configureSimulation(sim):
     '''
     # these parameters are not currently supported; the following code preventing them from being invoked.
     global speed_up_sim; speed_up_sim = params_container.getBooleanParam('speed_up_sim')
-    global batch; batch = params_container.getBooleanParam('batch')
     global hinder_cells_near_EN; hinder_cells_near_EN = params_container.getBooleanParam('hinder_cells_near_EN')
     '''
     global speed_up_sim; speed_up_sim = False
-    global batch; batch = False
     global hinder_cells_near_EN; hinder_cells_near_EN = False
+
+    global batch; batch = params_container.getBooleanParam('batch')
 
     ## CONFIGURE MODULES...
 
@@ -127,8 +126,8 @@ def configureSimulation(sim):
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"AnteriorLobe"},"100.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"EN"},"100.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"GZ"},"100.0")
-    PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"Mitosing"},"100.0")    
-    PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"Segmented"},"100.0")    
+    PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"Mitosing"},"100.0")
+    PluginElmnt_5.ElementCC3D("Energy",{"Type1":"Medium","Type2":"Segmented"},"100.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"AnteriorLobe","Type2":"AnteriorLobe"},"10.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"AnteriorLobe","Type2":"EN"},"10.0")
     PluginElmnt_5.ElementCC3D("Energy",{"Type1":"AnteriorLobe","Type2":"GZ"},"10.0")
@@ -161,7 +160,7 @@ def configureSimulation(sim):
         SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_3_19_2015.piff")
     elif embryo_size==2:
         SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_04_06_2015.piff")
-    
+
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
 
 # Boiler plate code, here
@@ -226,14 +225,14 @@ elif AP_growth_constraint_flag:
 else:
     from ElongationModelSteppables import RegionalMitosis
     mitosis = RegionalMitosis(sim,_frequency = 1, _params_container = params_container, _stats_reporter = reporter)
-    steppableRegistry.registerSteppable(mitosis)    
+    steppableRegistry.registerSteppable(mitosis)
 
 '''
 The simflified forces steppable implements the Sarrazin forces
 '''
 if params_container.getNumberParam('forces_on'):
     from ElongationModelSteppables import SimplifiedForces_SmoothedForces
-    simplified_forces = SimplifiedForces_SmoothedForces(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)  
+    simplified_forces = SimplifiedForces_SmoothedForces(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)
     steppableRegistry.registerSteppable(simplified_forces)
 
 ## CONFIGURE EXTRA PLAYER FIELDS
