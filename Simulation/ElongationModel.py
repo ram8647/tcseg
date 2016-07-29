@@ -23,15 +23,21 @@ params_path = ''
 global stats_reporter_path
 global measurements_output_path
 
-import getpass
+import getpass, platform
 usrname = getpass.getuser()
+operating_sys = platform.system()
 
-if usrname == 'jeremyfisher':
+if usrname == 'jeremyfisher' and operating_sys == 'Darwin':
+    if not batch:
+        params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.txt'
+    stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
+    measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'    
+if usrname == 'jeremyfisher' and operating_sys == 'Linux':
     if not batch:
         params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.txt'
     stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
     measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
-elif usrname == 'Susans username':
+if usrname == 'Susans username':
     if not batch:
         params_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Simulation/params.txt'
     stats_reporter_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/'
@@ -86,8 +92,6 @@ def configureSimulation(sim, params_path):
     '''
     global speed_up_sim; speed_up_sim = False
     global hinder_cells_near_EN; hinder_cells_near_EN = False
-
-    global batch; batch = params_container.getBooleanParam('batch')
 
     ## CONFIGURE MODULES...
 
