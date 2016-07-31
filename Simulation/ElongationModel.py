@@ -3,25 +3,22 @@ from PlayerPython import *
 from os import environ
 import os.path
 
-## CHECK IF THIS IS A BATCH RUN
-
-global batch; batch = False
-
 ## DECLARE GLOBAL PARAMETERS
 
+global batch
 global params_container                                     # Parameter container, instantiated below in configureSimulation()
 global speed_up_sim                                         # Defunct parameter
 global regional_mitosis_flag; global y_GZ_mitosis_border    # Mitosis parameters
-global dye_flag                                             # Cell labeling parameters
-# global params_path                                          # Important file paths
-# global stats_reporter_path
-# global measurements_output_path
+global dye_flag                                             # Cell labeling parametersgit 
+
+## DECLARE FILE PARAMATERS
+global stats_reporter_path
+global measurements_output_path
+params_path = ''
 
 ## CONFIRM PROPER FILE STRUCTURE AND CREATE IT IF NECESSARY
 
-params_path = ''
-global stats_reporter_path
-global measurements_output_path
+batch = bool(params_path != '') # this is a trick to find if the Batch system is running
 
 import getpass, platform
 usrname = getpass.getuser()
@@ -32,12 +29,12 @@ if usrname == 'jeremyfisher' and operating_sys == 'Darwin':
         params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.txt'
     stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
     measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'    
-if usrname == 'jeremyfisher' and operating_sys == 'Linux':
+elif usrname == 'jeremyfisher' and operating_sys == 'Linux':
     if not batch:
         params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.txt'
     stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
     measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
-if usrname == 'Susans username':
+elif usrname == 'Susans username':
     if not batch:
         params_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Simulation/params.txt'
     stats_reporter_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/'
@@ -163,6 +160,7 @@ def configureSimulation(sim, params_path):
     if embryo_size==1:
         SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_3_19_2015.piff")
     elif embryo_size==2:
+        #raise NameError('Poop!')
         SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_04_06_2015.piff")
 
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)

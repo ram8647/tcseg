@@ -137,7 +137,8 @@ class ParamsContainer:
          try:
            line = line.strip('\n')
            if line and not line[0] == '#':
-             (key,val) = line.split()
+             key = line.split()[0]
+             val = ' '.join(line.split()[1:])
              if ParamsContainer.is_number(val):
                dict[key] = float(val)
              elif val in ("False", "True"):
