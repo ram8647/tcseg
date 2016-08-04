@@ -2,41 +2,49 @@ import sys
 from PlayerPython import *
 from os import environ
 import os.path
+import ast
+
+## FIGURE OUT WHETHER THIS IS A BATCH RUN
+
+'''
+If this is a batch run, CompuCell will modify 'batch_message,' such that it will contain all the neccisary
+information. If it is NOT a batch run, CompuCell will leave 'batch_message' as is. In this case, batch will
+default to False and batch_interation will default to 0.
+'''
+
+batch_message = '{}' #
+batch_info_dict = ast.literal_eval(batch_message)
+batch = batch_info_dict.get('batch_on', False)
+batch_iteration = batch_info_dict.get('iteration', 0)
 
 ## DECLARE GLOBAL PARAMETERS
 
-global batch
 global params_container                                     # Parameter container, instantiated below in configureSimulation()
 global speed_up_sim                                         # Defunct parameter
 global regional_mitosis_flag; global y_GZ_mitosis_border    # Mitosis parameters
-global dye_flag                                             # Cell labeling parametersgit 
+global dye_flag                                             # Cell labeling parameters
 
 ## DECLARE FILE PARAMATERS
 global stats_reporter_path
 global measurements_output_path
-params_path = ''
+global params_path
 
-## CONFIRM PROPER FILE STRUCTURE AND CREATE IT IF NECESSARY
-
-batch = bool(params_path != '') # this is a trick to find if the Batch system is running
+## SPECIFY THE FILES PATHS
 
 import getpass, platform
 usrname = getpass.getuser()
 operating_sys = platform.system()
 
 if usrname == 'jeremyfisher' and operating_sys == 'Darwin':
-    if not batch:
-        params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.txt'
+    params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.txt'
     stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
     measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'    
 elif usrname == 'jeremyfisher' and operating_sys == 'Linux':
-    if not batch:
-        params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.txt'
+    params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.txt'
     stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
     measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
 elif usrname == 'Susans username':
-    if not batch:
-        params_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Simulation/params.txt'
+    params_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Simulation/params.txt'
     stats_reporter_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/'
     measurements_output_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/CSV_files/'
 elif usrname == 'Terris username':
