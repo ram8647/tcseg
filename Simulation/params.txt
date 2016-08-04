@@ -1,4 +1,4 @@
-embryo_size 1
+embryo_size 2
 stripe_period 400
 dye_flag 1
 x0_dye [50,75,225,225,225,115]
