@@ -33,7 +33,7 @@ class StatsReporter:
     printAttrValue() print their arguments to the output file.
 
     """
-    def __init__(self, folder='./'):
+    def __init__(self, batch = False, batch_iteration = 0, folder='./'):
         """Constructs a Reporter instance and Initializes its output file.
 
         Creates a time stamp and an output file and prints a header to the output file.
@@ -43,8 +43,12 @@ class StatsReporter:
 
         :folder the folder where the output file will be stored. Defaults to CWD.
         """
+        self.batch = batch
         self.stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%y%m%d-%H%M%S')
-        self.fname = folder + 'run' + self.stamp
+        if batch:
+            self.fname = folder + 'run' + str(batch_iteration) + self.stamp + '.txt'
+        elif not batch:
+            self.fname = folder + 'run' + self.stamp + '.txt'
         print('Creating StatsReporter opening file ', self.fname)
         self.outfile = open(self.fname, 'w', 1)
         self.outfile.write('---- Starting Run @ yymmdd-hhmmss ' + self.stamp + '--------\n')
@@ -117,14 +121,17 @@ class ParamsContainer:
         self.params = {}   # dictionary that stores the params
         self.reporter = reporter
 
-    def inputParamsFromFile(self, fname):
-        '''Inputs parameters from the designated file
-
-        :file the file name (just the file, not complete path)
-              parameters are stored as rows of the form: attr value
-        :folder the (optional) name of the path to the file, defaults to CWD
-        :return a dictionary with (key,value) parameter bindings
+    def inputParamsFromFile(self, fname, batch_iteration = 0, param_scan_spec='./'):
         '''
+        Output a dictionary from a .txt or .xml file. If it is a .xml file, it also requires the
+        run number (e.g. run0, run1, etc...) and the file path to the ParameterScanSpecs.xml file
+
+        :param fname: path to the .txt or .xml file
+        :param batch_iteration: the run number (e.g. run0, run1, etc...)
+        :param param_scan_spec: path to the ParameterScanSpecs.xml file
+        :return: a dictionary with proper (key,value) parameter bindings
+        '''
+
         print('Reading params: reporter = ', self.reporter)
         myprint(self.reporter, '---------------------- Stats: Reading params  -----------\n')
         global dict; dict = {}
@@ -132,23 +139,29 @@ class ParamsContainer:
         myprint(self.reporter, 'params file = ', fname, '\n')
 
         # Read the parameters file into the dictionary, dict
-        with open(fname) as f:
-            for line in f:
-                try:
-                    line = line.strip('\n')
-                    if line and not line[0] == '#':
-                        key = line.split()[0]
-                        val = ' '.join(line.split()[1:])
-                        if ParamsContainer.is_number(val):
-                            dict[key] = float(val)
-                        elif val in ("False", "True"):
-                            dict[key] = ParamsContainer.str2bool(val)
-                        elif ParamsContainer.is_list(val):
-                            dict[key] = ParamsContainer.str2list(val)
-                        else:
-                            dict[key] = val
-                except:
-                    raise NameError('Could not parse line: \'{}\''.format(line))
+        if fname.endswith('.txt'):
+            with open(fname) as f:
+                for line in f:
+                    try:
+                        line = line.strip('\n')
+                        if line and not line[0] == '#':
+                            key = line.split()[0]
+                            val = ' '.join(line.split()[1:])
+                            if ParamsContainer.is_number(val):
+                                dict[key] = float(val)
+                            elif val in ("False", "True"):
+                                dict[key] = ParamsContainer.str2bool(val)
+                            elif ParamsContainer.is_list(val):
+                                dict[key] = ParamsContainer.str2list(val)
+                            else:
+                                dict[key] = val
+                    except:
+                        raise NameError('Could not parse line: \'{}\''.format(line))
+        elif fname.endswith('.xml'):
+            from InterpretBatchParamsXML import params_dict_for_batch
+            dict = params_dict_for_batch(batch_iteration = batch_iteration,
+                                         xml_path=fname,
+                                         param_scan_specs_path=param_scan_spec)
 
         myprint(self.reporter, '\tReading data from file ', fname, '\n')
 

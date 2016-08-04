@@ -5,14 +5,12 @@ import os.path
 import ast
 
 ## FIGURE OUT WHETHER THIS IS A BATCH RUN
-
 '''
-If this is a batch run, CompuCell will modify 'batch_message,' such that it will contain all the neccisary
-information. If it is NOT a batch run, CompuCell will leave 'batch_message' as is. In this case, batch will
-default to False and batch_interation will default to 0.
+If this is a batch run, CompuCell will modify 'batch_message,' so that it will contain all the necessary
+information for such a run. If it is NOT a batch run, CompuCell will leave 'batch_message' as is. In this case,
+batch will default to False and batch_interation will default to 0.
 '''
-
-batch_message = '{}' #
+batch_message = '{}'
 batch_info_dict = ast.literal_eval(batch_message)
 batch = batch_info_dict.get('batch_on', False)
 batch_iteration = batch_info_dict.get('iteration', 0)
