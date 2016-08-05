@@ -33,8 +33,12 @@ class IOManager:
     def user_input_io_xml(self):
         # Have the user input the file paths
         self.model_path = raw_input('Where is folder containing ElongationModel.cc3d? ')
+        if not self.model_path.endswith('/'):
+            self.model_path = params_path = '/'
         self.params_path = raw_input('Where is params.txt (or params.xml)? ')
         self.output_folder = raw_input('Where do you want to keep output PNG and VTK? ')
+        if not self.output_folder.endswith('/'):
+            self.output_folder = params_path = '/'
         self.cc3d_command_dir = raw_input('Where is compucell3d.command? ')
 
         self.construct_additional_paths()
