@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<params_pkg manager_version="beta_1" name="Test">
+	<param batch="False" varName="AP_growth_constraint_flag">0.0</param>
+	<param batch="False" varName="V_AP_GZposterior">70.0</param>
+	<param batch="False" varName="dye_flag">1.0</param>
+	<param batch="False" varName="dye_mitosis_clones">0.0</param>
+	<param batch="False" varName="embryo_size">2.0</param>
+	<param batch="False" varName="forces_on">1.0</param>
+	<param batch="False" varName="k1_AP_GZanterior">65.0</param>
+	<param batch="False" varName="k1_AP_Segments">5.0</param>
+	<param batch="False" varName="k1_ML_GZ">70.0</param>
+	<param batch="False" varName="k1_ML_Segments">70.0</param>
+	<param batch="False" varName="k2_AP_GZanterior">5.0</param>
+	<param batch="False" varName="k2_AP_Segments">-0.02</param>
+	<param batch="False" varName="k2_ML_GZ">-0.004167</param>
+	<param batch="False" varName="k2_ML_Segments">-0.02</param>
+	<param batch="False" varName="mitosis_Vmax">90.0</param>
+	<param batch="False" varName="mitosis_Vmin_divide">60.0</param>
+	<param batch="False" varName="mitosis_dye_window">[50, 50]</param>
+	<param batch="False" varName="mitosis_fraction_AP_oriented">0.0</param>
+	<param batch="False" varName="mitosis_on">1.0</param>
+	<param batch="False" varName="mitosis_transition_times">[0, 1800, 2400]</param>
+	<param batch="False" varName="mitosis_visualization_flag">1.0</param>
+	<param batch="False" varName="mitosis_visualization_window">50.0</param>
+	<param batch="False" varName="mitosis_window">500.0</param>
+	<param batch="False" varName="r_grow_R0">[0.0, 0.0, 0.0]</param>
+	<param batch="False" varName="r_grow_R1">[0.0, 0.0, 0.0]</param>
+	<param batch="False" varName="r_grow_R2">[0.0, 0.0, 0.0]</param>
+	<param batch="False" varName="r_grow_R3">[0.05, 0.05, 0.05]</param>
+	<param batch="False" varName="r_mitosis_R0">[0.0, 0.0, 0.0]</param>
+	<param batch="False" varName="r_mitosis_R1">[0.0, 0.0, 0.0]</param>
+	<param batch="False" varName="r_mitosis_R2">[0.0, 0.0, 0.0]</param>
+	<param batch="False" varName="r_mitosis_R3">[0.5, 0.5, 0.5]</param>
+	<param batch="False" varName="stripe_period">400.0</param>
+	<param batch="False" varName="x0_dye">[50, 75, 225, 225, 225, 115]</param>
+	<param batch="False" varName="xf_dye">[100, 125, 275, 275, 275, 165]</param>
+	<param batch="False" varName="y0_dye">[1350, 1500, 1350, 1500, 1200, 1225]</param>
+	<param batch="False" varName="y_GZ_mitosis_border_percent">0.5</param>
+	<param batch="False" varName="yf_dye">[1400, 1550, 1400, 1550, 1250, 1275]</param>
+</params_pkg>
