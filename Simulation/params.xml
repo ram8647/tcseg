@@ -1,11 +1,17 @@
 <?xml version="1.0" ?>
-<params_pkg manager_version="beta_1" name="Test">
-	<param batch="False" varName="AP_growth_constraint_flag">0.0</param>
+<params_pkg manager_version="beta_1" name="Test2">
+	<param batch="True" varName="AP_growth_constraint_flag">
+		<BatchValue part="0">0</BatchValue>
+		<BatchValue part="1">1</BatchValue>
+	</param>
 	<param batch="False" varName="V_AP_GZposterior">70.0</param>
 	<param batch="False" varName="dye_flag">1.0</param>
 	<param batch="False" varName="dye_mitosis_clones">0.0</param>
 	<param batch="False" varName="embryo_size">2.0</param>
-	<param batch="False" varName="forces_on">1.0</param>
+	<param batch="True" varName="forces_on">
+		<BatchValue part="0">0</BatchValue>
+		<BatchValue part="1">1</BatchValue>
+	</param>
 	<param batch="False" varName="k1_AP_GZanterior">65.0</param>
 	<param batch="False" varName="k1_AP_Segments">5.0</param>
 	<param batch="False" varName="k1_ML_GZ">70.0</param>
@@ -18,19 +24,29 @@
 	<param batch="False" varName="mitosis_Vmin_divide">60.0</param>
 	<param batch="False" varName="mitosis_dye_window">[50, 50]</param>
 	<param batch="False" varName="mitosis_fraction_AP_oriented">0.0</param>
-	<param batch="False" varName="mitosis_on">1.0</param>
+	<param batch="True" varName="mitosis_on">
+		<BatchValue part="0">0</BatchValue>
+		<BatchValue part="1">1</BatchValue>
+	</param>
 	<param batch="False" varName="mitosis_transition_times">[0, 1800, 2400]</param>
 	<param batch="False" varName="mitosis_visualization_flag">1.0</param>
 	<param batch="False" varName="mitosis_visualization_window">50.0</param>
 	<param batch="False" varName="mitosis_window">500.0</param>
 	<param batch="False" varName="r_grow_R0">[0.0, 0.0, 0.0]</param>
-	<param batch="False" varName="r_grow_R1">[0.0, 0.0, 0.0]</param>
-	<param batch="False" varName="r_grow_R2">[0.0, 0.0, 0.0]</param>
+	<param batch="False" varName="r_grow_R1">[0.05, 0.05, 0.05]</param>
+	<param batch="False" varName="r_grow_R2">[0.05, 0.05, 0.05]</param>
 	<param batch="False" varName="r_grow_R3">[0.05, 0.05, 0.05]</param>
 	<param batch="False" varName="r_mitosis_R0">[0.0, 0.0, 0.0]</param>
-	<param batch="False" varName="r_mitosis_R1">[0.0, 0.0, 0.0]</param>
-	<param batch="False" varName="r_mitosis_R2">[0.0, 0.0, 0.0]</param>
-	<param batch="False" varName="r_mitosis_R3">[0.5, 0.5, 0.5]</param>
+	<param batch="True" varName="r_mitosis_R123">
+		<BatchValue part="0">[0.0, 0.0, 0.0]</BatchValue>
+		<BatchValue part="1">[0.1, 0.1, 0.1]</BatchValue>
+		<BatchValue part="2">[0.2, 0.2, 0.2]</BatchValue>
+		<BatchValue part="3">[0.3, 0.3, 0.3]</BatchValue>
+		<BatchValue part="4">[0.4, 0.4, 0.4]</BatchValue>
+		<BatchValue part="5">[0.5, 0.5, 0.5]</BatchValue>
+		<BatchValue part="6">[0.6, 0.6, 0.6]</BatchValue>
+		<BatchValue part="7">[0.7, 0.7, 0.7]</BatchValue>
+	</param>
 	<param batch="False" varName="stripe_period">400.0</param>
 	<param batch="False" varName="x0_dye">[50, 75, 225, 225, 225, 115]</param>
 	<param batch="False" varName="xf_dye">[100, 125, 275, 275, 275, 165]</param>
