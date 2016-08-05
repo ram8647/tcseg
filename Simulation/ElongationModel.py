@@ -7,16 +7,17 @@ import ast
 ## FIGURE OUT WHETHER THIS IS A BATCH RUN
 '''
 If this is a batch run, CompuCell will modify 'batch_message,' so that it will contain all the necessary
-information for such a run. If it is NOT a batch run, CompuCell will leave 'batch_message' as is. In this case,
-batch will default to False and batch_interation will default to 0.
+information for such a run. If it is NOT a batch run, CompuCell will leave 'batch_message' blank. In this case,
+'batch' will default to False and 'batch_interation' will default to 0.
 '''
 batch_message = '{}'
 batch_info_dict = ast.literal_eval(batch_message)
 batch = batch_info_dict.get('batch_on', False)
 batch_iteration = batch_info_dict.get('iteration', 0)
 
-## DECLARE GLOBAL PARAMETERS
+raise NameError('Batch Message: {}'.format(batch_message))
 
+## DECLARE GLOBAL PARAMETERS
 global params_container                                     # Parameter container, instantiated below in configureSimulation()
 global speed_up_sim                                         # Defunct parameter
 global regional_mitosis_flag; global y_GZ_mitosis_border    # Mitosis parameters
@@ -28,39 +29,18 @@ global measurements_output_path
 global params_path
 
 ## SPECIFY THE FILES PATHS
+params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.xml' #IO_MANAGER_FLAG_A_DO_NOT_CHANGE_THIS_COMMENT
+stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
+measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
 
-import getpass, platform
-usrname = getpass.getuser()
-operating_sys = platform.system()
-
-if usrname == 'jeremyfisher' and operating_sys == 'Darwin':
-    params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.txt'
-    stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
-    measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'    
-elif usrname == 'jeremyfisher' and operating_sys == 'Linux':
-    params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.txt'
-    stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
-    measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/'
-elif usrname == 'Susans username':
-    params_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Simulation/params.txt'
-    stats_reporter_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/'
-    measurements_output_path = '/Applications/CC3D_3.7.5_new/Simulations/tcseg/Stats_Output/CSV_files/'
-elif usrname == 'Terris username':
-    pass
-elif usrname == 'Lisas username':
-    pass
-else:
-    raise NameError('It looks like you havent specified the locations of params.txt and the output directories in ElongationModel.py. Please do so before running the simulation.')
-
-## CONFIRM PROPER FILE STRUCTURE EXISTS AND CREATE IT IF NECESSARY
-
+## MAKE SURE THESE PATHS ARE VALID AND DO STUFF IF THEY ARE NOT
+if not os.path.isfile(params_path):
+    raise NameError('No param file found at {}! Please specify the path to one in ElongationModel.py'.format(params_path))
 if not os.path.exists(stats_reporter_path):
-    print('No stats output path exists. Creating one at ', stats_reporter_path)
+    print('No stats output folder exsists! Creating one at ', stats_reporter_path)
     os.makedirs(stats_reporter_path)
-if not os.path.exists(params_path):
-    raise NameError('No parameter file found! Please specify the path to one in ElongationModel.py')
 if not os.path.exists(measurements_output_path):
-    print('No result CSV file exists to output measurements! Creating one at ', measurements_output_path)
+    print('No measurement output folder exists! Creating one at ', measurements_output_path)
     os.makedirs(measurements_output_path)
 
 def configureSimulation(sim, params_path):
@@ -72,7 +52,7 @@ def configureSimulation(sim, params_path):
     from Stats import ParamsContainer, StatsReporter
     global reporter; reporter = StatsReporter(stats_reporter_path)
     global params_container; params_container = ParamsContainer(reporter)
-    params_dict = params_container.inputParamsFromFile(params_path)
+    #params_dict = params_container.inputParamsFromFile(params_path)
 
     ## ASSIGN GLOBAL SIMULATION VARIABLES FROM THIS DICTIONARY
 
