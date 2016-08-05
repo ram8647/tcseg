@@ -859,16 +859,21 @@ class DyeMitosisClones(SteppableBasePy):
                         fillScalarValue(self.dyeField,pt.x,pt.y,pt.z,dye)
 
 class Measurements(SteppableBasePy):
-   def __init__(self,_simulator,_frequency, _reporter, _output_path):
+   def __init__(self,_simulator,_frequency, _reporter, _output_path, _batch = False, _batch_iteration = 0):
       SteppableBasePy.__init__(self,_simulator,_frequency)
       self.reporter = _reporter
       self.outp = _output_path
+      self.batch = _batch
+      self.batch_iteration = _batch_iteration
         
    def start(self):
       try:
           output_folder=self.outp
           stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%y%m%d-%H%M%S')
-          self.output_filename=output_folder + 'run' + stamp + '.csv'
+          if not self.batch:
+              self.output_filename = output_folder + 'run' + stamp + '.csv'
+          else:
+              self.output_filename= self.fname = '{}batch_run_{}.csv'.format(output_folder,self.batch_iteration)
           self.output_file=open(self.output_filename,'w')
           self.output_file.write('MCS,GB cell count,GB length,GB area,GB cell divisions,GZ cell count,GZ length,GZ area,GZ cell divisions,avg division cycle time\n')
           self.output_file.close()

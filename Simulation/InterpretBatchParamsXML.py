@@ -2,7 +2,6 @@ from xml.etree.ElementTree import ElementTree, parse
 from itertools import product
 from collections import OrderedDict
 import ast
-from copy import deepcopy
 
 # TODO: Add a feature to map certain variables onto other; so that r_mitosis 1 2 and 3 are synced, for example
 # TODO: add custom processing of certain variables, like r_grow
@@ -42,7 +41,7 @@ def params_dict_for_batch(batch_iteration, xml_path, param_scan_specs_path):
             batch_id = assign_batch_id(parameter_element.attrib['varName'])
             batch_vars_dict[batch_id] = []
             for values_element in parameter_element.iter('BatchValue'):
-                batch_vars_dict[batch_id].append(values_element.text)
+                batch_vars_dict[batch_id].append(ast.literal_eval(values_element.text))
 
     # If there are no variables to sweep, simply apply the variable rules and return it...
     if len(batch_vars_dict) == 0:

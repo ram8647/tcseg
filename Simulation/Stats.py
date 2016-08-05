@@ -46,7 +46,7 @@ class StatsReporter:
         self.batch = batch
         self.stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%y%m%d-%H%M%S')
         if batch:
-            self.fname = folder + 'run' + str(batch_iteration) + '_' + self.stamp + '.txt'
+            self.fname = '{}batch_run_{}.txt'.format(folder,batch_iteration)
         elif not batch:
             self.fname = folder + 'run' + self.stamp + '.txt'
         print('Creating StatsReporter opening file ', self.fname)
@@ -121,7 +121,7 @@ class ParamsContainer:
         self.params = {}   # dictionary that stores the params
         self.reporter = reporter
 
-    def inputParamsFromFile(self, fname, batch_iteration = 0, param_scan_spec='./'):
+    def inputParamsFromFile(self, fname, batch_iteration, param_scan_spec='./'):
         '''
         Output a dictionary from a .txt or .xml file. If it is a .xml file, it also requires the
         run number (e.g. run0, run1, etc...) and the file path to the ParameterScanSpecs.xml file

@@ -55,7 +55,7 @@ def configureSimulation(sim, params_path):
     from Stats import ParamsContainer, StatsReporter
     global reporter; reporter = StatsReporter(batch, batch_iteration, stats_reporter_path)
     global params_container; params_container = ParamsContainer(reporter)
-    params_dict = params_container.inputParamsFromFile(params_path, batch, params_scan_spec_path)
+    params_dict = params_container.inputParamsFromFile(params_path, batch_iteration, params_scan_spec_path)
 
     ## ASSIGN GLOBAL SIMULATION VARIABLES FROM THIS DICTIONARY
 
@@ -184,7 +184,11 @@ if AP_growth_constraint_flag:
 Measurements outputs relevant statistics from the current run
 '''
 from ElongationModelSteppables import Measurements
-MeasurementsInstance = Measurements(sim,_frequency = 100, _reporter=reporter, _output_path = measurements_output_path)
+MeasurementsInstance = Measurements(sim,_frequency = 100,
+                                    _reporter=reporter,
+                                    _output_path = measurements_output_path,
+                                    _batch=batch,
+                                    _batch_iteration=batch_iteration)
 steppableRegistry.registerSteppable(MeasurementsInstance)
 
 '''
