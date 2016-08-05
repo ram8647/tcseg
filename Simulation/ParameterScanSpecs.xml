@@ -1,7 +1,7 @@
 <ParameterScan version="3.7.0">
    <OutputDirectory>tcseg_ParameterScan</OutputDirectory>
    <ParameterList Resource="Simulation/ElongationModel.py">
-      <Parameter CurrentIteration="0" Name="batch_message" ValueType="string">
+      <Parameter CurrentIteration="0" Name="batch_message" Type="PYTHON_GLOBAL" ValueType="string">
          <Values>"{\'batch_on\': True, \'iteration\': 0}","{\'batch_on\': True, \'iteration\': 1}"</Values>
       </Parameter>
    </ParameterList>

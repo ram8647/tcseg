@@ -15,7 +15,7 @@ batch_info_dict = ast.literal_eval(batch_message)
 batch = batch_info_dict.get('batch_on', False)
 batch_iteration = batch_info_dict.get('iteration', 0)
 
-raise NameError('Batch Message: {}'.format(batch_message))
+#raise NameError('Batch Message: {}'.format(batch_message))
 
 ## DECLARE GLOBAL PARAMETERS
 global params_container                                     # Parameter container, instantiated below in configureSimulation()
@@ -29,9 +29,9 @@ global measurements_output_path
 global params_path
 
 ## SPECIFY THE FILES PATHS
-params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.xml' #IO_MANAGER_FLAG_A_DO_NOT_CHANGE_THIS_COMMENT
-stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
-measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
+params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.txt' #IO_MANAGER_FLAG_A_DO_NOT_CHANGE_THIS_COMMENT
+stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
+measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
 
 ## MAKE SURE THESE PATHS ARE VALID AND DO STUFF IF THEY ARE NOT
 if not os.path.isfile(params_path):
@@ -52,7 +52,7 @@ def configureSimulation(sim, params_path):
     from Stats import ParamsContainer, StatsReporter
     global reporter; reporter = StatsReporter(stats_reporter_path)
     global params_container; params_container = ParamsContainer(reporter)
-    #params_dict = params_container.inputParamsFromFile(params_path)
+    params_dict = params_container.inputParamsFromFile(params_path)
 
     ## ASSIGN GLOBAL SIMULATION VARIABLES FROM THIS DICTIONARY
 
