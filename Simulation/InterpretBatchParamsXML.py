@@ -1,6 +1,8 @@
 from xml.etree.ElementTree import ElementTree, parse
 from itertools import product
 from collections import OrderedDict
+import ast
+from copy import deepcopy
 
 # TODO: Add a feature to map certain variables onto other; so that r_mitosis 1 2 and 3 are synced, for example
 # TODO: add custom processing of certain variables, like r_grow
@@ -16,7 +18,7 @@ def params_dict_for_batch(batch_iteration, xml_path, param_scan_specs_path):
     :return: a dictionary corresponding to our current batch run
     '''
 
-    super_dict = OrderedDict()
+    raw_dict = OrderedDict()
     batch_vars_dict = OrderedDict()
     batch_id_to_param_name_table = OrderedDict()
 
@@ -29,12 +31,12 @@ def params_dict_for_batch(batch_iteration, xml_path, param_scan_specs_path):
         batch_id_to_param_name_table[new_batch_id] = _name
         return new_batch_id
 
-    # Parse the params_package file, adding normal parameters to 'super_dict' and batch parameters
+    # Parse the params_package file, adding normal parameters to 'raw_dict' and batch parameters
     # to a special 'batch_dict.' Each entry of the batch dictionary contains a list, wherein each element
     # is a value that will be sweeped.
     for parameter_element in xml_root.iter('param'):
         if parameter_element.attrib['batch'].lower() == "false":
-            super_dict[parameter_element.attrib['varName']] = parameter_element.text
+            raw_dict[parameter_element.attrib['varName']] = ast.literal_eval(parameter_element.text)
 
         elif parameter_element.attrib['batch'].lower() == "true":
             batch_id = assign_batch_id(parameter_element.attrib['varName'])
@@ -42,15 +44,64 @@ def params_dict_for_batch(batch_iteration, xml_path, param_scan_specs_path):
             for values_element in parameter_element.iter('BatchValue'):
                 batch_vars_dict[batch_id].append(values_element.text)
 
-    # Generate a tuple for all possible combinations of batch values
+    # If there are no variables to sweep, simply apply the variable rules and return it...
+    if len(batch_vars_dict) == 0:
+        update_parameter_scan_specs(num_runs=1, scan_spec_path=param_scan_specs_path)
+        final_dict = process_dictionary(raw_dict)
+        return final_dict
+
+    # ...otherwise, we'll add the batch values in apropriately, first by generating a tuple
+    # for all possible combinations of batch values
     all_combinations_of_params = list(product(*[batch_vars_dict[key] for key in batch_vars_dict]))
 
-    # Update parameter scan specs, just in case
+    # Update parameter scan specs so CompuCell will run the appropriate number of times, just in case
     num_runs = len(all_combinations_of_params)
     update_parameter_scan_specs(num_runs=num_runs, scan_spec_path=param_scan_specs_path)
 
-    # Add the proper combination of batch variables to the super_dict and return it.
+    # Add the proper combination of batch variables to the raw_dict and return it.
     combination_of_interest = all_combinations_of_params[batch_iteration]
     for i, key in enumerate(batch_vars_dict):
-        super_dict[batch_id_to_param_name_table[key]] = combination_of_interest[i]
-    return super_dict
+        raw_dict[batch_id_to_param_name_table[key]] = combination_of_interest[i]
+
+    final_dict = process_dictionary(raw_dict)
+    return final_dict
+
+
+def update_parameter_scan_specs(num_runs, scan_spec_path):
+    '''
+    Manipulate the ParameterScanSpecs.xml to make CompuCell run our simulation the correct number of times
+
+    :param num_runs: the total number of times that the simulation should run
+    :param scan_spec_path: the filepath to the ParameterScanSpecs.xml,
+    '''
+    scan_spec_values = []
+    for iteration_num in range(num_runs):
+        scan_spec_values.append('\"{{\\\'batch_on\\\': True, \\\'iteration\\\': {}}}\"'.format(iteration_num))
+    scan_spec_values_str_rep = ','.join(scan_spec_values)
+
+    xml_file = parse(scan_spec_path)
+    xml_root = xml_file.getroot()
+    for values_element in xml_root.iter('Values'):
+        values_element.text = scan_spec_values_str_rep
+    ElementTree(xml_root).write(scan_spec_path)
+
+
+def process_dictionary(dict):
+    '''
+    :param dict: the raw dictionary
+    :return: a dictionary where all the values have been checked and manipulated if needed
+    '''
+    if 'r_mitosis_R123' in dict.keys():
+        val = dict['r_mitosis_R123']
+        dict['r_mitosis_R1'] = val
+        dict['r_mitosis_R2'] = val
+        dict['r_mitosis_R3'] = val
+        del dict['r_mitosis_R123']
+
+    for i in range(3):
+        if dict['r_mitosis_R{}'.format(i)] == [0.0, 0.0, 0.0]:
+            dict['r_grow_R{}'.format(i)] = [0.0, 0.0, 0.0]
+        else:
+            dict['r_grow_R{}'.format(i)] = [0.05, 0.05, 0.05]
+
+    return dict

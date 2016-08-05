@@ -46,7 +46,7 @@ class StatsReporter:
         self.batch = batch
         self.stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%y%m%d-%H%M%S')
         if batch:
-            self.fname = folder + 'run' + str(batch_iteration) + self.stamp + '.txt'
+            self.fname = folder + 'run' + str(batch_iteration) + '_' + self.stamp + '.txt'
         elif not batch:
             self.fname = folder + 'run' + self.stamp + '.txt'
         print('Creating StatsReporter opening file ', self.fname)
