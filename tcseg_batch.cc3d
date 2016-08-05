@@ -1,6 +1,7 @@
 <Simulation version="3.6.2">
    <PythonScript Type="PythonScript">Simulation/ElongationModel.py</PythonScript>
    <Resource Type="Python">Simulation/ElongationModelSteppables.py</Resource>
+   <Resource Type="Python">Simulation/Stats.py</Resource>
    <Resource Type="Python">Simulation/InterpretBatchParamsXML.py</Resource>
    <Resource Type="Piff">Simulation/InitialConditions_3_19_2015.piff</Resource>
    <Resource Type="Piff">Simulation/InitialConditions_04_06_2015.piff</Resource>
