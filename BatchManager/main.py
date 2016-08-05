@@ -9,10 +9,10 @@ options_dict = OrderedDict()
 #options_dict['Run batch'] = 'run_batch'
 #options_dict['Reset and Run batch'] = 'reset_and_run_batch'
 options_dict['Reset Simulation'] = 'reset'
-options_dict['Update ParameterScanSpecs.xml'] = 'update_parameter_scan_specs'
+#options_dict['Update ParameterScanSpecs.xml'] = 'update_parameter_scan_specs'
 options_dict['Delete/redo the most recent simulation'] = 'step_back'
 options_dict['Input File Locations'] = 'input_file_paths'
-options_dict['Change File Locations in ElongationModel.py'] = 'sync'
+options_dict['Update File Locations in ElongationModel.py'] = 'sync'
 options_dict['Convert current params.txt to .xml'] = 'convert_current_txt_file2xml'
 options_dict['Convert another params.txt to .xml'] = 'convert_any_txt_file2xml'
 #options_dict['Create a .mov from each runs\' .pngs'] = 'convert2vid'
@@ -87,7 +87,7 @@ class managerSubscriptsCaller:
         print 'not supported yet'
 
     def update_parameter_scan_specs(self):
-        ParamsPackager.update
+        ParamsPackager.update()
 
 
 

@@ -88,21 +88,3 @@ def write_xml_to_sim_directory(xml_as_str):
     print 'Saving file to: {}'.format(outpath)
     with open(outpath, 'w') as f:
         f.write(xml_as_str)
-
-def update_parameter_scan_specs(num_runs, scan_spec_path):
-    '''
-    Manipulate the ParameterScanSpecs.xml to make CompuCell run our simulation the correct number of times
-
-    :param num_runs: the total number of times that the simulation should run
-    :param scan_spec_path: the filepath to the ParameterScanSpecs.xml,
-    '''
-    scan_spec_values = []
-    for iteration_num in range(num_runs):
-        scan_spec_values.append('\"{{\\\'batch_on\\\': True, \\\'iteration\\\': {}}}\"'.format(iteration_num))
-    scan_spec_values_str_rep = ','.join(scan_spec_values)
-
-    xml_file = parse(scan_spec_path)
-    xml_root = xml_file.getroot()
-    for values_element in xml_root.iter('Values'):
-        values_element.text = scan_spec_values_str_rep
-    ElementTree(xml_root).write(scan_spec_path)
