@@ -69,8 +69,8 @@ class IOManager:
         for dir in os.listdir(self.output_folder):
             if fnmatch.fnmatch(dir, '*_ParameterScan'):
                 self.screenshot_output_path = os.path.join(self.output_folder, dir)
-                if not self.screenshot_output_path.endswith('/'):
-                    self.screenshot_output_path = self.screenshot_output_path + '/' # I probably dont need this
+                #if not self.screenshot_output_path.endswith('/'):
+                #    self.screenshot_output_path = self.screenshot_output_path + '/' # I probably dont need this
 
     def update_file_path_in_elongation_model_python(self):
         file_path = self.elongation_model_python_path

@@ -5,32 +5,41 @@ from fnmatch import fnmatch
 from ModelIOManager import IOManager
 
 def convert_pngs_to_vid():
-    screenshot_parent_dir = IOManager().screenshot_output_path
-    screenshot_dir = None
-    project_name = None
+    '''
+    module converts images in the screenshot_output_path into a movie
+    '''
+    manager = IOManager()
+    screenshot_parent_dir = manager.screenshot_output_path
+    png_prefix = os.path.basename(screenshot_parent_dir).split('_')[0]
 
-    #Find the directory with all the screenshots
-    parent_sub_directories = os.listdir(screenshot_parent_dir)
-    for dir in parent_sub_directories:
-        if fnmatch(dir, '')
+    # Go through all the subfolders in the screenshot dir, where each folder represents a run...
+    for run_dir in os.listdir(screenshot_parent_dir):
+        # ...resize the images, if necessary
+        for screenshot_fname in os.listdir(os.path.join(screenshot_parent_dir, run_dir)):
+            if fnmatch(name=screenshot_fname, pat='*.png'):
+                # resize images so that the height is dividable by two
+                img_dir = os.path.join(screenshot_parent_dir, run_dir, screenshot_fname)
+                raw_image = Image.open(img_dir)
 
-
-    for dir in sub_directories:
-        images = (img for img in os.listdir(dir) if fnmatch(name=img, pat='*.png'))
-        for img in images:
-            # resize images so that the height is dividable by two
-            img_dir = os.path.join(dir, img)
-            raw_image = Image.open(img_dir)
-            if not raw_image.size[1] % 2 == 0:
                 w = raw_image.size[0]
-                h = raw_image.size[1] + 1
+                if not w % 2 == 0:
+                    w = raw_image.size[0] + 1
+                h = raw_image.size[1]
+                if not h % 2 == 0:
+                    h = raw_image.size[1] + 1
+
                 resized_img = raw_image.resize((w, h), PIL.Image.ANTIALIAS)
                 resized_img.save(img_dir)
 
-        batch_index = os.path.basename(dir)
-        cmd = 'cd {}; /usr/local/bin/ffmpeg -i {}_{}_%02d00.png -framerate 1 -start_number 01 -pix_fmt yuv420p {}{}.mov'.format(dir, png_prefix, batch_index, 'output_vid_', batch_index)
+        # ...then run ffmpeg on them to convert them from a series of images into a .mov
+        batch_index = os.path.basename(run_dir)
+        png_prefix = png_prefix
+        new_working_dir = os.path.join(screenshot_parent_dir, run_dir)
+        new_working_dir = new_working_dir.replace(' ','\ ')
+        cmd = 'cd {}; ffmpeg -i {}_batch_{}_%02d00.png -framerate 1 -start_number 01 -pix_fmt yuv420p output_vid_{}.mov'.format(
+            new_working_dir, png_prefix, batch_index, batch_index)
         try:
             shell_output = subprocess.check_output(cmd, shell=True)
             print(shell_output)
         except:
-            print('Failed to create movie. Is ffmpeg installed?')
+            raise NameError('Failed to create movie!')
