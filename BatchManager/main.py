@@ -4,6 +4,7 @@ from BatchManagerScripts import ResetBatch
 from BatchManagerScripts import StepBackBatch
 from BatchManagerScripts import ParamsPackager
 from BatchManagerScripts import Convert2Video
+from BatchManagerScripts import CompressVTKs
 
 # List the things that Manager can do.
 options_dict = OrderedDict()
@@ -17,6 +18,7 @@ options_dict['Update File Locations in ElongationModel.py'] = 'sync'
 options_dict['Convert current params.txt to .xml'] = 'convert_current_txt_file2xml'
 options_dict['Convert another params.txt to .xml'] = 'convert_any_txt_file2xml'
 options_dict['Create a .mov from each runs\' .pngs'] = 'convert2vid'
+options_dict['Compress VTK files'] = 'compress_vtks'
 #options_dict['Create summary.html] = 'create_summary'
 #options_dict['Plot run data] = 'plot_run_data'
 
@@ -86,6 +88,9 @@ class managerSubscriptsCaller:
     
     def convert2vid(self):
         Convert2Video.convert_pngs_to_vid()
+
+    def compress_vtks(self):
+        CompressVTKs.compressVTKs()
 
     def update_parameter_scan_specs(self):
         ParamsPackager.update()
