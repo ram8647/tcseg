@@ -1,8 +1,10 @@
+from collections import OrderedDict
 from tempfile import mkstemp
 from shutil import move
 from os import remove, close
 from fnmatch import fnmatch
 import fnmatch
+from itertools import product
 import os
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ElementTree, parse
@@ -21,6 +23,7 @@ class IOManager:
         self.elongation_model_python_path = ''
         self.screenshot_output_path = ''
         self.simulation_folder_path = ''
+        self.cached_variable_number_of_runs = None
 
         try:
             self.read_xml()
@@ -66,11 +69,12 @@ class IOManager:
         self.parameter_scan_specs_xml_file_path = os.path.join(self.model_path, 'Simulation/ParameterScanSpecs.xml')
         self.elongation_model_python_path = os.path.join(self.model_path, 'Simulation/ElongationModel.py')
 
-        for dir in os.listdir(self.output_folder):
-            if fnmatch.fnmatch(dir, '*_ParameterScan'):
-                self.screenshot_output_path = os.path.join(self.output_folder, dir)
-                #if not self.screenshot_output_path.endswith('/'):
-                #    self.screenshot_output_path = self.screenshot_output_path + '/' # I probably dont need this
+        for dir_in_output_folder in os.listdir(self.output_folder):
+            if fnmatch.fnmatch(dir_in_output_folder, '*_ParameterScan'):
+                self.screenshot_output_path = os.path.join(self.output_folder, dir_in_output_folder)
+
+        if not os.path.isdir(self.screenshot_output_path):
+            self.screenshot_output_path = os.path.join(self.output_folder, 'tcseg_ParameterScan')
 
     def update_file_path_in_elongation_model_python(self):
         file_path = self.elongation_model_python_path
@@ -89,6 +93,11 @@ class IOManager:
                         elif trailing_comment == '#IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT':
                             first_part_of_line = line.split('\'')[0]
                             new_line = '{}\'{}\' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT\n'.format(first_part_of_line, self.output_folder)
+                            new_file.write(new_line)
+                        elif trailing_comment == '#IO_MANAGER_FLAG_C_DO_NOT_CHANGE_THIS_COMMENT':
+                            first_part_of_line = line.split('\'')[0]
+                            new_line = '{}\'{}\' #IO_MANAGER_FLAG_C_DO_NOT_CHANGE_THIS_COMMENT\n'.format(
+                                first_part_of_line, self.parameter_scan_specs_xml_file_path)
                             new_file.write(new_line)
                         else:
                             new_file.write(line)
@@ -115,3 +124,44 @@ class IOManager:
         outpath = os.path.join(os.getcwd(), '/ModelIOManager_Settings.xml')
         print 'Saving settings to: {}'.format(outpath)
         ElementTree(root).write(outpath)
+
+    def number_of_runs(self):
+        '''
+        Parse the xml dictionary for batch values and calculate how many times the simulation will have
+        to run. However, if this function has run already, it will just return the cached value.
+        :return: the number of runs that an xml file will cause
+        '''
+        if not self.cached_variable_number_of_runs == None:
+            return self.cached_variable_number_of_runs
+
+        if not self.params_path.endswith('.xml'):
+            return 1
+        else:
+            batch_vars_dict = OrderedDict()
+            batch_id_to_param_name_table = OrderedDict()
+
+            # Open params.xml
+            xml_file = parse(self.params_path)
+            xml_root = xml_file.getroot()
+
+            # Generate a unique ID for each parameter that changes between runs, and link its name to its id in a table
+            def assign_batch_id(_name):
+                new_batch_id = 'batch_id_{}'.format(len(batch_vars_dict))
+                batch_id_to_param_name_table[new_batch_id] = _name
+                return new_batch_id
+
+            for parameter_element in xml_root.iter('param'):
+                if parameter_element.attrib['batch'].lower() == "true":
+                    batch_id = assign_batch_id(parameter_element.attrib['varName'])
+                    batch_vars_dict[batch_id] = []
+                    for values_element in parameter_element.iter('BatchValue'):
+                        batch_vars_dict[batch_id].append(0)
+
+            # If there are no batch variables, then it will run once
+            if len(batch_vars_dict.keys()) == 0:
+                return 1
+
+            # Otherwise, generate a list of tuples, each containing a unique combination of batch variables
+            all_combinations_of_params = list(product(*[batch_vars_dict[key] for key in batch_vars_dict]))
+            num_runs = len(all_combinations_of_params)
+            return num_runs

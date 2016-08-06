@@ -5,10 +5,11 @@ from BatchManagerScripts import StepBackBatch
 from BatchManagerScripts import ParamsPackager
 from BatchManagerScripts import Convert2Video
 from BatchManagerScripts import CompressVTKs
+from BatchManagerScripts import InvokeCompuCell
 
 # List the things that Manager can do.
 options_dict = OrderedDict()
-#options_dict['Run batch'] = 'run_batch'
+options_dict['Run batch'] = 'run_batch'
 #options_dict['Reset and Run batch'] = 'reset_and_run_batch'
 options_dict['Reset Simulation'] = 'reset'
 #options_dict['Update ParameterScanSpecs.xml'] = 'update_parameter_scan_specs'
@@ -68,7 +69,7 @@ class managerSubscriptsCaller:
         self.convert_txt2xml(path2xml)
 
     def run_batch(self):
-        print 'not supported yet'
+        InvokeCompuCell.invoke_compucell()
 
     def reset_and_run_batch(self):
         self.reset()
