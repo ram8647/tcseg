@@ -6,6 +6,7 @@ from BatchManagerScripts import ParamsPackager
 from BatchManagerScripts import Convert2Video
 from BatchManagerScripts import CompressVTKs
 from BatchManagerScripts import InvokeCompuCell
+from BatchManagerScripts import CreateSummary
 
 # List the things that Manager can do.
 options_dict = OrderedDict()
@@ -18,8 +19,10 @@ options_dict['Input File Locations'] = 'input_file_paths'
 options_dict['Update File Locations in ElongationModel.py'] = 'sync'
 options_dict['Convert current params.txt to .xml'] = 'convert_current_txt_file2xml'
 options_dict['Convert another params.txt to .xml'] = 'convert_any_txt_file2xml'
+options_dict['Create a summary of the batch runs'] = 'create_summary'
 options_dict['Create a .mov from each runs\' .pngs'] = 'convert2vid'
 options_dict['Compress VTK files'] = 'compress_vtks'
+options_dict['Process ALL output'] = 'process_all'
 #options_dict['Create summary.html] = 'create_summary'
 #options_dict['Plot run data] = 'plot_run_data'
 
@@ -60,6 +63,11 @@ class managerSubscriptsCaller:
         else:
             print 'The current params file is of unknown type. (File path = {}.) Aborting.'.format(inpath)
 
+    def process_all(self):
+        self.convert2vid()
+        self.compress_vtks()
+        # Clear old files
+
     def convert_any_txt_file2xml(self):
         path2xml = raw_input('Please input the location of the params.txt')
         self.convert_txt2xml(path2xml)
@@ -95,6 +103,9 @@ class managerSubscriptsCaller:
 
     def update_parameter_scan_specs(self):
         ParamsPackager.update()
+
+    def create_summary(self):
+        CreateSummary.create_summary()
 
 
 
