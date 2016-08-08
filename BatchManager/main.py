@@ -12,19 +12,13 @@ from BatchManagerScripts import CreateSummary
 options_dict = OrderedDict()
 options_dict['Run batch'] = 'run_batch'
 #options_dict['Reset and Run batch'] = 'reset_and_run_batch'
-options_dict['Reset Simulation'] = 'reset'
+options_dict['Delete all simulation output'] = 'reset'
 #options_dict['Update ParameterScanSpecs.xml'] = 'update_parameter_scan_specs'
 options_dict['Delete/redo the most recent simulation'] = 'step_back'
-options_dict['Input File Locations'] = 'input_file_paths'
-options_dict['Update File Locations in ElongationModel.py'] = 'sync'
-options_dict['Convert current params.txt to .xml'] = 'convert_current_txt_file2xml'
-options_dict['Convert another params.txt to .xml'] = 'convert_any_txt_file2xml'
-options_dict['Create a summary of the batch runs'] = 'create_summary'
-options_dict['Create a .mov from each runs\' .pngs'] = 'convert2vid'
-options_dict['Compress VTK files'] = 'compress_vtks'
-options_dict['Process ALL output'] = 'process_all'
-#options_dict['Create summary.html] = 'create_summary'
-#options_dict['Plot run data] = 'plot_run_data'
+options_dict['Input file locations'] = 'input_file_paths'
+options_dict['Update file locations in ElongationModel.py'] = 'sync'
+options_dict['Convert a params.txt to .xml format'] = 'convert_any_txt_file2xml'
+options_dict['Process output (i.e. move files, create summary and create videos)'] = 'process_all'
 
 
 # Offer these options to the user, and invoke them when requested
@@ -45,7 +39,7 @@ def interface_loop(script_runner):
 
 
 # Class to invoke functions defined in subscripts
-class managerSubscriptsCaller:
+class ManagerSubscriptsCaller:
     def __init__(self):
         self.io_manager = ModelIOManager.IOManager(_silent=False)
 
@@ -66,17 +60,16 @@ class managerSubscriptsCaller:
     def process_all(self):
         self.convert2vid()
         self.compress_vtks()
-        # Clear old files
+        self.io_manager.move_all_files_to_output_folder()
+        self.io_manager.delete_unnecessary_files()
+        self.create_summary()
 
     def convert_any_txt_file2xml(self):
         path2xml = raw_input('Please input the location of the params.txt')
         self.convert_txt2xml(path2xml)
 
-    def convert_current_txt_file2xml(self):
-        path2xml = self.io_manager.params_path
-        self.convert_txt2xml(path2xml)
-
     def run_batch(self):
+        self.sync()
         InvokeCompuCell.invoke_compucell()
 
     def reset_and_run_batch(self):
@@ -111,6 +104,6 @@ class managerSubscriptsCaller:
 
 # Main interface loop
 print 'Welcome to the Williams-Nagy Segmentation Model Manager (built by Jeremy Fisher)'
-script_runner = managerSubscriptsCaller()
+script_runner = ManagerSubscriptsCaller()
 while True:
     interface_loop(script_runner)
