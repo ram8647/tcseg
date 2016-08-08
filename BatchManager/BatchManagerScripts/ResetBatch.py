@@ -25,5 +25,5 @@ def reset():
             if not fnmatch(d, '*_ParameterScan') or not fnmatch(d, 'css') or not fnmatch(d, 'js'):
             	shutil.rmtree(os.path.join(root, d))
         for f in files:
-            if not fnmatch(f, '*.js') or if not fnmatch(f, '*.css')
-            os.remove(os.path.join(root, f))
+            if not fnmatch(f, '*.js') or not fnmatch(f, '*.css'):
+                os.remove(os.path.join(root, f))
