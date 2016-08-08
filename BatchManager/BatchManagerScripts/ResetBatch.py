@@ -2,6 +2,7 @@ import os
 import shutil
 from xml.etree.ElementTree import ElementTree, parse
 from ModelIOManager import IOManager
+from fnmatch import fnmatch
 
 def reset():
     io_manager = IOManager()
@@ -21,6 +22,8 @@ def reset():
     #remove the outputted vtks and pngs
     for root, dirs, files in os.walk(path_to_clear):
         for d in dirs:
-        	shutil.rmtree(os.path.join(root, d))
+            if not fnmatch(d, '*_ParameterScan') or not fnmatch(d, 'css') or not fnmatch(d, 'js'):
+            	shutil.rmtree(os.path.join(root, d))
         for f in files:
+            if not fnmatch(f, '*.js') or if not fnmatch(f, '*.css')
             os.remove(os.path.join(root, f))
