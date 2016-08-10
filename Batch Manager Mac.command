@@ -2,5 +2,5 @@
 here="`dirname \"$0\"`"
 cd "$here"
 cd "BatchManager"
-python ./main.py 
+./dist/main_UI
 exit 1

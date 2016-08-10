@@ -27,14 +27,16 @@ class IOManager:
         self.run_script_command_dir = ''
         self.cached_variable_number_of_runs = None
 
+        self.GUI_messages = []
+
         # Try to figure out the file paths
         self.autodetect_file_paths()
         try:
             self.read_xml()
         except IOError:
-            print 'No setting file exists! Please specify the correct paths, if necessary, and we will make one.'
-        self.user_input_io_xml()
-        self.write_settings_XML_file()
+            print 'No setting file exists!'
+            self.GUI_messages.append('ask_for_params')
+            self.GUI_messages.append('ask_for_compucell_command')
 
     def user_input_io_xml(self):
         # Have the user input the file paths
@@ -202,21 +204,26 @@ class IOManager:
         #proposed_params_path = process_path(os.path.join(proposed_model_path, 'Simulation', 'params.xml'))
         proposed_output_folder = process_path(os.path.join(proposed_model_path, 'Output'))
 
-        print '\nCurrent Working Directory: {}\n'.format(cwd)
+        if not self.silent:
+            print '\nCurrent Working Directory: {}\n'.format(cwd)
 
-        print '\tOpening {} at {}'.format('Model Path', proposed_model_path)
+        if not self.silent:
+            print '\tOpening {} at {}'.format('Model Path', proposed_model_path)
         if os.path.isdir(proposed_model_path):
             self.model_path = process_path(proposed_model_path)
-            print '\t->Seems legit. Continuing...'
+            if not self.silent:
+                print '\t->Seems legit. Continuing...'
         else:
             print '\tFailed to open model path!\n'
             self.user_input_io_xml()
             return False
 
-        print '\tOpening {} at {}'.format('Output Path', proposed_output_folder)
+        if not self.silent:
+            print '\tOpening {} at {}'.format('Output Path', proposed_output_folder)
         if os.path.isdir(proposed_output_folder):
             self.output_folder = process_path(proposed_output_folder)
-            print '\t->Seems legit. Continuing...'
+            if not self.silent:
+                print '\t->Seems legit. Continuing...'
         else:
             print '\tFailed to open output path!\n'
             self.user_input_io_xml()
