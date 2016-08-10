@@ -1,10 +1,6 @@
 ##BEFORE USING THE MODEL
 
-On a Mac, open 'Batch Manager.command'. On a Windows computer, open a command prompt, cd to the 'BatchManager' directory and run 'python ./main.py'
-
-This will open the Batch Manager. Choose 'Input File Locations' and follow the prompts. This will set up the file system.
-
-NOTE: Unfortunetly, due to an error in CompuCell, filepaths must be hard-coded when running simulations in batches. Therefore, if you change the location of any of asked-about files, you must  redo 'Input File Locations' as described above.
+On a Mac, open 'Batch Manager Mac.command'. On a Windows or Linux computer, open a command prompt, cd to the 'BatchManager' directory and run './dist/main_UI'. This will open the Batch Manager, where --most importantly--you can change the params file. 
 
 Now, you may run the simulation like normal 
 
