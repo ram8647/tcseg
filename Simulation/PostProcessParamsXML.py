@@ -34,7 +34,7 @@ def process_dictionary(dict):
 
     for i in range(3):
         default_growth_rate = 0.02
-        if dict['r_mitosis_R{}'.format(i)] == [0.0] * 3
+        if dict['r_mitosis_R{}'.format(i)] == [0.0] * 3:
             dict['r_grow_R{}'.format(i)] = [0.0] * 3
         else:
             if not 'r_grow_R{}'.format(i) in dict:
