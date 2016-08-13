@@ -11,9 +11,6 @@ import math
 from random import random
 from copy import deepcopy
 
-def hackish_soln():
-    import ModelIOManager
-
 ## General Note: Cell Address is relative to the anterior. So, a 0.0 address means that it is on the anterior tip.
 
 class VolumeStabilizer(SteppableBasePy):

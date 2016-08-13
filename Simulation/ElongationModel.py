@@ -31,10 +31,10 @@ global params_scan_spec_path
 '''
 You can add these manually or, and this is recommended, use BatchManager.command
 '''
-params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/params.xml' #IO_MANAGER_FLAG_A_DO_NOT_CHANGE_THIS_COMMENT
-stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
-measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
-params_scan_spec_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/TC Model/Simulation/ParameterScanSpecs.xml' #IO_MANAGER_FLAG_C_DO_NOT_CHANGE_THIS_COMMENT
+params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/tcseg_batch/Simulation/params.xml' #IO_MANAGER_FLAG_A_DO_NOT_CHANGE_THIS_COMMENT
+stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/tcseg_batch/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
+measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/tcseg_batch/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
+params_scan_spec_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/tcseg_batch/Simulation/ParameterScanSpecs.xml' #IO_MANAGER_FLAG_C_DO_NOT_CHANGE_THIS_COMMENT
 
 ## MAKE SURE  PATHS ARE VALID AND DO STUFF IF THEY ARE NOT
 if not os.path.isfile(params_path):
