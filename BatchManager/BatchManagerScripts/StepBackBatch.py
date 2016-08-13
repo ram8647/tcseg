@@ -4,14 +4,12 @@ from fnmatch import fnmatch
 import os
 import shutil
 
-def step_back():
-    mngr = IOManager()
-
+def step_back(io_manager):
     current_iteration = None
     target_iteration = None
 
     # Figure out the current iteration and modify the scan specs file appropriately
-    parameter_scan_specs_xml_file_path = mngr.parameter_scan_specs_xml_file_path
+    parameter_scan_specs_xml_file_path = io_manager.parameter_scan_specs_xml_file_path
     xml_file = parse(parameter_scan_specs_xml_file_path)
     xml_root = xml_file.getroot()
     for parameter_element in xml_root.iter('Parameter'):
@@ -24,13 +22,13 @@ def step_back():
     ElementTree(xml_root).write(parameter_scan_specs_xml_file_path)
     
     # Remove screenshots
-    for root, dirs, files in os.walk(mngr.screenshot_output_path):
+    for root, dirs, files in os.walk(io_manager.screenshot_output_path):
         for dir in dirs:
             if dir == str(target_iteration):
                 shutil.rmtree(os.path.join(root, dir))
     
     # Remove most recent .csv and .txt in output folder
-    for root, dirs, files in os.walk(mngr.output_folder):
+    for root, dirs, files in os.walk(io_manager.output_folder):
         for file in files:
             if fnmatch(file, '*output{}.txt'.format(target_iteration)) or fnmatch(file, '*output{}.csv'.format(target_iteration)):
                 os.remove(os.path.join(root, file))

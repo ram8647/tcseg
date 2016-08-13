@@ -2,8 +2,7 @@ import os, os.path, subprocess
 from ModelIOManager import IOManager
 
 
-def invoke_compucell():
-    manager = IOManager()
+def invoke_compucell(manager):
 
     def batch_completed():
         required_dir = os.path.join(manager.screenshot_output_path, str(manager.number_of_runs() - 1))

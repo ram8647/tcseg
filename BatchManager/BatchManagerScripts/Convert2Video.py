@@ -4,11 +4,10 @@ import os, os.path, subprocess
 from fnmatch import fnmatch
 from ModelIOManager import IOManager
 
-def convert_pngs_to_vid():
+def convert_pngs_to_vid(manager):
     '''
     module converts images in the screenshot_output_path into a movie
     '''
-    manager = IOManager()
     screenshot_parent_dir = manager.screenshot_output_path
     png_prefix = os.path.basename(screenshot_parent_dir).split('_')[0]
 

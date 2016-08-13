@@ -9,11 +9,10 @@ import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom
 import os.path
 
-def create_summary(type = 'html'):
+def create_summary(manager, type = 'html'):
     '''
     write a file, either html or csv, that visually summarizes all the batch runs
     '''
-    manager = IOManager()
     params_path = manager.params_path
     outpath = os.path.join(manager.output_folder, 'BatchSummary.html')
 

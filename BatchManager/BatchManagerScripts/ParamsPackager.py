@@ -79,12 +79,13 @@ def create_xml_from_params_dict(param_dict):
     pretty_str = reparsed.toprettyxml(indent="\t")
     return pretty_str
 
-def write_xml_to_sim_directory(xml_as_str):
+def write_xml_to_sim_directory(xml_as_str, io_manager):
     '''
     Write the params.xml to the Simulation directory
     :param xml_as_str: the string representation of an XML file
     '''
-    outpath = os.path.join(IOManager().simulation_folder_path, 'params.xml')
+
+    outpath = os.path.join(io_manager.simulation_folder_path, 'params.xml')
     print 'Saving file to: {}'.format(outpath)
     with open(outpath, 'w') as f:
         f.write(xml_as_str)
