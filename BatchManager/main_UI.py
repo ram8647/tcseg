@@ -5,7 +5,6 @@ import os
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from collections import OrderedDict
 from BatchManagerScripts import ModelIOManager
 from BatchManagerScripts import ResetBatch
 from BatchManagerScripts import StepBackBatch
@@ -13,12 +12,16 @@ from BatchManagerScripts import ParamsPackager
 from BatchManagerScripts import Convert2Video
 from BatchManagerScripts import CompressVTKs
 from BatchManagerScripts import CreateSummary
+from BatchManagerScripts import InvokeCompuCell
 
 # Set up the gui
 def window(io_manager):
     '''
     Set up the functions that the GUI calls, then use PyQt to set up the GUI
     '''
+    # Run CC3D
+    def invoke_cc3d():
+        InvokeCompuCell.invoke_compucell(io_manager)
 
     # Manage Input
     def new_params_path():
@@ -78,30 +81,33 @@ def window(io_manager):
     app = QApplication(sys.argv)
     w = QWidget()
 
-    b0 = QPushButton('Open new params file')
-    b0.clicked.connect(new_params_path)
-    b1 = QPushButton('Update files paths in ElongationModel.py')
-    b1.clicked.connect(update_file_paths_in_elongation_model_py)
-    b2 = QPushButton('Delete all output')
-    b2.clicked.connect(delete_all_output)
-    b3 = QPushButton('Delete output from last run')
-    b3.clicked.connect(delete_last_runs_output)
-    b4 = QPushButton('Create summary')
-    b4.clicked.connect(create_summary)
-    b5 = QPushButton('Create videos')
-    b5.clicked.connect(convert2vid)
-    b6 = QPushButton('Compress VTKs')
-    b6.clicked.connect(compress_vtks)
-    b7 = QPushButton('Move output to output folder')
-    b7.clicked.connect(move_output2output_folder)
-    b8 = QPushButton('Do all four')
-    b8.clicked.connect(process_all)
+    b0 = QPushButton('Spawn an instance of CC3D')
+    b0.clicked.connect(invoke_cc3d)
+    b1 = QPushButton('Open new params file')
+    b1.clicked.connect(new_params_path)
+    b2 = QPushButton('Update files paths in ElongationModel.py')
+    b2.clicked.connect(update_file_paths_in_elongation_model_py)
+    b3 = QPushButton('Delete all output')
+    b3.clicked.connect(delete_all_output)
+    b4 = QPushButton('Delete output from last run')
+    b4.clicked.connect(delete_last_runs_output)
+    b5 = QPushButton('Create summary')
+    b5.clicked.connect(create_summary)
+    b6 = QPushButton('Create videos')
+    b6.clicked.connect(convert2vid)
+    b7 = QPushButton('Compress VTKs')
+    b7.clicked.connect(compress_vtks)
+    b8 = QPushButton('Move output to output folder')
+    b8.clicked.connect(move_output2output_folder)
+    b9 = QPushButton('Do all four')
+    b9.clicked.connect(process_all)
 
+    l0 = QLabel('Run Model')
     l1 = QLabel('Manage Input')
     l2 = QLabel('Delete Old Output')
     l3 = QLabel('Manage Output')
 
-    widgets = [l1, b0, b1, l2, b2, b3, l3, b4, b5, b6, b7, b8]
+    widgets = [l0, b0, l1, b1, b2, l2, b3, b4, l3, b5, b6, b7, b8, b9]
 
     vbox = QVBoxLayout()
     for widget in widgets:

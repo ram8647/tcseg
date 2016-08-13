@@ -290,7 +290,6 @@ class IOManager:
                 print '\t->Seems legit. Continuing...'
         else:
             print '\tFailed to open output path!\n'
-            self.user_input_io_xml()
             return False
 
     def open_a_params_file(self, path):
