@@ -4,9 +4,11 @@ from __future__ import print_function
 import time
 import json
 import datetime
-import sys
-from os import environ
-from os import getcwd
+from xml.etree.ElementTree import ElementTree, parse
+from itertools import product
+from collections import OrderedDict
+import ast
+from PostProcessParamsXML import process_dictionary
 
 #  NOTE: These paths assume that tcseg is a sibling directory to CC3D_3.7.1
 global PARAMS_FOLDER; PARAMS_FOLDER  = './' #  '../tcseg/Simulation/'    # Root directory of params file
@@ -158,7 +160,6 @@ class ParamsContainer:
                     except:
                         raise NameError('Could not parse line: \'{}\''.format(line))
         elif fname.endswith('.xml'):
-            from InterpretBatchParamsXML import params_dict_for_batch
             dict = params_dict_for_batch(batch_iteration = batch_iteration,
                                          xml_path=fname,
                                          param_scan_specs_path=param_scan_spec)
@@ -246,6 +247,84 @@ class ParamsContainer:
         return True if key in params else False
 
 
+def params_dict_for_batch(batch_iteration, xml_path, param_scan_specs_path):
+    '''
+    Generate a parameter dictionary corresponding to our current batch run
+
+    :param batch_iteration: the batch run number: like run0, run1, etc.
+    :param xml_path: the file path to the XML that will be decomposed into our dictionary
+    :param param_scan_specs_path: the filepath to the ParameterScanSpecs.xml, which we will manipulate
+     to make CompuCell run batches properly
+    :return: a dictionary corresponding to our current batch run
+    '''
+
+    raw_dict = OrderedDict()
+    batch_vars_dict = OrderedDict()
+    batch_id_to_param_name_table = OrderedDict()
+
+    xml_file = parse(xml_path)
+    xml_root = xml_file.getroot()
+
+    # Generate a unique ID for each parameter that changes between runs, and link its name to its id in a table
+    def assign_batch_id(_name):
+        new_batch_id = 'batch_id_{}'.format(len(batch_vars_dict))
+        batch_id_to_param_name_table[new_batch_id] = _name
+        return new_batch_id
+
+    # Parse the params_package file, adding normal parameters to 'raw_dict' and batch parameters
+    # to a special 'batch_dict.' Each entry of the batch dictionary contains a list, wherein each element
+    # is a value that will be sweeped.
+    for parameter_element in xml_root.iter('param'):
+        if parameter_element.attrib['batch'].lower() == "false":
+            raw_dict[parameter_element.attrib['varName']] = ast.literal_eval(parameter_element.text)
+
+        elif parameter_element.attrib['batch'].lower() == "true":
+            batch_id = assign_batch_id(parameter_element.attrib['varName'])
+            batch_vars_dict[batch_id] = []
+            for values_element in parameter_element.iter('BatchValue'):
+                batch_vars_dict[batch_id].append(ast.literal_eval(values_element.text))
+
+    # If there are no variables to sweep, simply apply the variable rules and return it...
+    if len(batch_vars_dict) == 0:
+        update_parameter_scan_specs(num_runs=1, scan_spec_path=param_scan_specs_path)
+        final_dict = process_dictionary(raw_dict)
+        return final_dict
+
+    # ...otherwise, we'll add the batch values in apropriately, first by generating a tuple
+    # for all possible combinations of batch values
+    all_combinations_of_params = list(product(*[batch_vars_dict[key] for key in batch_vars_dict]))
+
+    # Update parameter scan specs so CompuCell will run the appropriate number of times, just in case
+    num_runs = len(all_combinations_of_params)
+    update_parameter_scan_specs(num_runs=num_runs, scan_spec_path=param_scan_specs_path)
+
+    # Add the proper combination of batch variables to the raw_dict and return it.
+    combination_of_interest = all_combinations_of_params[batch_iteration]
+    for i, key in enumerate(batch_vars_dict):
+        raw_dict[batch_id_to_param_name_table[key]] = combination_of_interest[i]
+
+    final_dict = process_dictionary(raw_dict)
+    return final_dict
+
+
+def update_parameter_scan_specs(num_runs, scan_spec_path):
+    '''
+    Manipulate the ParameterScanSpecs.xml to make CompuCell run our simulation the correct number of times
+
+    :param num_runs: the total number of times that the simulation should run
+    :param scan_spec_path: the filepath to the ParameterScanSpecs.xml,
+    '''
+    scan_spec_values = []
+    for iteration_num in range(num_runs):
+        scan_spec_values.append('\"{{\\\'batch_on\\\': True, \\\'iteration\\\': {}}}\"'.format(iteration_num))
+    scan_spec_values_str_rep = ','.join(scan_spec_values)
+
+    xml_file = parse(scan_spec_path)
+    xml_root = xml_file.getroot()
+    for values_element in xml_root.iter('Values'):
+        values_element.text = scan_spec_values_str_rep
+    ElementTree(xml_root).write(scan_spec_path)
+
 
 def main():
     ''' Code to test methods in this class.'''
@@ -274,7 +353,6 @@ def main():
         reporter.rprint('Not speeding up')
 
     myprint(None, 'End of the test run')
-
 
 def test():
     reporter = StatsReporter()
