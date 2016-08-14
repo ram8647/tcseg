@@ -5,6 +5,10 @@ from ModelIOManager import IOManager
 from fnmatch import fnmatch
 
 def reset(io_manager):
+    '''
+    removes all old output files from the Output folder
+    :type io_manager: IOManger
+    '''
     parameter_scan_specs_xml_file_path = io_manager.parameter_scan_specs_xml_file_path
     path_to_clear = io_manager.output_folder
 

@@ -3,7 +3,11 @@ import os, os.path
 from ModelIOManager import IOManager
 
 def compressVTKs(io_manager):
-
+    '''
+    compress VTK archives the VTK and screenshot description file in the ParameterScan folder,
+    which considerably decreases their file size
+    :type io_manager: IOManger
+    '''
     for root, dirs, files in os.walk(io_manager.screenshot_output_path):
         for name in dirs:
             if name == 'LatticeData':

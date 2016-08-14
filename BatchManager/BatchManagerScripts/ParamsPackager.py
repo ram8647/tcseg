@@ -7,6 +7,9 @@ import json
 
 
 class valueTypeChecker:
+    '''
+    Helper class to determine file types
+    '''
     @classmethod
     def is_number(self,str):
         """Returns true if str is a number"""
@@ -83,6 +86,7 @@ def write_xml_to_sim_directory(xml_as_str, io_manager):
     '''
     Write the params.xml to the Simulation directory
     :param xml_as_str: the string representation of an XML file
+    :type io_manager: IOManger
     '''
 
     outpath = os.path.join(io_manager.simulation_folder_path, 'params.xml')

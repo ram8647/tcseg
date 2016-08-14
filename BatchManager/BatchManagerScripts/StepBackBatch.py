@@ -5,6 +5,10 @@ import os
 import shutil
 
 def step_back(io_manager):
+    '''
+    deletes the output files from the most recent runs
+    :type io_manager: IOManger
+    '''
     current_iteration = None
     target_iteration = None
 
