@@ -41,6 +41,7 @@ class IOManager:
         self.simulation_folder_path = ''
         self.param_scan_command_dir = ''
         self.run_script_command_dir = ''
+        self.apple_script_dir = ''
 
         # Declare other variables having to do with maintaining IOManager itself
 
@@ -114,6 +115,7 @@ class IOManager:
         self.simulation_folder_path = os.path.join(self.model_path, 'Simulation')
         self.parameter_scan_specs_xml_file_path = os.path.join(self.model_path, 'Simulation/ParameterScanSpecs.xml')
         self.elongation_model_python_path = os.path.join(self.model_path, 'Simulation/ElongationModel.py')
+        self.apple_script_dir = os.path.join(self.model_path, 'BatchManager/BatchManagerScripts/ForceRunCompuCell.scpt')
 
         # Construct path to the parameter scan folder, if it exists
         for dir_in_output_folder in os.listdir(self.output_folder):
