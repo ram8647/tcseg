@@ -37,8 +37,9 @@ def convert_pngs_to_vid(io_manager):
             png_prefix = png_prefix
             new_working_dir = os.path.join(screenshot_parent_dir, run_dir)
             new_working_dir = new_working_dir.replace(' ','\ ')
-            cmd = 'cd {}; ffmpeg -i {}_batch_{}_%02d00.png -framerate 1 -start_number 01 -pix_fmt yuv420p batch_run_{}.mov'.format(
-                new_working_dir, png_prefix, batch_index, batch_index)
+            ffmpeg_path = 'ffmpeg'
+            cmd = 'cd {}; {} -i {}_batch_{}_%02d00.png -framerate 1 -start_number 01 -pix_fmt yuv420p batch_run_{}.mov'.format(
+                new_working_dir, ffmpeg_path, png_prefix, batch_index, batch_index)
             try:
                 shell_output = subprocess.check_output(cmd, shell=True)
                 print(shell_output)

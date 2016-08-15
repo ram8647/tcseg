@@ -8,7 +8,7 @@ from xml.etree.ElementTree import ElementTree, parse
 from itertools import product
 from collections import OrderedDict
 import ast
-from PostProcessParamsXML import process_dictionary
+import PostProcessParamsXML
 
 #  NOTE: These paths assume that tcseg is a sibling directory to CC3D_3.7.1
 global PARAMS_FOLDER; PARAMS_FOLDER  = './' #  '../tcseg/Simulation/'    # Root directory of params file
@@ -161,7 +161,7 @@ class ParamsContainer:
                         raise NameError('Could not parse line: \'{}\''.format(line))
         elif fname.endswith('.xml'):
             dict = params_dict_for_batch(batch_iteration = batch_iteration,
-                                         xml_path=fname,
+                                         params_xml_path=fname,
                                          param_scan_specs_path=param_scan_spec)
 
         myprint(self.reporter, '\tReading data from file ', fname, '\n')
@@ -247,22 +247,24 @@ class ParamsContainer:
         return True if key in params else False
 
 
-def params_dict_for_batch(batch_iteration, xml_path, param_scan_specs_path):
+def params_dict_for_batch(batch_iteration, params_xml_path, param_scan_specs_path):
     '''
     Generate a parameter dictionary corresponding to our current batch run
 
-    :param batch_iteration: the batch run number: like run0, run1, etc.
-    :param xml_path: the file path to the XML that will be decomposed into our dictionary
+    :param batch_iteration: the batch run number, like run0, run1, etc.
+    :param params_xml_path: the file path to the XML that will fed into our dictionary
     :param param_scan_specs_path: the filepath to the ParameterScanSpecs.xml, which we will manipulate
      to make CompuCell run batches properly
     :return: a dictionary corresponding to our current batch run
     '''
+    def has_children(xml_element):
+        return True if len(list(xml_element)) else False
 
     raw_dict = OrderedDict()
     batch_vars_dict = OrderedDict()
     batch_id_to_param_name_table = OrderedDict()
 
-    xml_file = parse(xml_path)
+    xml_file = parse(params_xml_path)
     xml_root = xml_file.getroot()
 
     # Generate a unique ID for each parameter that changes between runs, and link its name to its id in a table
@@ -273,24 +275,27 @@ def params_dict_for_batch(batch_iteration, xml_path, param_scan_specs_path):
 
     # Parse the params_package file, adding normal parameters to 'raw_dict' and batch parameters
     # to a special 'batch_dict.' Each entry of the batch dictionary contains a list, wherein each element
-    # is a value that will be sweeped.
+    # is a value that will be swept.
     for parameter_element in xml_root.iter('param'):
-        if parameter_element.attrib['batch'].lower() == "false":
-            raw_dict[parameter_element.attrib['varName']] = ast.literal_eval(parameter_element.text)
-
-        elif parameter_element.attrib['batch'].lower() == "true":
-            batch_id = assign_batch_id(parameter_element.attrib['varName'])
+        # First, we'll assume that any param element with children is a variable that should be swept
+        if has_children(parameter_element):
+            var_name = parameter_element.attrib['varName']
+            batch_id = assign_batch_id(var_name)
             batch_vars_dict[batch_id] = []
             for values_element in parameter_element.iter('BatchValue'):
                 batch_vars_dict[batch_id].append(ast.literal_eval(values_element.text))
 
-    # If there are no variables to sweep, simply apply the variable rules and return it...
+        # If it doesnt have children, just pull the interior text into our dictionary
+        elif not has_children(parameter_element):
+            raw_dict[parameter_element.attrib['varName']] = ast.literal_eval(parameter_element.text)
+
+    # If there are no variables to sweep, simply apply the dictionary rules and return it...
     if len(batch_vars_dict) == 0:
         update_parameter_scan_specs(num_runs=1, scan_spec_path=param_scan_specs_path)
-        final_dict = process_dictionary(raw_dict)
+        final_dict = PostProcessParamsXML.process_dictionary(raw_dict)
         return final_dict
 
-    # ...otherwise, we'll add the batch values in apropriately, first by generating a tuple
+    # ...otherwise, we'll add the batch values in appropriately, first by generating a tuple
     # for all possible combinations of batch values
     all_combinations_of_params = list(product(*[batch_vars_dict[key] for key in batch_vars_dict]))
 
@@ -298,12 +303,16 @@ def params_dict_for_batch(batch_iteration, xml_path, param_scan_specs_path):
     num_runs = len(all_combinations_of_params)
     update_parameter_scan_specs(num_runs=num_runs, scan_spec_path=param_scan_specs_path)
 
-    # Add the proper combination of batch variables to the raw_dict and return it.
+    # Add the proper combination of batch variables to the raw_dict and return it. If the name is two
+    # variables combined by an &, like r_mitosis_r1&r_mitosis_r2, these will be swept together
     combination_of_interest = all_combinations_of_params[batch_iteration]
     for i, key in enumerate(batch_vars_dict):
-        raw_dict[batch_id_to_param_name_table[key]] = combination_of_interest[i]
+        combined_param_names = batch_id_to_param_name_table[key]
+        param_name_list = combined_param_names.split('&')
+        for param_name in param_name_list:
+            raw_dict[param_name] = combination_of_interest[i]
 
-    final_dict = process_dictionary(raw_dict)
+    final_dict = PostProcessParamsXML.process_dictionary(raw_dict)
     return final_dict
 
 
