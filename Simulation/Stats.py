@@ -308,7 +308,7 @@ def params_dict_for_batch(batch_iteration, params_xml_path, param_scan_specs_pat
     combination_of_interest = all_combinations_of_params[batch_iteration]
     for i, key in enumerate(batch_vars_dict):
         combined_param_names = batch_id_to_param_name_table[key]
-        param_name_list = combined_param_names.split('&')
+        param_name_list = combined_param_names.split(' AND ')
         for param_name in param_name_list:
             raw_dict[param_name] = combination_of_interest[i]
 
