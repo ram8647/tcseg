@@ -195,6 +195,9 @@ class IOManager:
         to run. However, if this function has run already, it will just return the cached value.
         :return: the number of runs that an xml file will cause
         '''
+        def has_children(xml_element):
+            return True if len(list(xml_element)) else False
+
         if not self.cached_variable_number_of_runs == None:
             return self.cached_variable_number_of_runs
 
@@ -215,7 +218,7 @@ class IOManager:
                 return new_batch_id
 
             for parameter_element in xml_root.iter('param'):
-                if parameter_element.attrib['batch'].lower() == "true":
+                if has_children(parameter_element):
                     batch_id = assign_batch_id(parameter_element.attrib['varName'])
                     batch_vars_dict[batch_id] = []
                     for values_element in parameter_element.iter('BatchValue'):
