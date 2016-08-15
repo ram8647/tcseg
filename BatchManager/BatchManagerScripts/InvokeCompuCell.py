@@ -18,7 +18,7 @@ def invoke_compucell_other_platforms(io_manager):
 
 def invoke_compucell_mac(io_manager):
     '''
-    not supported yet, yet this function will restart CompuCell if it crashes before the completion of
+    BETA this function will restart CompuCell if it crashes before the completion of
     the batch runs. It handles crashes in a way that only works on mac.
     '''
     def batch_completed():
