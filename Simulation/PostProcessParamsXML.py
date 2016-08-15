@@ -32,13 +32,12 @@ def process_dictionary(dict):
         dict['r_grow_R3'] = val
         del dict['r_grow_GZ']
 
-    for i in range(3):
+    for i in range(4):
         default_growth_rate = 0.02
         if dict['r_mitosis_R{}'.format(i)] == [0.0] * 3:
             dict['r_grow_R{}'.format(i)] = [0.0] * 3
         else:
-            if not 'r_grow_R{}'.format(i) in dict:
+            if not 'r_grow_R{}'.format(i) in dict.keys():
                 dict['r_grow_R{}'.format(i)] = [default_growth_rate] * 3
-
 
     return dict
