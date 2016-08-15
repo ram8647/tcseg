@@ -150,7 +150,7 @@ def window(io_manager):
             model_dir = os.path.abspath(os.path.join(tcseg_cc3d_dir, os.pardir))
             io_manager.model_path = model_dir
         else:
-            raise NameError('Unknown error from IOManager: {}'.format(msg))
+            raise NameError('Unknown message from IOManager: {}'.format(msg))
 
         io_manager.construct_additional_paths()
         io_manager.write_settings_XML_file()
