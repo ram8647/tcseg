@@ -36,12 +36,8 @@ def create_summary(io_manager, type ='html'):
                 print 'Including {}...'.format(variable_name)
                 batch_vars_dict[variable_name] = []
                 for values_element in parameter_element.iter('BatchValue'):
-                    print '\tand {}...'.format(values_element.text)
+                    print '\twith value: {}...'.format(values_element.text)
                     new_batch_value = ast.literal_eval(values_element.text)
-                    if fnmatch.fnmatch(variable_name, 'r_mitosis_R*') or fnmatch.fnmatch(variable_name, 'r_grow_R*'):
-                        first_var = new_batch_value[0]
-                        if new_batch_value == [first_var] * 3:
-                            new_batch_value = new_batch_value[0]
                     batch_vars_dict[variable_name].append(new_batch_value)
 
         all_combinations_of_params = product(*[batch_vars_dict[key] for key in batch_vars_dict])
