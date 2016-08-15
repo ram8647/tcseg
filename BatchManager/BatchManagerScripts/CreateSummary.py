@@ -14,6 +14,10 @@ def create_summary(io_manager, type ='html'):
     write a file, either html or csv, that visually summarizes all the batch runs
     :type io_manager: IOManger
     '''
+
+    def has_children(xml_element):
+        return True if len(list(xml_element)) else False
+
     params_path = io_manager.params_path
     outpath = os.path.join(io_manager.output_folder, 'BatchSummary.html')
 
@@ -31,7 +35,7 @@ def create_summary(io_manager, type ='html'):
         run_name = xml_root.attrib['name']
 
         for parameter_element in xml_root.iter('param'):
-            if parameter_element.attrib['batch'].lower() == "true":
+            if has_children(parameter_element):
                 variable_name = parameter_element.attrib['varName']
                 print 'Including {}...'.format(variable_name)
                 batch_vars_dict[variable_name] = []
