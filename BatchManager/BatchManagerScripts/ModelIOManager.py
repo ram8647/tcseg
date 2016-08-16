@@ -268,10 +268,15 @@ class IOManager:
         :return: False if the function cannot find the correct files
         '''
 
+        # First, look in the default directories for CompuCell
         if platform.system() == 'Linux':
             default_dir = '/usr/lib/compucell3d/compucell3d.sh'
             if os.path.isfile(default_dir):
                 self.cc3d_command_dir = '/usr/lib/compucell3d/compucell3d.sh'
+        if platform.system() == 'Darwin':
+            for dir in os.listdir('/Applications'):
+                if fnmatch(dir, 'CC3D_*'):
+                    self.cc3d_command_dir = os.path.join('/Applications',dir,'compucell3d.command')
 
         cwd = os.getcwd()
         proposed_model_path = parent_dir(cwd)
