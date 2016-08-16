@@ -1,4 +1,5 @@
 import os
+import platform
 from tempfile import mkstemp
 from shutil import move, rmtree
 from fnmatch import fnmatch
@@ -102,8 +103,6 @@ class IOManager:
         '''
         Finds the paths that we can find automatically, without needing to ask the user directly.
         '''
-
-        #TODO have these detect paramScan and runScript for linux and windows versions of compucell too
 
         # Construct paths in /CC3D_3.7.5/
         compucell_parent_dir = parent_dir(self.cc3d_command_dir)
@@ -262,12 +261,17 @@ class IOManager:
 
     def autodetect_file_paths(self):
         '''
-        main_UI.py should be execute in a certain place, such that the current working directory is
+        main_UI.py should be executed in a certain place, such that the current working directory is
         a child of the parent of the model path. If so, IOManager will autodetect all the important
         file paths.
 
         :return: False if the function cannot find the correct files
         '''
+
+        if platform.system() == 'Linux':
+            default_dir = '/usr/lib/compucell3d/compucell3d.sh'
+            if os.path.isfile(default_dir):
+                self.cc3d_command_dir = '/usr/lib/compucell3d/compucell3d.sh'
 
         cwd = os.getcwd()
         proposed_model_path = parent_dir(cwd)
@@ -298,6 +302,9 @@ class IOManager:
             return False
 
     def open_a_params_file(self, path):
+        '''
+        :param path: path to new params file
+        '''
         new_params_path = ''
         if path.endswith('.txt') or path.endswith('.xml'):
             self.params_path = new_params_path
