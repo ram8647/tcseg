@@ -122,7 +122,8 @@ def window(io_manager):
         print 'Dealing with message: \'{}\''.format(msg)
         if msg == 'ask_for_params':
             msg_box = QMessageBox()
-            msg_box.setText('Please Open Params.xml')
+            msg_box.setText('No params.xml or params.txt has been previously specified. Please do so now!')
+            msg_box.setWindowModality(Qt.WindowModal)
             msg_box.exec_()
             params_path = QFileDialog.getOpenFileName(w, 'Cannot find params file. Please Open Params.xml...', '/')
             params_path = unicode(params_path)
