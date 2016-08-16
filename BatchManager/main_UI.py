@@ -131,6 +131,7 @@ def window(io_manager):
         elif msg == 'ask_for_compucell_command':
             msg_box = QMessageBox()
             msg_box.setText('Please Open CompuCell.command')
+            msg_box.setWindowModality(Qt.WindowModal)
             msg_box.exec_()
             cc3d_command_dir = QFileDialog.getOpenFileName(w, 'Cannot find CompuCell.command Please Open CompuCell.command', '/')
             cc3d_command_dir = unicode(cc3d_command_dir)
@@ -138,6 +139,7 @@ def window(io_manager):
         elif msg == 'ask_for_output_folder':
             msg_box = QMessageBox()
             msg_box.setText('Please open the folder where output will be kept')
+            msg_box.setWindowModality(Qt.WindowModal)
             msg_box.exec_()
             output_folder_dir = QFileDialog.getOpenFileName(w, 'Cannot find output folder. Please Open Output Folder', '/')
             output_folder_dir = unicode(cc3d_command_dir)
@@ -145,6 +147,7 @@ def window(io_manager):
         elif msg == 'ask_for_model_folder':
             msg_box = QMessageBox()
             msg_box.setText('Please Open tcseg_batch.cc3d')
+            msg_box.setWindowModality(Qt.WindowModal)
             msg_box.exec_()
             tcseg_cc3d_dir = QFileDialog.getOpenFileName(w,'Cannot find tcseg_batch.cc3d Please Open tcseg_batch.cc3d','/')
             tcseg_cc3d_dir = unicode(cc3d_command_dir)
@@ -155,6 +158,7 @@ def window(io_manager):
 
         io_manager.construct_additional_paths()
         io_manager.write_settings_XML_file()
+        update_file_paths_in_elongation_model_py()
 
     sys.exit(app.exec_())
 
