@@ -31,10 +31,10 @@ global params_scan_spec_path
 '''
 You can add these manually or, and this is recommended, use BatchManager.command
 '''
-params_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/tcseg_batch/Simulation/params.xml' #IO_MANAGER_FLAG_A_DO_NOT_CHANGE_THIS_COMMENT
-stats_reporter_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/tcseg_batch/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
-measurements_output_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/tcseg_batch/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
-params_scan_spec_path = '/Users/jeremyfisher/Dropbox/Summer 16/TcSeg/tcseg_batch/Simulation/ParameterScanSpecs.xml' #IO_MANAGER_FLAG_C_DO_NOT_CHANGE_THIS_COMMENT
+params_path = '/Users/jeremyfisher/Desktop/tcseg/Simulation/Example_Params.xml' #IO_MANAGER_FLAG_A_DO_NOT_CHANGE_THIS_COMMENT
+stats_reporter_path = '/Users/jeremyfisher/Desktop/tcseg/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
+measurements_output_path = '/Users/jeremyfisher/Desktop/tcseg/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
+params_scan_spec_path = '/Users/jeremyfisher/Desktop/tcseg/Simulation/ParameterScanSpecs.xml' #IO_MANAGER_FLAG_C_DO_NOT_CHANGE_THIS_COMMENT
 
 ## MAKE SURE  PATHS ARE VALID AND DO STUFF IF THEY ARE NOT
 if not os.path.isfile(params_path):
@@ -185,17 +185,6 @@ if AP_growth_constraint_flag:
     steppableRegistry.registerSteppable(OrientedConstraintSteppableInstance)
 
 '''
-Measurements outputs relevant statistics from the current run
-'''
-from ElongationModelSteppables import Measurements
-MeasurementsInstance = Measurements(sim,_frequency = 100,
-                                    _reporter=reporter,
-                                    _output_path = measurements_output_path,
-                                    _batch=batch,
-                                    _batch_iteration=batch_iteration)
-steppableRegistry.registerSteppable(MeasurementsInstance)
-
-'''
 Engrailed implements a diffusion field to simulate EN gene products.
 
 CURRENTLY, EN GENE PRODUCT FIELD NOT ACCOMPLISHING ANYTHING MECHANISTIC AND SLOWING DOWN SIMULATION A LOT
@@ -233,6 +222,17 @@ if params_container.getNumberParam('forces_on'):
     from ElongationModelSteppables import SimplifiedForces_SmoothedForces
     simplified_forces = SimplifiedForces_SmoothedForces(sim,_frequency = 10, _params_container = params_container, _stats_reporter = reporter)
     steppableRegistry.registerSteppable(simplified_forces)
+
+'''
+Measurements outputs relevant statistics from the current run
+'''
+from ElongationModelSteppables import Measurements
+MeasurementsInstance = Measurements(sim,_frequency = 100,
+                                    _reporter=reporter,
+                                    _output_path = measurements_output_path,
+                                    _batch=batch,
+                                    _batch_iteration=batch_iteration)
+steppableRegistry.registerSteppable(MeasurementsInstance)
 
 ## CONFIGURE EXTRA PLAYER FIELDS
 
