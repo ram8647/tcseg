@@ -15,7 +15,7 @@ batch_info_dict = ast.literal_eval(batch_message)
 global batch; batch = batch_info_dict.get('batch_on', False)
 global batch_iteration; batch_iteration = batch_info_dict.get('iteration', 0)
 
-## DECLARE GLOBAL PARAMETERS
+## DECLARE GLOBAL SIMULATION PARAMETERS
 global params_container                                     # Parameter container, instantiated below in configureSimulation()
 global speed_up_sim                                         # Defunct parameter
 global regional_mitosis_flag; global y_GZ_mitosis_border    # Mitosis parameters
@@ -74,8 +74,17 @@ def configureSimulation(sim, params_path):
     global AP_growth_constraint_flag; AP_growth_constraint_flag = params_container.getNumberParam('AP_growth_constraint_flag')
     global dye_mitosis_clones; dye_mitosis_clones=params_container.getNumberParam('dye_mitosis_clones')
     global mitosis_dye_window; mitosis_dye_window=params_container.getListParam('mitosis_dye_window')
+    # Eve oscillator parameters
+    global visualize_eve; visualize_eve=params_container.getNumberParam('visualize_eve')
+    global visualize_Vmeve; visualize_Vmeve=params_container.getNumberParam('visualize_Vmeve')
+    global visualize_runt; visualize_runt=params_container.getNumberParam('visualize_runt')
+    global visualize_odd; visualize_odd=params_container.getNumberParam('visualize_odd')
+    global visualize_all; visualize_all=params_container.getNumberParam('visualize_all')
+    global visualization_threshold; visualization_threshold=params_container.getNumberParam('visualization_threshold')
+    global eve_osc_flag; eve_osc_flag=params_container.getNumberParam('eve_osc_flag')
+    
     '''
-    # these parameters are not currently supported; the following code preventing them from being invoked.
+    # the following parameters are not currently supported; the following code preventing them from being invoked.
     global speed_up_sim; speed_up_sim = params_container.getBooleanParam('speed_up_sim')
     global hinder_cells_near_EN; hinder_cells_near_EN = params_container.getBooleanParam('hinder_cells_near_EN')
     '''
@@ -169,13 +178,6 @@ steppableRegistry=CompuCellSetup.getSteppableRegistry()
 ## INITIALIZE CUSTOM STEPPABLES
 
 '''
-Volume stabilizer prevents cells from vanishing at the beginning of the simulation
-'''
-from ElongationModelSteppables import VolumeStabilizer
-VolumeStabilizerInstance = VolumeStabilizer(sim,_frequency = 1)
-steppableRegistry.registerSteppable(VolumeStabilizerInstance)
-
-'''
 OrientedConstraintSteppable implements oriented growth on certain cells
 '''
 if AP_growth_constraint_flag:
@@ -216,6 +218,13 @@ else:
     steppableRegistry.registerSteppable(mitosis)
 
 '''
+Volume stabilizer prevents cells from vanishing at the beginning of the simulation
+'''
+from ElongationModelSteppables import VolumeStabilizer
+VolumeStabilizerInstance = VolumeStabilizer(sim,_frequency = 1)
+steppableRegistry.registerSteppable(VolumeStabilizerInstance)
+
+'''
 The simflified forces steppable implements the Sarrazin forces
 '''
 if params_container.getNumberParam('forces_on'):
@@ -235,6 +244,32 @@ MeasurementsInstance = Measurements(sim,_frequency = 100,
 steppableRegistry.registerSteppable(MeasurementsInstance)
 
 ## CONFIGURE EXTRA PLAYER FIELDS
+
+if visualize_eve and eve_osc_flag:
+   eveField=simthread.createFloatFieldPy(dim,"eve")
+if visualize_Vmeve and eve_osc_flag:
+   VmeveField=simthread.createFloatFieldPy(dim,"Vmeve")
+if visualize_runt and eve_osc_flag:
+   runField=simthread.createFloatFieldPy(dim,"run")
+if visualize_odd and eve_osc_flag:
+   oddField=simthread.createFloatFieldPy(dim,"odd")
+if visualize_all and eve_osc_flag:
+   eve_run_oddField=simthread.createFloatFieldPy(dim,"eve_run_odd")
+
+if eve_osc_flag:   
+   from RewrittenSarrazinSteppables_07_15 import EveOscillator
+   eveOsc=EveOscillator(_simulator=sim,_frequency=2,_vis_Vmeve=visualize_Vmeve,_vis_eve=visualize_eve,_vis_run=visualize_runt,_vis_odd=visualize_odd,_vis_all=visualize_all,_vis_thresh=visualization_threshold)
+   if visualize_eve:
+      eveOsc.setEveField(eveField)
+   if visualize_Vmeve:
+      eveOsc.setVmeveField(VmeveField)
+   if visualize_runt:
+      eveOsc.setRunField(runField)
+   if visualize_odd:
+      eveOsc.setOddField(oddField)
+   if visualize_all:
+      eveOsc.setEveRunOddField(eve_run_oddField)
+   steppableRegistry.registerSteppable(eveOsc) 
 
 if dye_flag:
     dim=sim.getPotts().getCellFieldG().getDim()
