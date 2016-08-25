@@ -36,7 +36,7 @@ def create_summary(io_manager, type ='html'):
 
         for parameter_element in xml_root.iter('param'):
             if has_children(parameter_element):
-                variable_name = parameter_element.attrib['varName']
+                variable_name = parameter_element.attrib['name']
                 print 'Including {}...'.format(variable_name)
                 batch_vars_dict[variable_name] = []
                 for values_element in parameter_element.iter('BatchValue'):
