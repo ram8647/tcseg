@@ -31,7 +31,7 @@ global params_scan_spec_path
 '''
 You can add these manually or, and this is recommended, use BatchManager.command
 '''
-params_path = '/Users/jeremyfisher/Desktop/tcseg/Simulation/Example_Params.xml' #IO_MANAGER_FLAG_A_DO_NOT_CHANGE_THIS_COMMENT
+params_path = '/Users/jeremyfisher/Desktop/tcseg/Simulation/params.xml' #IO_MANAGER_FLAG_A_DO_NOT_CHANGE_THIS_COMMENT
 stats_reporter_path = '/Users/jeremyfisher/Desktop/tcseg/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
 measurements_output_path = '/Users/jeremyfisher/Desktop/tcseg/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
 params_scan_spec_path = '/Users/jeremyfisher/Desktop/tcseg/Simulation/ParameterScanSpecs.xml' #IO_MANAGER_FLAG_C_DO_NOT_CHANGE_THIS_COMMENT
@@ -221,7 +221,7 @@ else:
 Volume stabilizer prevents cells from vanishing at the beginning of the simulation
 '''
 from ElongationModelSteppables import VolumeStabilizer
-VolumeStabilizerInstance = VolumeStabilizer(sim,_frequency = 1)
+VolumeStabilizerInstance = VolumeStabilizer(sim,1, params_container)
 steppableRegistry.registerSteppable(VolumeStabilizerInstance)
 
 '''
