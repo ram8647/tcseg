@@ -281,13 +281,13 @@ def params_dict_for_batch(batch_iteration, params_xml_path, param_scan_specs_pat
     for parameter_element in xml_root.iter('param'):
         # First, we'll assume that any param element with children is a variable that should be swept
         if has_children(parameter_element):
-            var_name = parameter_element.attrib['varName']
+            var_name = parameter_element.attrib['name']
             batch_var_dict[var_name] = []
             for values_element in parameter_element.iter('BatchValue'):
                 batch_var_dict[var_name].append(ast.literal_eval(values_element.text))
         # If it doesnt have children, it is static. We'll pull the interior text into our dictionary.
         elif not has_children(parameter_element):
-            raw_dict[parameter_element.attrib['varName']] = ast.literal_eval(parameter_element.text)
+            raw_dict[parameter_element.attrib['name']] = ast.literal_eval(parameter_element.text)
 
     if len(batch_var_dict) == 0:
         # If there are no variables to sweep, simply apply the dictionary rules and return the dictionary as is...

@@ -218,7 +218,7 @@ class IOManager:
 
             for parameter_element in xml_root.iter('param'):
                 if has_children(parameter_element):
-                    batch_id = assign_batch_id(parameter_element.attrib['varName'])
+                    batch_id = assign_batch_id(parameter_element.attrib['name'])
                     batch_vars_dict[batch_id] = []
                     for values_element in parameter_element.iter('BatchValue'):
                         batch_vars_dict[batch_id].append(0)
