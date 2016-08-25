@@ -980,12 +980,13 @@ class Measurements(SteppableBasePy):
       return cell_counter
       
    def find_GZ_cell_count(self):
-      cell_counter=0
       y_EN_pos=self.find_posterior_EN_stripe()
-      for cell in self.cellList:
-         if cell.yCOM<y_EN_pos:
-            cell_counter+=1
-      return cell_counter
+      return sum(1 for cell in self.cellList if cell.yCOM<y_EN_pos)
+      # cell_counter = 0
+      # for cell in self.cellList:
+      #    if cell.yCOM<y_EN_pos:
+      #       cell_counter+=1
+      # return cell_counter
       
    def find_GB_length(self):
       ant=self.find_anterior_GB()
@@ -1007,12 +1008,14 @@ class Measurements(SteppableBasePy):
       return area
       
    def find_GZ_area(self):
-      area=0
       y_ant=self.find_posterior_EN_stripe()
-      for cell in self.cellList:
-         if cell.yCOM<y_ant:
-            area+=cell.volume
+      area = sum(cell.volume for cell in self.cellList if cell.yCOM < y_ant)
       return area
+      # area=0
+      # for cell in self.cellList:
+      #    if cell.yCOM<y_ant:
+      #       area+=cell.volume
+      # return area
       
    def find_average_cell_size(self):
       area=self.find_GB_area()
