@@ -1,8 +1,11 @@
 from Stats import StatsReporter
 from Stats import ParamsContainer
 import datetime
+
 from PlayerPython import * 
 import CompuCellSetup
+## General Note: Cell Address is relative to the anterior. So, a 0.0 address means that it is on the anterior tip.
+
 from PySteppables import *
 from PySteppablesExamples import MitosisSteppableBase
 import CompuCell
@@ -11,23 +14,32 @@ import math
 from random import random
 from copy import deepcopy
 
-## General Note: Cell Address is relative to the anterior. So, a 0.0 address means that it is on the anterior tip.
 
 class VolumeStabilizer(SteppableBasePy):
-    '''
-    VolumeStabilizer prevents the cells from immediately shrinking to nothing,
-    which usually happens by default, for some reason...
-    '''
-    def __init__(self,_simulator,_frequency=1):
+    def __init__(self,_simulator,_frequency,_params_container):
         SteppableBasePy.__init__(self,_simulator,_frequency)
+        self.params_container=_params_container
 
     def start(self):
+        Vmin_divide =  self.params_container.getNumberParam('mitosis_Vmin_divide') # 60 
+        Vmin=int(Vmin_divide/2.0)
+
         for cell in self.cellList:
-            cell.targetVolume = cell.volume
-            cell.targetSurface = cell.surface
+            if cell.type==3: # GZ
+                volume=int(Vmin+Vmin*random())
+                surface=4*int(math.sqrt(volume))
+                cell.targetVolume = volume
+                cell.targetSurface = surface
+            else:
+                cell.targetVolume=cell.volume
+                cell.targetSurface=cell.surface
+
+            # This above code prevents the cells from immediately shrinking to nothing.
+
             cell.lambdaVolume = 50.0 # A high lambdaVolume makes the cells resist changing volume.
             cell.lambdaSurface = 2.0 # However, a low lambdaSurface still allows them to move easily.
-            #These above two lines allow the cells to travel without squeezing unrealistically.
+
+            # In effect, these above two lines allow the cells to travel without squeezing, which would be unrealistic.
 
 
 class SimplifiedForces_SmoothedForces(SteppableBasePy):
@@ -193,7 +205,7 @@ class Engrailed(SteppableBasePy):
                         cell.type = 2 # EN
                         #####if self.hinder_anterior_cells == True:
                             #######self.gene_product_secretor.secreteInsideCell(cell,1)
-
+                            
             
 class RegionalMitosis(MitosisSteppableBase):
 
@@ -294,8 +306,29 @@ class RegionalMitosis(MitosisSteppableBase):
       for key, item in parentDict.items():
          childDict[key]=deepcopy(parentDict[key])
       childDict["mitosis_times"]=[]
+
+      eve_flag=self.params_container.getNumberParam('eve_osc_flag')
+      if eve_flag:
       
-    
+       ### copy parent's SBML model to child cell
+         self.copySBMLs(_fromCell=parentCell,_toCell=childCell)
+         state={}
+         state=self.getSBMLState(_modelName='EveOsc',_cell=parentCell)
+         meve=state['meve']
+         Eve=state['Eve']
+         mrun=state['mrun']
+         Run=state['Run']
+         modd=state['modd']
+         Odd=state['Odd']
+      
+         state1={}
+         state1['meve']=meve
+         state1['Eve']=Eve
+         state1['mrun']=mrun
+         state1['Run']=Run
+         state1['modd']=modd
+         state1['Odd']=Odd
+         self.setSBMLState(_modelName='EveOsc',_cell=childCell,_state=state1)    
    
    def assign_cell_region(self,cell):
       cellDict=CompuCell.getPyAttrib(cell)
@@ -935,7 +968,7 @@ class Measurements(SteppableBasePy):
       print 'length=' + str(GZ_length) + ' pixels'
       print 'area=' + str(GZ_area) + ' pixels'
       print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
-      print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'   
+      print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n' 
 
    def find_avg_div_time(self):
       sum_times=0
@@ -980,13 +1013,12 @@ class Measurements(SteppableBasePy):
       return cell_counter
       
    def find_GZ_cell_count(self):
+      cell_counter=0
       y_EN_pos=self.find_posterior_EN_stripe()
-      return sum(1 for cell in self.cellList if cell.yCOM<y_EN_pos)
-      # cell_counter = 0
-      # for cell in self.cellList:
-      #    if cell.yCOM<y_EN_pos:
-      #       cell_counter+=1
-      # return cell_counter
+      for cell in self.cellList:
+         if cell.yCOM<y_EN_pos:
+            cell_counter+=1
+      return cell_counter
       
    def find_GB_length(self):
       ant=self.find_anterior_GB()
@@ -1008,14 +1040,12 @@ class Measurements(SteppableBasePy):
       return area
       
    def find_GZ_area(self):
+      area=0
       y_ant=self.find_posterior_EN_stripe()
-      area = sum(cell.volume for cell in self.cellList if cell.yCOM < y_ant)
+      for cell in self.cellList:
+         if cell.yCOM<y_ant:
+            area+=cell.volume
       return area
-      # area=0
-      # for cell in self.cellList:
-      #    if cell.yCOM<y_ant:
-      #       area+=cell.volume
-      # return area
       
    def find_average_cell_size(self):
       area=self.find_GB_area()
