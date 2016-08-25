@@ -94,12 +94,3 @@ def write_xml_to_sim_directory(xml_as_str, io_manager):
     print 'Saving file to: {}'.format(outpath)
     with open(outpath, 'w') as f:
         f.write(xml_as_str)
-
-
-dict = load_params_dict('/Users/jeremyfisher/Desktop/Merge Me/params.txt')
-output_str = create_xml_str_from_params_dict(param_dict=dict)
-
-outpath = os.path.join('/Users/jeremyfisher/Desktop/Merge Me/params.xml')
-print 'Saving file to: {}'.format(outpath)
-with open(outpath, 'w') as f:
-    f.write(output_str)
