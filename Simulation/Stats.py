@@ -258,13 +258,6 @@ def params_dict_for_batch(batch_iteration, params_xml_path, param_scan_specs_pat
     :return: a dictionary corresponding to our current batch run
     '''
 
-    # Function to generate a unique ID for each parameter that changes between runs, and link
-    # its name to its id in a table
-    def assign_batch_id(_name):
-        new_batch_id = 'batch_id_{}'.format(len(batch_vars_dict))
-        batch_id_to_param_name_table[new_batch_id] = _name
-        return new_batch_id
-
     # Function to determine if a params xml element has children, which probably means it
     # should be swept in a batch
     def has_children(xml_element):
