@@ -17,7 +17,7 @@ class VolumeStabilizer(SteppableBasePy):
         self.params_container=_params_container
 
     def start(self):
-        Vmin_divide =  self.params_container.getNumberParam('mitosis_Vmin_divide') # 60
+        Vmin_divide =  self.params_container.getNumberParam('mitosis_Vmin_divide')
         Vmin=int(Vmin_divide/2.0)
 
         for cell in self.cellList:
@@ -30,11 +30,8 @@ class VolumeStabilizer(SteppableBasePy):
                 cell.targetVolume=cell.volume
                 cell.targetSurface=cell.surface
 
-            # This above code prevents the cells from immediately shrinking to nothing.
-
             cell.lambdaVolume = 50.0 # A high lambdaVolume makes the cells resist changing volume.
             cell.lambdaSurface = 2.0 # However, a low lambdaSurface still allows them to move easily.
-
             # In effect, these above two lines allow the cells to travel without squeezing, which would be unrealistic.
 
 class SimplifiedForces_SmoothedForces(SteppableBasePy):
@@ -925,14 +922,16 @@ class Measurements(SteppableBasePy):
       avg_div_time=self.find_avg_div_time()
 
       with open(self.output_filename,'a') as self.output_file:
-          write_vars = [mcs, GB_cell_count, GB_length, GB_area, GB_division, GZ_cell_count, GZ_length, GZ_area,
+          measurements_vars = [mcs, GB_cell_count, GB_length, GB_area, GB_division, GZ_cell_count, GZ_length, GZ_area,
                         GZ_division, avg_div_time, GZ_normalized_growth]
-          self.output_file.write(','.join(write_vars))+'\n')
+          str_rep_measurements_vars = (str(var) for var in measurements_vars)
+          self.output_file.write(','.join(str_rep_measurements_vars))
+          self.output_file.write('\n')
 
       # self.output_file=open(self.output_filename,'a')
       # self.output_file.write(str(mcs)+','+str(GB_cell_count)+','+str(GB_length)+','+str(GB_area)+','+str(GB_division)+','+str(GZ_cell_count)+','+str(GZ_length)+','+str(GZ_area)+','+str(GZ_division)+','+str(avg_div_time)+'\n')
       # self.output_file.close()
-      
+
       self.reporter.rprint('Germ band (pixels): ')
       self.reporter.printAttrValue(mcs=mcs, GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
       self.reporter.rprint( 'Growth zone (pixels): ')
@@ -948,7 +947,7 @@ class Measurements(SteppableBasePy):
       print 'length=' + str(GZ_length) + ' pixels'
       print 'area=' + str(GZ_area) + ' pixels'
       print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
-      print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'   
+      print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'
 
    def find_avg_div_time(self):
       sum_times=0
