@@ -11,24 +11,31 @@ import math
 from random import random
 from copy import deepcopy
 
-## General Note: Cell Address is relative to the anterior. So, a 0.0 address means that it is on the anterior tip.
-
 class VolumeStabilizer(SteppableBasePy):
-    '''
-    VolumeStabilizer prevents the cells from immediately shrinking to nothing,
-    which usually happens by default, for some reason...
-    '''
-    def __init__(self,_simulator,_frequency=1):
+    def __init__(self,_simulator,_frequency,_params_container):
         SteppableBasePy.__init__(self,_simulator,_frequency)
+        self.params_container=_params_container
 
     def start(self):
+        Vmin_divide =  self.params_container.getNumberParam('mitosis_Vmin_divide') # 60
+        Vmin=int(Vmin_divide/2.0)
+
         for cell in self.cellList:
-            cell.targetVolume = cell.volume
-            cell.targetSurface = cell.surface
+            if cell.type==3: # GZ
+                volume=int(Vmin+Vmin*random())
+                surface=4*int(math.sqrt(volume))
+                cell.targetVolume = volume
+                cell.targetSurface = surface
+            else:
+                cell.targetVolume=cell.volume
+                cell.targetSurface=cell.surface
+
+            # This above code prevents the cells from immediately shrinking to nothing.
+
             cell.lambdaVolume = 50.0 # A high lambdaVolume makes the cells resist changing volume.
             cell.lambdaSurface = 2.0 # However, a low lambdaSurface still allows them to move easily.
-            #These above two lines allow the cells to travel without squeezing unrealistically.
 
+            # In effect, these above two lines allow the cells to travel without squeezing, which would be unrealistic.
 
 class SimplifiedForces_SmoothedForces(SteppableBasePy):
     def __init__(self,_simulator,_frequency, _params_container, _stats_reporter):
@@ -912,13 +919,19 @@ class Measurements(SteppableBasePy):
       GZ_length=self.find_GZ_length()
       GB_area=self.find_GB_area()
       GZ_area=self.find_GZ_area()
+      GZ_normalized_growth = GZ_division/GZ_area
       avg_cell_size=self.find_average_cell_size()
       avg_diam=math.sqrt(avg_cell_size)
       avg_div_time=self.find_avg_div_time()
-      
-      self.output_file=open(self.output_filename,'a')
-      self.output_file.write(str(mcs)+','+str(GB_cell_count)+','+str(GB_length)+','+str(GB_area)+','+str(GB_division)+','+str(GZ_cell_count)+','+str(GZ_length)+','+str(GZ_area)+','+str(GZ_division)+','+str(avg_div_time)+'\n')
-      self.output_file.close()
+
+      with open(self.output_filename,'a') as self.output_file:
+          write_vars = [mcs, GB_cell_count, GB_length, GB_area, GB_division, GZ_cell_count, GZ_length, GZ_area,
+                        GZ_division, avg_div_time, GZ_normalized_growth]
+          self.output_file.write(','.join(write_vars))+'\n')
+
+      # self.output_file=open(self.output_filename,'a')
+      # self.output_file.write(str(mcs)+','+str(GB_cell_count)+','+str(GB_length)+','+str(GB_area)+','+str(GB_division)+','+str(GZ_cell_count)+','+str(GZ_length)+','+str(GZ_area)+','+str(GZ_division)+','+str(avg_div_time)+'\n')
+      # self.output_file.close()
       
       self.reporter.rprint('Germ band (pixels): ')
       self.reporter.printAttrValue(mcs=mcs, GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)

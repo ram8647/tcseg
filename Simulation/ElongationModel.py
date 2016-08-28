@@ -169,13 +169,6 @@ steppableRegistry=CompuCellSetup.getSteppableRegistry()
 ## INITIALIZE CUSTOM STEPPABLES
 
 '''
-Volume stabilizer prevents cells from vanishing at the beginning of the simulation
-'''
-from ElongationModelSteppables import VolumeStabilizer
-VolumeStabilizerInstance = VolumeStabilizer(sim,_frequency = 1)
-steppableRegistry.registerSteppable(VolumeStabilizerInstance)
-
-'''
 OrientedConstraintSteppable implements oriented growth on certain cells
 '''
 if AP_growth_constraint_flag:
@@ -214,6 +207,13 @@ else:
     from ElongationModelSteppables import RegionalMitosis
     mitosis = RegionalMitosis(sim,_frequency = 1, _params_container = params_container, _stats_reporter = reporter)
     steppableRegistry.registerSteppable(mitosis)
+
+'''
+Volume stabilizer prevents cells from vanishing at the beginning of the simulation.
+'''
+from ElongationModelSteppables import VolumeStabilizer
+VolumeStabilizerInstance = VolumeStabilizer(sim, _frequency=1, _params_container=params_container)
+steppableRegistry.registerSteppable(VolumeStabilizerInstance)
 
 '''
 The simflified forces steppable implements the Sarrazin forces
