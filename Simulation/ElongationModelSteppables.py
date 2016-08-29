@@ -136,8 +136,6 @@ class SimplifiedForces_SmoothedForces(SteppableBasePy):
             y_GZ_pos=yCM
       return y_GZ_pos       
 
-      
-
 class SarrazinVisualizer(SteppableBasePy):
     def __init__(self, _simulator, _frequency):
         SteppableBasePy.__init__(self, _simulator, _frequency)
@@ -198,8 +196,356 @@ class Engrailed(SteppableBasePy):
                         #####if self.hinder_anterior_cells == True:
                             #######self.gene_product_secretor.secreteInsideCell(cell,1)
 
-            
-class RegionalMitosis(MitosisSteppableBase):
+class OrientedConstraintSteppable(SteppableBasePy):
+    def __init__(self, _simulator, _frequency, _OGPlugin):
+        SteppableBasePy.__init__(self, _simulator, _frequency)
+        self.OGPlugin = _OGPlugin
+
+    def start(self):
+        for cell in self.cellList:
+            if cell:
+                #### cell.lambdaVolume=2.0
+                cell.targetVolume = cell.volume
+
+                #### self.OGPlugin.setElongationAxis(cell, math.cos(math.pi / 3), math.sin(math.pi / 3)) # Here, we define the axis of elongatino.
+                self.OGPlugin.setElongationAxis(cell, 0, 1)  # Here, we define the axis of elongation.
+                self.OGPlugin.setConstraintWidth(cell, 4.0)  # And this function gives a width constraint to each cell
+                self.OGPlugin.setElongationEnabled(cell, True)  # Make sure to enable or disable elongation in all cells
+                # Or unexpected results may occur.
+
+class DyeCells(SteppableBasePy):
+    '''Labels a population of cells and outputs to a Player visualization field'''
+
+    def __init__(self, _simulator, _frequency, _x0, _y0, _xf, _yf, _reporter):
+        SteppableBasePy.__init__(self, _simulator, _frequency)
+        self.pixelTrackerPlugin = CompuCell.getPixelTrackerPlugin()
+        self.x0 = _x0;
+        self.xf = _xf
+        self.y0 = _y0;
+        self.yf = _yf
+        self.reporter = _reporter
+
+    def setScalarField(self, _field):
+        self.dyeField = _field
+
+    def start(self):
+        #       self.reporter.rprint("\nIn the DyeCells module...\n")
+        self.zero_field()
+        self.zero_cells()
+        for i in range(len(self.x0)):
+            #         self.reporter.rprint('\nfetching dye info...\n')
+            dye = 1 + i
+            x0 = self.x0[i]
+            xf = self.xf[i]
+            y0 = self.y0[i]
+            yf = self.yf[i]
+            self.mark_clone(x0, xf, y0, yf, dye)
+            #
+
+    def step(self, mcs):
+        self.zero_field()
+        ##### identify cells that have dye and visualize the dye in Player
+        for cell in self.cellList:
+            if cell:
+                cellDict = CompuCell.getPyAttrib(cell)
+                dye = cellDict["dye"]
+                if dye > 0:
+                    pixelList = CellPixelList(self.pixelTrackerPlugin, cell)
+                    for pixelData in pixelList:
+                        pt = pixelData.pixel
+                        fillScalarValue(self.dyeField, pt.x, pt.y, pt.z, dye)
+
+    def mark_clone(self, x0, xf, y0, yf, dye):
+        for cell in self.cellList:
+            if cell:
+                cellDict = CompuCell.getPyAttrib(cell)
+                xCM = cell.xCOM
+                yCM = cell.yCOM
+                if (xCM >= x0 and xCM <= xf and yCM >= y0 and yCM <= yf):  ## if the cell is within the dye area
+                    #                     self.reporter.rprint('\ndying cell...\n')
+                    cellDict["dye"] = dye  ## set initial dye load
+                    pixelList = CellPixelList(self.pixelTrackerPlugin, cell)
+                    for pixelData in pixelList:
+                        pt = pixelData.pixel
+                        fillScalarValue(self.dyeField, pt.x, pt.y, pt.z, dye)
+
+    def zero_field(self):
+        ##### Set dye field to zero
+        for x in range(self.dim.x):
+            for y in range(self.dim.y):
+                fillScalarValue(self.dyeField, x, y, 0, 0)
+
+    def zero_cells(self):
+        for cell in self.cellList:
+            if cell:
+                cellDict = CompuCell.getPyAttrib(cell)
+                cellDict["dye"] = 0
+
+class DyeMitosisClones(SteppableBasePy):
+    def __init__(self, _simulator, _frequency, _window):
+        SteppableBasePy.__init__(self, _simulator, _frequency)
+        self.pixelTrackerPlugin = CompuCell.getPixelTrackerPlugin()
+        self.window = _window
+
+    def setScalarField(self, _field):
+        self.dyeField = _field
+
+    def start(self):
+        ### Initialize mitosis dye value to zero in all cells
+        for cell in self.cellList:
+            if cell:
+                cellDict = CompuCell.getPyAttrib(cell)
+                cellDict["mitosis_dye"] = 0
+
+    def step(self, mcs):
+        ### if within the mitosis dye window, mark mitosing cells (this will depend on the
+        ### visualization of mitosing cells by marking them as type "Mitosing")
+        if mcs >= self.window[0] and mcs <= self.window[1]:
+            for cell in self.cellList:
+                if cell.type == 4:  # if a type Mitosing cell
+                    cellDict = CompuCell.getPyAttrib(cell)
+                    cellDict["mitosis_dye"] = 1
+
+                    ##### Set mitosis dye field to zero
+        for x in range(self.dim.x):
+            for y in range(self.dim.y):
+                fillScalarValue(self.dyeField, x, y, 0, 0)
+                ##### identify cells that have mitosis dye and visualize the dye in Player
+        for cell in self.cellList:
+            if cell:
+                cellDict = CompuCell.getPyAttrib(cell)
+                dye = cellDict["mitosis_dye"]
+                if dye > 0:
+                    pixelList = CellPixelList(self.pixelTrackerPlugin, cell)
+                    for pixelData in pixelList:
+                        pt = pixelData.pixel
+                        fillScalarValue(self.dyeField, pt.x, pt.y, pt.z, dye)
+
+class Measurements(SteppableBasePy):
+    def __init__(self, _simulator, _frequency, _reporter, _output_path, _batch=False, _batch_iteration=0):
+        SteppableBasePy.__init__(self, _simulator, _frequency)
+        self.reporter = _reporter
+        self.outp = _output_path
+        self.batch = _batch
+        self.batch_iteration = _batch_iteration
+
+    def start(self):
+        try:
+            output_folder = self.outp
+            stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%y%m%d-%H%M%S')
+            if not self.batch:
+                self.output_filename = output_folder + 'run' + stamp + '.csv'
+            else:
+                self.output_filename = self.fname = '{}batch_run_{}.csv'.format(output_folder, self.batch_iteration)
+            with open(self.output_filename, 'w') as self.output_file:
+                self.output_file.write(
+                    'MCS,GB cell count,GB length,GB area,GB cell divisions,GZ cell count,GZ length,GZ area,GZ cell divisions,avg division cycle time\n')
+        except IOError:
+            raise NameError('Could not output to a csv file properly! Aborting.')
+
+            # GB_cell_count=self.find_GB_cell_count()
+            # GZ_cell_count=self.find_GZ_cell_count()
+            # GB_length=self.find_GB_length()
+            # GZ_length=self.find_GZ_length()
+            # GB_area=self.find_GB_area()
+            # GZ_area=self.find_GZ_area()
+            # avg_cell_size=self.find_average_cell_size()
+            # avg_diam=math.sqrt(avg_cell_size)
+            #
+            # self.reporter.rprint('Germ band (pixels): ')
+            # self.reporter.printAttrValue(GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
+            # self.reporter.rprint( 'Growth zone (pixels): ')
+            # self.reporter.printAttrValue(GZ_cell_count=GZ_cell_count, GZ_length=GZ_length, GZ_area=GZ_area, avg_cell_size=avg_cell_size, avg_diam=avg_diam)
+            #
+            # print '\nGerm band:'
+            # print 'cell count=' + str(GB_cell_count)
+            # print 'length=' + str(GB_length) + ' pixels'
+            # print 'area=' + str(GB_area) + ' pixels'
+            # print '========='
+            # print '\nGrowth zone:'
+            # print 'cell count=' + str(GZ_cell_count)
+            # print 'length=' + str(GZ_length) + ' pixels'
+            # print 'area=' + str(GZ_area) + ' pixels'
+            # print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
+            # print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'
+
+    def step(self, mcs):
+        with open(self.output_filename, 'a') as self.output_file:
+            GZ_division = self.find_GZ_division_count()
+            GB_division = self.find_GB_division_count()
+            GB_cell_count = self.find_GB_cell_count()
+            GZ_cell_count = self.find_GZ_cell_count()
+            GB_length = self.find_GB_length()
+            GZ_length = self.find_GZ_length()
+            GB_area = self.find_GB_area()
+            GZ_area = self.find_GZ_area()
+            GZ_normalized_growth = GZ_division / GZ_area
+            avg_cell_size = self.find_average_cell_size()
+            avg_diam = math.sqrt(avg_cell_size)
+            avg_div_time = self.find_avg_div_time()
+
+            measurements_vars = [mcs, GB_cell_count, GB_length, GB_area, GB_division, GZ_cell_count, GZ_length, GZ_area,
+                                 GZ_division, avg_div_time, GZ_normalized_growth]
+            str_rep_measurements_vars = (str(var) for var in measurements_vars)
+
+            self.output_file.write(','.join(str_rep_measurements_vars))
+            self.output_file.write('\n')
+
+            # self.output_file=open(self.output_filename,'a')
+            # self.output_file.write(str(mcs)+','+str(GB_cell_count)+','+str(GB_length)+','+str(GB_area)+','+str(GB_division)+','+str(GZ_cell_count)+','+str(GZ_length)+','+str(GZ_area)+','+str(GZ_division)+','+str(avg_div_time)+'\n')
+            # self.output_file.close()
+
+            # self.reporter.rprint('Germ band (pixels): ')
+            # self.reporter.printAttrValue(mcs=mcs, GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
+            # self.reporter.rprint( 'Growth zone (pixels): ')
+            # self.reporter.printAttrValue(mcs=mcs,GZ_cell_count=GZ_cell_count, GZ_length=GZ_length, GZ_area=GZ_area, avg_cell_size=avg_cell_size, avg_diam=avg_diam)
+            #
+            # print '\nGerm band:'
+            # print 'cell count=' + str(GB_cell_count)
+            # print 'length=' + str(GB_length) + ' pixels'
+            # print 'area=' + str(GB_area) + ' pixels'
+            # print '========='
+            # print '\nGrowth zone:'
+            # print 'cell count=' + str(GZ_cell_count)
+            # print 'length=' + str(GZ_length) + ' pixels'
+            # print 'area=' + str(GZ_area) + ' pixels'
+            # print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
+            # print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'
+
+    def find_avg_div_time(self):
+        sum_times = 0
+        num_times = 0
+        for cell in self.cellList:
+            if cell:
+                cellDict = CompuCell.getPyAttrib(cell)
+                if "mitosis_times" in cellDict:
+                    if len(cellDict["mitosis_times"]) > 1:
+                        sum_times += sum(cellDict["mitosis_times"]) - cellDict["mitosis_times"][0]
+                        num_times += len(cellDict["mitosis_times"]) - 1
+        if num_times == 0:
+            avg_time = 0
+        else:
+            avg_time = sum_times / float(num_times)
+        return avg_time
+
+    def find_GZ_division_count(self):
+        division_count = 0
+        for cell in self.cellList:
+            if cell:
+                cellDict = CompuCell.getPyAttrib(cell)
+                division_count += cellDict["divided_GZ"]
+                cellDict["divided_GZ"] = 0
+        return division_count
+
+    def find_GB_division_count(self):
+        division_count = 0
+        for cell in self.cellList:
+            if cell:
+                cellDict = CompuCell.getPyAttrib(cell)
+                division_count += cellDict["divided"]
+                cellDict["divided"] = 0
+        return division_count
+
+    def find_GB_cell_count(self):
+        cell_counter = 0
+        for cell in self.cellList:
+            if cell:
+                cell_counter += 1
+        return cell_counter
+
+    def find_GZ_cell_count(self):
+        y_EN_pos = self.find_posterior_EN_stripe()
+        return sum(1 for cell in self.cellList if cell.yCOM < y_EN_pos)
+        # cell_counter = 0
+        # for cell in self.cellList:
+        #    if cell.yCOM<y_EN_pos:
+        #       cell_counter+=1
+        # return cell_counter
+
+    def find_GB_length(self):
+        ant = self.find_anterior_GB()
+        pos = self.find_posterior_GB()
+        length = ant - pos
+        return length
+
+    def find_GZ_length(self):
+        ant = self.find_posterior_EN_stripe()
+        pos = self.find_posterior_GB()
+        length = ant - pos
+        return length
+
+    def find_GB_area(self):
+        area = 0
+        for cell in self.cellList:
+            if cell:
+                area += cell.volume
+        return area
+
+    def find_GZ_area(self):
+        y_ant = self.find_posterior_EN_stripe()
+        area = sum(cell.volume for cell in self.cellList if cell.yCOM < y_ant)
+        return area
+        # area=0
+        # for cell in self.cellList:
+        #    if cell.yCOM<y_ant:
+        #       area+=cell.volume
+        # return area
+
+    def find_average_cell_size(self):
+        area = self.find_GB_area()
+        cell_count = self.find_GB_cell_count()
+        avg_cell_volume = area / cell_count
+        return avg_cell_volume
+
+    def find_posterior_EN_stripe(self):
+        y_EN_pos = 9999
+        for cell in self.cellList:
+            if cell.type == 2:  # EN cell
+                yCM = cell.yCOM
+                if yCM < y_EN_pos:
+                    y_EN_pos = yCM
+        return y_EN_pos
+
+    def find_anterior_GB(self):
+        ant = 0
+        for cell in self.cellList:
+            yCM = cell.yCOM
+            if yCM > ant:
+                ant = yCM
+        return ant
+
+    def find_posterior_GB(self):
+        pos = 9999
+        for cell in self.cellList:
+            yCM = cell.yCOM
+            if yCM < pos:
+                pos = yCM
+        return pos
+
+## Mitosis Classes ##
+class ElongationModelMitosisSteppableBase(MitosisSteppableBase):
+    def assign_cell_region(self, cell):
+        cellDict = CompuCell.getPyAttrib(cell)
+        yCM = cell.yCM / float(cell.volume)
+        if yCM > self.y_EN_ant:  # if cell is anterior to EN stripes
+            cellDict["region"] = 0
+            if cell.type != 4 and cell.type != 2 :  # if cell is not En or mitosing
+                cell.type = 1  # AnteriorLobe
+        elif yCM > self.y_EN_pos:  # if cell is in EN-striped region
+            cellDict["region"] = 1
+            if cell.type != 2 and cell.type != 4 and cell.type != 1:  # if cell is not En or mitosing or AnteriorLobe
+                cell.type = 5  # Segmented
+        elif yCM > self.y_GZ_border:  # if cell is in anterior region of GZ
+            cellDict["region"] = 2
+            if (cell.type != 2 and cell.type != 4):  # if cell is not En or mitosing
+                cell.type = 3  # GZ
+        else:  # if cell is in posterior region of GZ
+            cellDict["region"] = 3
+            if cell.type != 4:  # if cell is not mitosing
+                cell.type = 3  # GZ
+
+
+class RegionalMitosis(ElongationModelMitosisSteppableBase):
 
    def __init__(self,_simulator,_frequency, _params_container, _stats_reporter):
       self.reporter = _stats_reporter
@@ -298,28 +644,7 @@ class RegionalMitosis(MitosisSteppableBase):
       for key, item in parentDict.items():
          childDict[key]=deepcopy(parentDict[key])
       childDict["mitosis_times"]=[]
-      
-    
-   
-   def assign_cell_region(self,cell):
-      cellDict=CompuCell.getPyAttrib(cell)
-      yCM=cell.yCM/float(cell.volume)
-      if yCM > self.y_EN_ant: # if cell is anterior to EN stripes
-         cellDict["region"]=0
-         if (cell.type!=4 and cell.type!=2): # if cell is not En or mitosing
-            cell.type=1 # AnteriorLobe
-      elif yCM > self.y_EN_pos: # if cell is in EN-striped region
-         cellDict["region"]=1
-         if (cell.type!=2 and cell.type!=4 and cell.type!=1): # if cell is not En or mitosing or AnteriorLobe
-            cell.type=5 # Segmented
-      elif yCM > self.y_GZ_border: # if cell is in anterior region of GZ
-         cellDict["region"]=2
-         if (cell.type!=2 and cell.type!=4): # if cell is not En or mitosing
-            cell.type=3 #GZ
-      else:                # if cell is in posterior region of GZ
-         cellDict["region"]=3
-         if cell.type!=4: #if cell is not mitosing
-            cell.type=3 # GZ
+
       
    def initiate_cell_volume(self,cell): 
       phase=random() # chooses a phase between 0 and 1 to initialize cell volume
@@ -403,7 +728,7 @@ class RegionalMitosis(MitosisSteppableBase):
             else:
                cellDict['mitosisVisualizationTimer']-=1
 
-class RegionalMitosisWithAPConstraint(MitosisSteppableBase):
+class RegionalMitosisWithAPConstraint(ElongationModelMitosisSteppableBase):
 
    def __init__(self,_simulator,_frequency, _params_container, _stats_reporter,_OGPlugin):
       self.reporter = _stats_reporter
@@ -479,11 +804,12 @@ class RegionalMitosisWithAPConstraint(MitosisSteppableBase):
             self.divideCellRandomOrientation(cell)
       if self.mitosisVisualizationFlag:
          self.mitosisVisualizationCountdown()   # Maintains cell type as "Mitosing" for a set window of time (self.mitosisVisualizationWindow)
-         
-   # UpdateAttributes is inherited from MitosisSteppableBase
-   #  and it is called automatically by the divideCell() function
-   # It sets the attributes of the parent and daughter cells:      
+
    def updateAttributes(self):
+       # UpdateAttributes is inherited from MitosisSteppableBase
+       # and it is called automatically by the divideCell() function
+       # It sets the attributes of the parent and daughter cells.
+
       parentCell=self.mitosisSteppable.parentCell
       childCell=self.mitosisSteppable.childCell
             
@@ -506,26 +832,6 @@ class RegionalMitosisWithAPConstraint(MitosisSteppableBase):
       self.OGPlugin.setConstraintWidth(childCell, 4.0) # And this function gives a width constraint to each cell
       self.OGPlugin.setElongationEnabled(childCell, True) # Make sure to enable or disable elongation in all cells
                                                             # Or unexpected results may occur.
-   
-   def assign_cell_region(self,cell):
-      cellDict=CompuCell.getPyAttrib(cell)
-      yCM=cell.yCM/float(cell.volume)
-      if yCM > self.y_EN_ant: # if cell is anterior to EN stripes
-         cellDict["region"]=0
-         if (cell.type!=4 and cell.type!=2): # if cell is not En or mitosing
-            cell.type=1 # AnteriorLobe
-      elif yCM > self.y_EN_pos: # if cell is in EN-striped region
-         cellDict["region"]=1
-         if (cell.type!=2 and cell.type!=4 and cell.type!=1): # if cell is not En or mitosing or AnteriorLobe
-            cell.type=5 # Segmented
-      elif yCM > self.y_GZ_border: # if cell is in anterior region of GZ
-         cellDict["region"]=2
-         if (cell.type!=2 and cell.type!=4): # if cell is not En or mitosing
-            cell.type=3 #GZ
-      else:                # if cell is in posterior region of GZ
-         cellDict["region"]=3
-         if cell.type!=4: #if cell is not mitosing
-            cell.type=3 # GZ
       
    def initiate_cell_volume(self,cell): 
       phase=random() # chooses a phase between 0 and 1 to initialize cell volume
@@ -609,7 +915,7 @@ class RegionalMitosisWithAPConstraint(MitosisSteppableBase):
             else:
                cellDict['mitosisVisualizationTimer']-=1
            
-class InitializeRegionsWithoutMitosis(MitosisSteppableBase):
+class InitializeRegionsWithoutMitosis(ElongationModelMitosisSteppableBase):
 
    def __init__(self,_simulator,_frequency):
       MitosisSteppableBase.__init__(self,_simulator, _frequency)
@@ -632,26 +938,6 @@ class InitializeRegionsWithoutMitosis(MitosisSteppableBase):
       self.y_GZ_border=self.find_y_GZ_mitosis_border()
       for cell in self.cellList:
          self.assign_cell_region(cell)
-   
-   def assign_cell_region(self,cell):
-      cellDict=CompuCell.getPyAttrib(cell)
-      yCM=cell.yCM/float(cell.volume)
-      if yCM > self.y_EN_ant: # if cell is anterior to EN stripes
-         cellDict["region"]=0
-         if (cell.type!=4 and cell.type!=2): # if cell is not En or mitosing
-            cell.type=1 # AnteriorLobe
-      elif yCM > self.y_EN_pos: # if cell is in EN-striped region
-         cellDict["region"]=1
-         if (cell.type!=2 and cell.type!=4 and cell.type!=1): # if cell is not En or mitosing or AnteriorLobe
-            cell.type=5 # Segmented
-      elif yCM > self.y_GZ_border: # if cell is in anterior region of GZ
-         cellDict["region"]=2
-         if (cell.type!=2 and cell.type!=4): # if cell is not En or mitosing
-            cell.type=3 #GZ
-      else:                # if cell is in posterior region of GZ
-         cellDict["region"]=3
-         if cell.type!=4: #if cell is not mitosing
-            cell.type=3 # GZ
       
    def find_posterior_EN_stripe(self):
       y_EN_pos=9999
@@ -683,379 +969,3 @@ class InitializeRegionsWithoutMitosis(MitosisSteppableBase):
          if yCM < y_GZ_pos:
             y_GZ_pos=yCM
       return y_GZ_pos
-      
-# class InitializeRegionsWithoutMitosis(SteppableBasePy):
-# 
-#    def __init__(self,_simulator,_frequency):
-#       SteppableBasePy.__init__(self,_simulator,_frequency)
-#       
-#    def start(self):
-#       self.y_EN_pos=self.find_posterior_EN_stripe()
-#       self.y_EN_ant=self.find_anterior_EN_stripe()
-#       for cell in self.cellList:
-#          region=self.assign_cell_region(cell)
-#          cellDict = CompuCell.getPyAttrib(cell)
-#          cellDict["divided"]=0
-#          cellDict["divided_GZ"]=0
-#      
-#    def step(self,mcs):
-#       self.y_EN_pos=self.find_posterior_EN_stripe()
-#       self.y_EN_ant=self.find_anterior_EN_stripe()
-#       for cell in self.cellList:
-#          self.assign_cell_region(cell)
-#      
-#    def assign_cell_region(self,cell):
-#       yCM=cell.yCOM
-#       if yCM > self.y_EN_ant: # if cell is anterior to EN stripes
-#          if (cell.type!=4 and cell.type!=2): # if cell is not En or mitosing
-#             cell.type=1 # AnteriorLobe
-#       elif yCM > self.y_EN_pos: # if cell is in EN-striped region
-#          if (cell.type!=2 and cell.type!=4 and cell.type!=1): # if cell is not En or mitosing or AnteriorLobe
-#             cell.type=5 # Segmented
-#       else:                # if cell is in posterior region of GZ
-#          if (cell.type!=2 and cell.type!=4): #if cell is not En or mitosing
-#             cell.type=3 # GZ
-#                
-#    def find_posterior_EN_stripe(self):
-#       y_EN_pos=9999
-#       for cell in self.cellList:
-#          if cell.type==2: # EN cell
-#             yCM=cell.yCM/float(cell.volume)
-#             if yCM < y_EN_pos:
-#                y_EN_pos=yCM
-#       return y_EN_pos
-#       
-#    def find_anterior_EN_stripe(self):
-#       y_EN_ant=0
-#       for cell in self.cellList:
-#          if cell.type==2: # EN cell
-#             yCM=cell.yCM/float(cell.volume)
-#             if yCM > y_EN_ant:
-#                y_EN_ant=yCM
-#       return y_EN_ant          
-#                
-               
-### Constrains a subpopulation of cells to grow along a particular axis by biasing the 
-### addition of new pixels and constraining the width of cells orthogonal to the axis of growth 
-### Developed by Jeremy Fisher (2015)              
-class OrientedConstraintSteppable(SteppableBasePy):
-   def __init__(self,_simulator,_frequency,_OGPlugin):
-      SteppableBasePy.__init__(self,_simulator,_frequency)
-      self.OGPlugin = _OGPlugin
-        
-   def start(self):
-      for cell in self.cellList:
-         if cell:
-            #### cell.lambdaVolume=2.0
-            cell.targetVolume=cell.volume
-            
-            #### self.OGPlugin.setElongationAxis(cell, math.cos(math.pi / 3), math.sin(math.pi / 3)) # Here, we define the axis of elongatino.
-            self.OGPlugin.setElongationAxis(cell, 0, 1) # Here, we define the axis of elongation.
-            self.OGPlugin.setConstraintWidth(cell, 4.0) # And this function gives a width constraint to each cell
-            self.OGPlugin.setElongationEnabled(cell, True) # Make sure to enable or disable elongation in all cells
-                                                            # Or unexpected results may occur.
-               
-## Labels a population of cells and outputs to a Player visualization field   
-class DyeCells(SteppableBasePy):
-   def __init__(self,_simulator,_frequency,_x0,_y0,_xf,_yf,_reporter):
-      SteppableBasePy.__init__(self,_simulator,_frequency)   
-      self.pixelTrackerPlugin=CompuCell.getPixelTrackerPlugin()
-      self.x0=_x0; self.xf=_xf
-      self.y0=_y0; self.yf=_yf
-      self.reporter=_reporter
-      
-   def setScalarField(self,_field):
-      self.dyeField=_field
-      
-   def start(self):
-#       self.reporter.rprint("\nIn the DyeCells module...\n")
-      self.zero_field()
-      self.zero_cells()
-      for i in range(len(self.x0)):
-#         self.reporter.rprint('\nfetching dye info...\n')
-        dye=1+i
-        x0=self.x0[i]
-        xf=self.xf[i]
-        y0=self.y0[i]
-        yf=self.yf[i]
-        self.mark_clone(x0,xf,y0,yf,dye)
-#       
-   def step(self,mcs):
-      self.zero_field()
-   ##### identify cells that have dye and visualize the dye in Player
-      for cell in self.cellList:
-         if cell:
-            cellDict=CompuCell.getPyAttrib(cell)
-            dye=cellDict["dye"]
-            if dye>0:
-               pixelList=CellPixelList(self.pixelTrackerPlugin,cell)
-               for pixelData in pixelList:
-                  pt=pixelData.pixel   
-                  fillScalarValue(self.dyeField,pt.x,pt.y,pt.z,dye)
-                  
-   def mark_clone(self,x0,xf,y0,yf,dye):
-        for cell in self.cellList:
-            if cell:
-                cellDict=CompuCell.getPyAttrib(cell)
-                xCM=cell.xCOM
-                yCM=cell.yCOM
-                if (xCM>=x0 and xCM<=xf and yCM>=y0 and yCM<=yf): ## if the cell is within the dye area
-#                     self.reporter.rprint('\ndying cell...\n')
-                    cellDict["dye"]=dye  ## set initial dye load
-                    pixelList=CellPixelList(self.pixelTrackerPlugin,cell)
-                    for pixelData in pixelList:
-                        pt=pixelData.pixel
-                        fillScalarValue(self.dyeField,pt.x,pt.y,pt.z,dye)
-                        
-   def zero_field(self):
-       ##### Set dye field to zero
-        for x in range(self.dim.x):
-            for y in range(self.dim.y):
-                fillScalarValue(self.dyeField,x,y,0,0)
-   
-   def zero_cells(self):
-        for cell in self.cellList:
-            if cell:
-                cellDict=CompuCell.getPyAttrib(cell)
-                cellDict["dye"]=0
-               
-class DyeMitosisClones(SteppableBasePy):
-    def __init__(self,_simulator,_frequency,_window):
-        SteppableBasePy.__init__(self,_simulator,_frequency)   
-        self.pixelTrackerPlugin=CompuCell.getPixelTrackerPlugin()
-        self.window=_window
-        
-    def setScalarField(self,_field):
-        self.dyeField=_field
-
-    def start(self):
-    ### Initialize mitosis dye value to zero in all cells
-        for cell in self.cellList:
-            if cell:
-                cellDict=CompuCell.getPyAttrib(cell)
-                cellDict["mitosis_dye"]=0
-        
-    def step(self,mcs):
-    ### if within the mitosis dye window, mark mitosing cells (this will depend on the 
-    ### visualization of mitosing cells by marking them as type "Mitosing")
-        if mcs>=self.window[0] and mcs<=self.window[1]:
-            for cell in self.cellList:
-                if cell.type==4: # if a type Mitosing cell
-                    cellDict=CompuCell.getPyAttrib(cell)
-                    cellDict["mitosis_dye"]=1
-   
-   ##### Set mitosis dye field to zero
-        for x in range(self.dim.x):
-            for y in range(self.dim.y):
-                fillScalarValue(self.dyeField,x,y,0,0)
-   ##### identify cells that have mitosis dye and visualize the dye in Player
-        for cell in self.cellList:
-            if cell:
-                cellDict=CompuCell.getPyAttrib(cell)
-                dye=cellDict["mitosis_dye"]
-                if dye>0:
-                    pixelList=CellPixelList(self.pixelTrackerPlugin,cell)
-                    for pixelData in pixelList:
-                        pt=pixelData.pixel   
-                        fillScalarValue(self.dyeField,pt.x,pt.y,pt.z,dye)
-
-class Measurements(SteppableBasePy):
-   def __init__(self,_simulator,_frequency, _reporter, _output_path, _batch = False, _batch_iteration = 0):
-      SteppableBasePy.__init__(self,_simulator,_frequency)
-      self.reporter = _reporter
-      self.outp = _output_path
-      self.batch = _batch
-      self.batch_iteration = _batch_iteration
-        
-   def start(self):
-      try:
-          output_folder=self.outp
-          stamp = datetime.datetime.fromtimestamp(time.time()).strftime('%y%m%d-%H%M%S')
-          if not self.batch:
-              self.output_filename = output_folder + 'run' + stamp + '.csv'
-          else:
-              self.output_filename= self.fname = '{}batch_run_{}.csv'.format(output_folder,self.batch_iteration)
-          with open(self.output_filename,'w') as self.output_file:
-              self.output_file.write('MCS,GB cell count,GB length,GB area,GB cell divisions,GZ cell count,GZ length,GZ area,GZ cell divisions,avg division cycle time\n')
-      except IOError:
-          raise NameError('Could not output to a csv file properly! Aborting.')
-   
-      # GB_cell_count=self.find_GB_cell_count()
-      # GZ_cell_count=self.find_GZ_cell_count()
-      # GB_length=self.find_GB_length()
-      # GZ_length=self.find_GZ_length()
-      # GB_area=self.find_GB_area()
-      # GZ_area=self.find_GZ_area()
-      # avg_cell_size=self.find_average_cell_size()
-      # avg_diam=math.sqrt(avg_cell_size)
-      #
-      # self.reporter.rprint('Germ band (pixels): ')
-      # self.reporter.printAttrValue(GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
-      # self.reporter.rprint( 'Growth zone (pixels): ')
-      # self.reporter.printAttrValue(GZ_cell_count=GZ_cell_count, GZ_length=GZ_length, GZ_area=GZ_area, avg_cell_size=avg_cell_size, avg_diam=avg_diam)
-      #
-      # print '\nGerm band:'
-      # print 'cell count=' + str(GB_cell_count)
-      # print 'length=' + str(GB_length) + ' pixels'
-      # print 'area=' + str(GB_area) + ' pixels'
-      # print '========='
-      # print '\nGrowth zone:'
-      # print 'cell count=' + str(GZ_cell_count)
-      # print 'length=' + str(GZ_length) + ' pixels'
-      # print 'area=' + str(GZ_area) + ' pixels'
-      # print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
-      # print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'
-      
-   def step(self,mcs):
-      with open(self.output_filename,'a') as self.output_file:
-          GZ_division = self.find_GZ_division_count()
-          GB_division = self.find_GB_division_count()
-          GB_cell_count = self.find_GB_cell_count()
-          GZ_cell_count = self.find_GZ_cell_count()
-          GB_length = self.find_GB_length()
-          GZ_length = self.find_GZ_length()
-          GB_area = self.find_GB_area()
-          GZ_area = self.find_GZ_area()
-          GZ_normalized_growth = GZ_division / GZ_area
-          avg_cell_size = self.find_average_cell_size()
-          avg_diam = math.sqrt(avg_cell_size)
-          avg_div_time = self.find_avg_div_time()
-
-          measurements_vars = [mcs, GB_cell_count, GB_length, GB_area, GB_division, GZ_cell_count, GZ_length, GZ_area,
-                        GZ_division, avg_div_time, GZ_normalized_growth]
-          str_rep_measurements_vars = (str(var) for var in measurements_vars)
-
-          self.output_file.write(','.join(str_rep_measurements_vars))
-          self.output_file.write('\n')
-
-      # self.output_file=open(self.output_filename,'a')
-      # self.output_file.write(str(mcs)+','+str(GB_cell_count)+','+str(GB_length)+','+str(GB_area)+','+str(GB_division)+','+str(GZ_cell_count)+','+str(GZ_length)+','+str(GZ_area)+','+str(GZ_division)+','+str(avg_div_time)+'\n')
-      # self.output_file.close()
-
-      # self.reporter.rprint('Germ band (pixels): ')
-      # self.reporter.printAttrValue(mcs=mcs, GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
-      # self.reporter.rprint( 'Growth zone (pixels): ')
-      # self.reporter.printAttrValue(mcs=mcs,GZ_cell_count=GZ_cell_count, GZ_length=GZ_length, GZ_area=GZ_area, avg_cell_size=avg_cell_size, avg_diam=avg_diam)
-      #
-      # print '\nGerm band:'
-      # print 'cell count=' + str(GB_cell_count)
-      # print 'length=' + str(GB_length) + ' pixels'
-      # print 'area=' + str(GB_area) + ' pixels'
-      # print '========='
-      # print '\nGrowth zone:'
-      # print 'cell count=' + str(GZ_cell_count)
-      # print 'length=' + str(GZ_length) + ' pixels'
-      # print 'area=' + str(GZ_area) + ' pixels'
-      # print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
-      # print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'
-
-   def find_avg_div_time(self):
-      sum_times=0
-      num_times=0
-      for cell in self.cellList:
-         if cell:
-            cellDict=CompuCell.getPyAttrib(cell)
-            if "mitosis_times" in cellDict:
-                if len(cellDict["mitosis_times"])>1:
-                    sum_times+=sum(cellDict["mitosis_times"])-cellDict["mitosis_times"][0]
-                    num_times+=len(cellDict["mitosis_times"])-1
-      if num_times==0:
-         avg_time=0
-      else:
-         avg_time=sum_times/float(num_times)
-      return avg_time
-    
-
-   def find_GZ_division_count(self):
-      division_count=0
-      for cell in self.cellList:
-         if cell:
-            cellDict=CompuCell.getPyAttrib(cell)
-            division_count+=cellDict["divided_GZ"]
-            cellDict["divided_GZ"]=0
-      return division_count
-
-   def find_GB_division_count(self):
-      division_count=0
-      for cell in self.cellList:
-         if cell:
-            cellDict=CompuCell.getPyAttrib(cell)
-            division_count+=cellDict["divided"]
-            cellDict["divided"]=0
-      return division_count
-                  
-   def find_GB_cell_count(self):
-      cell_counter=0
-      for cell in self.cellList:
-         if cell:
-            cell_counter+=1
-      return cell_counter
-      
-   def find_GZ_cell_count(self):
-      y_EN_pos=self.find_posterior_EN_stripe()
-      return sum(1 for cell in self.cellList if cell.yCOM<y_EN_pos)
-      # cell_counter = 0
-      # for cell in self.cellList:
-      #    if cell.yCOM<y_EN_pos:
-      #       cell_counter+=1
-      # return cell_counter
-      
-   def find_GB_length(self):
-      ant=self.find_anterior_GB()
-      pos=self.find_posterior_GB()
-      length=ant-pos
-      return length
-            
-   def find_GZ_length(self):
-      ant=self.find_posterior_EN_stripe()
-      pos=self.find_posterior_GB()
-      length=ant-pos
-      return length
-      
-   def find_GB_area(self):
-      area=0
-      for cell in self.cellList:
-         if cell:
-            area+=cell.volume
-      return area
-      
-   def find_GZ_area(self):
-      y_ant=self.find_posterior_EN_stripe()
-      area = sum(cell.volume for cell in self.cellList if cell.yCOM < y_ant)
-      return area
-      # area=0
-      # for cell in self.cellList:
-      #    if cell.yCOM<y_ant:
-      #       area+=cell.volume
-      # return area
-      
-   def find_average_cell_size(self):
-      area=self.find_GB_area()
-      cell_count=self.find_GB_cell_count()
-      avg_cell_volume=area/cell_count
-      return avg_cell_volume
-            
-   def find_posterior_EN_stripe(self):
-      y_EN_pos=9999
-      for cell in self.cellList:
-         if cell.type==2: # EN cell
-            yCM=cell.yCOM
-            if yCM < y_EN_pos:
-               y_EN_pos=yCM
-      return y_EN_pos
-      
-   def find_anterior_GB(self):
-      ant=0
-      for cell in self.cellList:
-         yCM=cell.yCOM
-         if yCM>ant:
-            ant=yCM
-      return ant
-      
-   def find_posterior_GB(self):
-      pos=9999
-      for cell in self.cellList:
-         yCM=cell.yCOM
-         if yCM<pos:
-            pos=yCM
-      return pos
