@@ -12,7 +12,7 @@ The Tribolium c. modeling project is funded by a grant from the National Science
 
 The focus of the project is to create a Monte-Carlo cellular-level model of the process of segmentation in an arthropod. 
 
-There are three main source files that make up the Simulation.  These are typically found in the /Simulation folder of a ComputCell project.
+There are three main source files that make up the Simulation.  These are typically found in the /Simulation folder of a CompuCell project.
 These are the files that will typically be edited and revised during development.
 
 *  Simulation/ElongationModel.py -- initialization file
