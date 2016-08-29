@@ -245,7 +245,7 @@ class RegionalMitosis(MitosisSteppableBase):
    
    def step(self,mcs):
       self.mcs=mcs
-      print 'Executing Mitosis Steppable'
+      #print 'Executing Mitosis Steppable'
       if mcs in self.transition_times:
          print '*******************TRANSITIONING MITOSIS TIME WINDOW**********************'
          self.reporter.printLn( '*******************TRANSITIONING MITOSIS TIME WINDOW**********************')
@@ -875,56 +875,56 @@ class Measurements(SteppableBasePy):
               self.output_filename = output_folder + 'run' + stamp + '.csv'
           else:
               self.output_filename= self.fname = '{}batch_run_{}.csv'.format(output_folder,self.batch_iteration)
-          self.output_file=open(self.output_filename,'w')
-          self.output_file.write('MCS,GB cell count,GB length,GB area,GB cell divisions,GZ cell count,GZ length,GZ area,GZ cell divisions,avg division cycle time\n')
-          self.output_file.close()
+          with open(self.output_filename,'w') as self.output_file:
+              self.output_file.write('MCS,GB cell count,GB length,GB area,GB cell divisions,GZ cell count,GZ length,GZ area,GZ cell divisions,avg division cycle time\n')
       except IOError:
           raise NameError('Could not output to a csv file properly! Aborting.')
    
-      GB_cell_count=self.find_GB_cell_count()
-      GZ_cell_count=self.find_GZ_cell_count()
-      GB_length=self.find_GB_length()
-      GZ_length=self.find_GZ_length()
-      GB_area=self.find_GB_area()
-      GZ_area=self.find_GZ_area()
-      avg_cell_size=self.find_average_cell_size()
-      avg_diam=math.sqrt(avg_cell_size)
-      
-      self.reporter.rprint('Germ band (pixels): ')
-      self.reporter.printAttrValue(GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
-      self.reporter.rprint( 'Growth zone (pixels): ')
-      self.reporter.printAttrValue(GZ_cell_count=GZ_cell_count, GZ_length=GZ_length, GZ_area=GZ_area, avg_cell_size=avg_cell_size, avg_diam=avg_diam)
-
-      print '\nGerm band:'
-      print 'cell count=' + str(GB_cell_count)
-      print 'length=' + str(GB_length) + ' pixels'
-      print 'area=' + str(GB_area) + ' pixels'
-      print '========='
-      print '\nGrowth zone:'
-      print 'cell count=' + str(GZ_cell_count)
-      print 'length=' + str(GZ_length) + ' pixels'
-      print 'area=' + str(GZ_area) + ' pixels'
-      print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
-      print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'
+      # GB_cell_count=self.find_GB_cell_count()
+      # GZ_cell_count=self.find_GZ_cell_count()
+      # GB_length=self.find_GB_length()
+      # GZ_length=self.find_GZ_length()
+      # GB_area=self.find_GB_area()
+      # GZ_area=self.find_GZ_area()
+      # avg_cell_size=self.find_average_cell_size()
+      # avg_diam=math.sqrt(avg_cell_size)
+      #
+      # self.reporter.rprint('Germ band (pixels): ')
+      # self.reporter.printAttrValue(GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
+      # self.reporter.rprint( 'Growth zone (pixels): ')
+      # self.reporter.printAttrValue(GZ_cell_count=GZ_cell_count, GZ_length=GZ_length, GZ_area=GZ_area, avg_cell_size=avg_cell_size, avg_diam=avg_diam)
+      #
+      # print '\nGerm band:'
+      # print 'cell count=' + str(GB_cell_count)
+      # print 'length=' + str(GB_length) + ' pixels'
+      # print 'area=' + str(GB_area) + ' pixels'
+      # print '========='
+      # print '\nGrowth zone:'
+      # print 'cell count=' + str(GZ_cell_count)
+      # print 'length=' + str(GZ_length) + ' pixels'
+      # print 'area=' + str(GZ_area) + ' pixels'
+      # print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
+      # print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'
       
    def step(self,mcs):
-      GZ_division=self.find_GZ_division_count()
-      GB_division=self.find_GB_division_count()
-      GB_cell_count=self.find_GB_cell_count()
-      GZ_cell_count=self.find_GZ_cell_count()
-      GB_length=self.find_GB_length()
-      GZ_length=self.find_GZ_length()
-      GB_area=self.find_GB_area()
-      GZ_area=self.find_GZ_area()
-      GZ_normalized_growth = GZ_division/GZ_area
-      avg_cell_size=self.find_average_cell_size()
-      avg_diam=math.sqrt(avg_cell_size)
-      avg_div_time=self.find_avg_div_time()
-
       with open(self.output_filename,'a') as self.output_file:
+          GZ_division = self.find_GZ_division_count()
+          GB_division = self.find_GB_division_count()
+          GB_cell_count = self.find_GB_cell_count()
+          GZ_cell_count = self.find_GZ_cell_count()
+          GB_length = self.find_GB_length()
+          GZ_length = self.find_GZ_length()
+          GB_area = self.find_GB_area()
+          GZ_area = self.find_GZ_area()
+          GZ_normalized_growth = GZ_division / GZ_area
+          avg_cell_size = self.find_average_cell_size()
+          avg_diam = math.sqrt(avg_cell_size)
+          avg_div_time = self.find_avg_div_time()
+
           measurements_vars = [mcs, GB_cell_count, GB_length, GB_area, GB_division, GZ_cell_count, GZ_length, GZ_area,
                         GZ_division, avg_div_time, GZ_normalized_growth]
           str_rep_measurements_vars = (str(var) for var in measurements_vars)
+
           self.output_file.write(','.join(str_rep_measurements_vars))
           self.output_file.write('\n')
 
@@ -932,22 +932,22 @@ class Measurements(SteppableBasePy):
       # self.output_file.write(str(mcs)+','+str(GB_cell_count)+','+str(GB_length)+','+str(GB_area)+','+str(GB_division)+','+str(GZ_cell_count)+','+str(GZ_length)+','+str(GZ_area)+','+str(GZ_division)+','+str(avg_div_time)+'\n')
       # self.output_file.close()
 
-      self.reporter.rprint('Germ band (pixels): ')
-      self.reporter.printAttrValue(mcs=mcs, GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
-      self.reporter.rprint( 'Growth zone (pixels): ')
-      self.reporter.printAttrValue(mcs=mcs,GZ_cell_count=GZ_cell_count, GZ_length=GZ_length, GZ_area=GZ_area, avg_cell_size=avg_cell_size, avg_diam=avg_diam)
-
-      print '\nGerm band:'
-      print 'cell count=' + str(GB_cell_count)
-      print 'length=' + str(GB_length) + ' pixels'
-      print 'area=' + str(GB_area) + ' pixels'
-      print '========='
-      print '\nGrowth zone:'
-      print 'cell count=' + str(GZ_cell_count)
-      print 'length=' + str(GZ_length) + ' pixels'
-      print 'area=' + str(GZ_area) + ' pixels'
-      print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
-      print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'
+      # self.reporter.rprint('Germ band (pixels): ')
+      # self.reporter.printAttrValue(mcs=mcs, GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
+      # self.reporter.rprint( 'Growth zone (pixels): ')
+      # self.reporter.printAttrValue(mcs=mcs,GZ_cell_count=GZ_cell_count, GZ_length=GZ_length, GZ_area=GZ_area, avg_cell_size=avg_cell_size, avg_diam=avg_diam)
+      #
+      # print '\nGerm band:'
+      # print 'cell count=' + str(GB_cell_count)
+      # print 'length=' + str(GB_length) + ' pixels'
+      # print 'area=' + str(GB_area) + ' pixels'
+      # print '========='
+      # print '\nGrowth zone:'
+      # print 'cell count=' + str(GZ_cell_count)
+      # print 'length=' + str(GZ_length) + ' pixels'
+      # print 'area=' + str(GZ_area) + ' pixels'
+      # print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
+      # print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'
 
    def find_avg_div_time(self):
       sum_times=0
