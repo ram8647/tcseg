@@ -1,4 +1,4 @@
-##tcseg
+# tcseg
 
 Source code for the Tribolium casteneum (Tc) segmentation modeling project on the CompuCell platform.
 
@@ -28,7 +28,7 @@ There are also two main simulation (.cc3d) files.  These rarely need editing:
 2. $ git checkout master
 3. $ git merge upstream/master
 
-# Standard work flow in Terminal Window
+## Standard work flow in Terminal Window
 
 1. Sync with upstream repo
 1. $ git fetch upstream
@@ -48,11 +48,11 @@ There are also two main simulation (.cc3d) files.  These rarely need editing:
 11. $ git branch -d taskname           # Optional: Delete your task branch once you're sure your changes are in the repo
 
 
-# Running the simulation
+## Running the simulation
 
 On a Mac, open 'Batch Manager Mac.command'. On a Windows or Linux computer, open a command prompt, cd to the 'BatchManager' directory and run './dist/main_UI'. This will open the Batch Manager, where --most importantly--you can change the params file. 
 
-1. Run Compucell3D (CC3D_3.7.1) by double clicking on CC3D_3.7.5/compucell3d.command
+1. Run Compucell3D (CC3D_3.7.5) by double clicking on CC3D_3.7.5/compucell3d.command
 2. This will open a console and the GUI player
 3. To open a model: File > Open one of the simulation files (.cc3d)
 4. To run it, click on the player's run icon
