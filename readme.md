@@ -23,7 +23,8 @@ There are also two main simulation (.cc3d) files.  These rarely need editing:
 * tcseg.cc3d
 * tcseg_batch.cc3d
 
-# To sync with upstream ram8647/tcseg
+## To sync with upstream ram8647/tcseg
+
 1. $ git fetch upstream
 2. $ git checkout master
 3. $ git merge upstream/master
@@ -46,7 +47,6 @@ There are also two main simulation (.cc3d) files.  These rarely need editing:
 9. $ git push                          # Push the changes (this pushes to your clone of the main repo)
 10. $ git push upstream                # Push the changes to the main repo (assuming you are a collaborator)
 11. $ git branch -d taskname           # Optional: Delete your task branch once you're sure your changes are in the repo
-
 
 ## Running the simulation
 
