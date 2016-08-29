@@ -8,7 +8,7 @@ The Tribolium c. modeling project is funded by a grant from the National Science
 
 * Yuxuan (Effie) Li, Trinity
 * Peter Jung, Trinity
-* Jeremy Fisher 
+* Jeremy Fisher, Carleton College
 
 The focus of the project is to create a Monte-Carlo cellular-level model of the process of segmentation in an arthropod. 
 
@@ -29,7 +29,7 @@ There are also two main simulation (.cc3d) files.  These rarely need editing:
 3. $ git merge upstream/master
 
 # Standard work flow in Terminal Window
-=====================================
+
 1. Sync with upstream repo
 1. $ git fetch upstream
 2. $ git checkout master
