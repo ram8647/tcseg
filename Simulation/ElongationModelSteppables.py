@@ -434,20 +434,13 @@ class Measurements(SteppableBasePy):
         return division_count
 
     def find_GB_cell_count(self):
-        cell_counter = 0
-        for cell in self.cellList:
-            if cell:
-                cell_counter += 1
-        return cell_counter
+        GB_cell_count = sum(1 for cell in self.cellList if cell)
+        return GB_cell_count
 
     def find_GZ_cell_count(self):
         y_EN_pos = self.find_posterior_EN_stripe()
-        return sum(1 for cell in self.cellList if cell.yCOM < y_EN_pos)
-        # cell_counter = 0
-        # for cell in self.cellList:
-        #    if cell.yCOM<y_EN_pos:
-        #       cell_counter+=1
-        # return cell_counter
+        GZ_cell_count = sum(1 for cell in self.cellList if cell.yCOM < y_EN_pos)
+        return GZ_cell_count
 
     def find_GB_length(self):
         ant = self.find_anterior_GB()
@@ -462,21 +455,13 @@ class Measurements(SteppableBasePy):
         return length
 
     def find_GB_area(self):
-        area = 0
-        for cell in self.cellList:
-            if cell:
-                area += cell.volume
+        area = sum(cell.volume for cell in self.cellList)
         return area
 
     def find_GZ_area(self):
         y_ant = self.find_posterior_EN_stripe()
         area = sum(cell.volume for cell in self.cellList if cell.yCOM < y_ant)
         return area
-        # area=0
-        # for cell in self.cellList:
-        #    if cell.yCOM<y_ant:
-        #       area+=cell.volume
-        # return area
 
     def find_average_cell_size(self):
         area = self.find_GB_area()
@@ -485,29 +470,16 @@ class Measurements(SteppableBasePy):
         return avg_cell_volume
 
     def find_posterior_EN_stripe(self):
-        y_EN_pos = 9999
-        for cell in self.cellList:
-            if cell.type == 2:  # EN cell
-                yCM = cell.yCOM
-                if yCM < y_EN_pos:
-                    y_EN_pos = yCM
-        return y_EN_pos
+        EN_posterior = min(cell.cell.yCOM for cell in self.cellListByType(2))# EN cell
+        return EN_posterior
 
     def find_anterior_GB(self):
-        ant = 0
-        for cell in self.cellList:
-            yCM = cell.yCOM
-            if yCM > ant:
-                ant = yCM
-        return ant
+        GB_anterior = max(cell.yCOM for cell in self.cellList)
+        return GB_anterior
 
     def find_posterior_GB(self):
-        pos = 9999
-        for cell in self.cellList:
-            yCM = cell.yCOM
-            if yCM < pos:
-                pos = yCM
-        return pos
+        GB_posterior = min(cell.yCOM for cell in self.cellList)
+        return GB_posterior
 
 class ElongationMitosisSteppableBase(MitosisSteppableBase):
 
@@ -682,7 +654,7 @@ class RegionalMitosis(ElongationMitosisSteppableBase):
    
    def step(self,mcs):
       self.mcs=mcs
-      #print 'Executing Mitosis Steppable'
+      print '\nExecuting Mitosis Steppable @ {}'.format(mcs)
       if mcs in self.transition_times:
          print '*******************TRANSITIONING MITOSIS TIME WINDOW**********************'
          self.reporter.printLn( '*******************TRANSITIONING MITOSIS TIME WINDOW**********************')
