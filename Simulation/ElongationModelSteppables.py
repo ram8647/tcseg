@@ -579,7 +579,7 @@ class ElongationMitosisSteppableBase(MitosisSteppableBase):
         parent_dict['last_division_mcs'] = self.mcs
 
         # Make a copy of the parent cell's dictionary and attach to child cell
-        for key, item in parent_dict.items():
+        for key, item in parent_dict.iteritems():
             child_dict[key] = deepcopy(item)
         child_dict['mitosis_times'] = []
 
