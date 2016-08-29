@@ -8,6 +8,7 @@ from PySteppablesExamples import MitosisSteppableBase
 import CompuCell
 import sys
 import math
+from decimal import *
 from random import random
 from copy import deepcopy
 
@@ -108,32 +109,17 @@ class SimplifiedForces_SmoothedForces(SteppableBasePy):
 
       
     def find_midline(self):
-      x0=999999
-      x_max=0
-      for cell in self.cellList:
-         xCM=cell.xCOM
-         if xCM>x_max:
-            x_max=xCM
-         elif xCM<x0:
-            x0=xCM
+      x0 = min(cell.xCOM for cell in self.cellList)
+      x_max = max(cell.xCOM for cell in self.cellList)
       midline=x0+0.5*(x_max-x0)
       return midline
       
     def find_posterior_EN(self):
-      y_EN_pos=999999
-      for cell in self.cellList:
-         if cell.type==2: #Anterior
-            yCM=cell.yCOM
-            if yCM < y_EN_pos:
-               y_EN_pos=yCM
-      return y_EN_pos    
+      y_EN_pos = min(cell.yCOM for cell in self.cellListByType(2)) # EN cell
+      return y_EN_pos
 
     def find_posterior_GZ(self):
-      y_GZ_pos=999999
-      for cell in self.cellList:
-         yCM=cell.yCOM
-         if yCM < y_GZ_pos:
-            y_GZ_pos=yCM
+      y_GZ_pos = min(cell.yCOM for cell in self.cellList)
       return y_GZ_pos       
 
 class SarrazinVisualizer(SteppableBasePy):
@@ -249,7 +235,6 @@ class DyeCells(SteppableBasePy):
                 xCM = cell.xCOM
                 yCM = cell.yCOM
                 if (xCM >= x0 and xCM <= xf and yCM >= y0 and yCM <= yf):  ## if the cell is within the dye area
-                    #                     self.reporter.rprint('\ndying cell...\n')
                     cellDict['dye'] = dye  ## set initial dye load
                     pixelList = CellPixelList(self.pixelTrackerPlugin, cell)
                     for pixelData in pixelList:
@@ -325,38 +310,17 @@ class Measurements(SteppableBasePy):
             else:
                 self.output_filename = self.fname = '{}batch_run_{}.csv'.format(output_folder, self.batch_iteration)
             with open(self.output_filename, 'w') as self.output_file:
-                self.output_file.write(
-                    'MCS,GB cell count,GB length,GB area,GB cell divisions,GZ cell count,GZ length,GZ area,GZ cell divisions,avg division cycle time\n')
+                measurement_vars = ['MCS', 'GB cell count', 'GB length', 'GB area', 'GB cell divisions', 'GZ cell count',
+                        'GZ length', 'GZ area', 'GZ cell divisions', 'avg division cycle time', 'GZ normalized growth']
+                output_str = ','.join(measurement_vars) + '\n'
+                self.output_file.write(output_str)
         except IOError:
             raise NameError('Could not output to a csv file properly! Aborting.')
 
-            # GB_cell_count=self.find_GB_cell_count()
-            # GZ_cell_count=self.find_GZ_cell_count()
-            # GB_length=self.find_GB_length()
-            # GZ_length=self.find_GZ_length()
-            # GB_area=self.find_GB_area()
-            # GZ_area=self.find_GZ_area()
-            # avg_cell_size=self.find_average_cell_size()
-            # avg_diam=math.sqrt(avg_cell_size)
-            #
-            # self.reporter.rprint('Germ band (pixels): ')
-            # self.reporter.printAttrValue(GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
-            # self.reporter.rprint( 'Growth zone (pixels): ')
-            # self.reporter.printAttrValue(GZ_cell_count=GZ_cell_count, GZ_length=GZ_length, GZ_area=GZ_area, avg_cell_size=avg_cell_size, avg_diam=avg_diam)
-            #
-            # print '\nGerm band:'
-            # print 'cell count=' + str(GB_cell_count)
-            # print 'length=' + str(GB_length) + ' pixels'
-            # print 'area=' + str(GB_area) + ' pixels'
-            # print '========='
-            # print '\nGrowth zone:'
-            # print 'cell count=' + str(GZ_cell_count)
-            # print 'length=' + str(GZ_length) + ' pixels'
-            # print 'area=' + str(GZ_area) + ' pixels'
-            # print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
-            # print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'
+        getcontext().prec = 15 # Sets the decimal precision for high precision arithmetic
 
     def step(self, mcs):
+        print('\nTaking measurements @ {} mcs'.format(mcs))
         with open(self.output_filename, 'a') as self.output_file:
             GZ_division = self.find_GZ_division_count()
             GB_division = self.find_GB_division_count()
@@ -366,7 +330,7 @@ class Measurements(SteppableBasePy):
             GZ_length = self.find_GZ_length()
             GB_area = self.find_GB_area()
             GZ_area = self.find_GZ_area()
-            GZ_normalized_growth = GZ_division / GZ_area
+            GZ_normalized_growth = Decimal(GZ_division) / Decimal(GZ_area) # Decimal() allows high precision arithmetic
             avg_cell_size = self.find_average_cell_size()
             avg_diam = math.sqrt(avg_cell_size)
             avg_div_time = self.find_avg_div_time()
@@ -377,27 +341,6 @@ class Measurements(SteppableBasePy):
 
             self.output_file.write(','.join(str_rep_measurements_vars))
             self.output_file.write('\n')
-
-            # self.output_file=open(self.output_filename,'a')
-            # self.output_file.write(str(mcs)+','+str(GB_cell_count)+','+str(GB_length)+','+str(GB_area)+','+str(GB_division)+','+str(GZ_cell_count)+','+str(GZ_length)+','+str(GZ_area)+','+str(GZ_division)+','+str(avg_div_time)+'\n')
-            # self.output_file.close()
-
-            # self.reporter.rprint('Germ band (pixels): ')
-            # self.reporter.printAttrValue(mcs=mcs, GB_cell_count=GB_cell_count, GB_length=GB_length, GB_area=GB_area)
-            # self.reporter.rprint( 'Growth zone (pixels): ')
-            # self.reporter.printAttrValue(mcs=mcs,GZ_cell_count=GZ_cell_count, GZ_length=GZ_length, GZ_area=GZ_area, avg_cell_size=avg_cell_size, avg_diam=avg_diam)
-            #
-            # print '\nGerm band:'
-            # print 'cell count=' + str(GB_cell_count)
-            # print 'length=' + str(GB_length) + ' pixels'
-            # print 'area=' + str(GB_area) + ' pixels'
-            # print '========='
-            # print '\nGrowth zone:'
-            # print 'cell count=' + str(GZ_cell_count)
-            # print 'length=' + str(GZ_length) + ' pixels'
-            # print 'area=' + str(GZ_area) + ' pixels'
-            # print '\nAverage cell size (whole embryo) = ' + str(avg_cell_size) + ' pixels'
-            # print 'Average cell diameter (whole embryo) = ' + str(avg_diam) + ' pixels' + '\n'
 
     def find_avg_div_time(self):
         sum_times = 0
@@ -470,7 +413,7 @@ class Measurements(SteppableBasePy):
         return avg_cell_volume
 
     def find_posterior_EN_stripe(self):
-        EN_posterior = min(cell.cell.yCOM for cell in self.cellListByType(2))# EN cell
+        EN_posterior = min(cell.yCOM for cell in self.cellListByType(2)) # EN cell
         return EN_posterior
 
     def find_anterior_GB(self):
@@ -654,7 +597,7 @@ class RegionalMitosis(ElongationMitosisSteppableBase):
    
    def step(self,mcs):
       self.mcs=mcs
-      print '\nExecuting Mitosis Steppable @ {}'.format(mcs)
+      #print '\nExecuting Mitosis Steppable @ {}'.format(mcs)
       if mcs in self.transition_times:
          print '*******************TRANSITIONING MITOSIS TIME WINDOW**********************'
          self.reporter.printLn( '*******************TRANSITIONING MITOSIS TIME WINDOW**********************')
