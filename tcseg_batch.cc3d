@@ -5,7 +5,7 @@
    <Resource Type="Python">Simulation/PostProcessParamsXML.py</Resource>
    <Resource Type="Piff">Uniform_volume_with_large_cells.piff</Resource>
    <Resource Type="Piff">Simulation/Uniform_volume.piff</Resource>
-   <Resource Type="Piff">Simulation/Uniformly_distributed_volume.piff/Resource>
-   <Resource Type="Piff">Simulation/Semirandom_volume.piff.piff/Resource>
+   <Resource Type="Piff">Simulation/Uniformly_distributed_volume.piff</Resource>
+   <Resource Type="Piff">Simulation/Semirandom_volume.piff.piff</Resource>
    <ParameterScan Type="ParameterScan">Simulation/ParameterScanSpecs.xml</ParameterScan>
 </Simulation>
