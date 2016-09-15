@@ -64,12 +64,12 @@ def configureSimulation(sim, params_path):
     if embryo_size==1:
         Dx = 320
         Dy = 910
-    elif embryo_size==2:
+    elif embryo_size==2 or embryo_size==3 or embryo_size == 4:
         Dx = 450
         Dy = 1800
-    elif embryo_size==3:
-        Dx = 900
-        Dy = 1800
+    # elif embryo_size==3:
+    #     Dx = 900
+    #     Dy = 1800
     global dye_flag; dye_flag = params_container.getNumberParam('dye_flag')
     global AP_growth_constraint_flag; AP_growth_constraint_flag = params_container.getNumberParam('AP_growth_constraint_flag')
     global dye_mitosis_clones; dye_mitosis_clones=params_container.getNumberParam('dye_mitosis_clones')
@@ -150,11 +150,13 @@ def configureSimulation(sim, params_path):
     # To initial layout of cells using PIFF file. (Piff files can be generated using PIFGEnerator)
     SteppableElmnt=CompuCell3DElmnt.ElementCC3D("Steppable",{"Type":"PIFInitializer"})
     if embryo_size==1:
-        SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_3_19_2015.piff")
+        SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/Uniform_volume_with_large_cells.piff")
     elif embryo_size==2:
-        SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_04_06_2015.piff")
+        SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/Uniform_volume.piff")
     elif embryo_size==3:
-        SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/InitialConditions_04_06_2015_wide.piff")
+        SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/Uniformly_distributed_volume.piff")
+    elif embryo_size==4:
+        SteppableElmnt.ElementCC3D("PIFName",{},"Simulation/Semirandom_volume.piff")
 
     CompuCellSetup.setSimulationXMLDescription(CompuCell3DElmnt)
 
