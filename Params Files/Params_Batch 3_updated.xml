@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+<params_pkg manager_version="beta_2" name="ExploreSpatialVariationInRMitosis">
+	<param name="AP_growth_constraint_flag">0</param>
+	<param name="V_AP_GZposterior">70.0</param>
+	<param name="dye_flag">1.0</param>
+	<param name="dye_mitosis_clones">0.0</param>
+	<param name="embryo_size">2.0</param>
+	<param name="forces_on">1</param>
+	<param name="k1_AP_GZanterior">65.0</param>
+	<param name="k1_AP_Segments">5.0</param>
+	<param name="k1_ML_GZ">70.0</param>
+	<param name="k1_ML_Segments">70.0</param>
+	<param name="k2_AP_GZanterior">5.0</param>
+	<param name="k2_AP_Segments">-0.02</param>
+	<param name="k2_ML_GZ">-0.004167</param>
+	<param name="k2_ML_Segments">-0.02</param>
+	<param name="mitosis_Vmax">90.0</param>
+	<param name="mitosis_Vmin_divide">60.0</param>
+	<param name="mitosis_dye_window">[50, 50]</param>
+	<param name="mitosis_fraction_AP_oriented">0.0</param>
+	<param name="mitosis_on">1</param>
+	<param name="mitosis_transition_times">[0, 1800, 2400]</param>
+	<param name="mitosis_visualization_flag">1.0</param>
+	<param name="mitosis_visualization_window">50.0</param>
+	<param name="mitosis_window">500.0</param>
+	<param name="r_grow_R0">[0.0, 0.0, 0.0]</param>
+	<param name="r_grow_R1">[0.05, 0.05, 0.05]</param>
+	<param name="r_grow_R2">[0.05, 0.05, 0.05]</param>
+	<param name="r_grow_R3">[0.05, 0.05, 0.05]</param>
+	<param name="r_mitosis_R0">[0.0, 0.0, 0.0]</param>
+	<param name="r_mitosis_R1">
+		<BatchValue>[0.0, 0.0, 0.0]</BatchValue>
+		<BatchValue>[0.2, 0.2, 0.2]</BatchValue>
+		<BatchValue>[0.4, 0.4, 0.4]</BatchValue>
+		<BatchValue>[0.6, 0.6, 0.6]</BatchValue>
+	</param>
+	<param name="r_mitosis_R2">
+		<BatchValue>[0.0, 0.0, 0.0]</BatchValue>
+		<BatchValue>[0.2, 0.2, 0.2]</BatchValue>
+		<BatchValue>[0.4, 0.4, 0.4]</BatchValue>
+		<BatchValue>[0.6, 0.6, 0.6]</BatchValue>
+	</param>
+	<param name="r_mitosis_R3">
+		<BatchValue>[0.0, 0.0, 0.0]</BatchValue>
+		<BatchValue>[0.2, 0.2, 0.2]</BatchValue>
+		<BatchValue>[0.4, 0.4, 0.4]</BatchValue>
+		<BatchValue>[0.6, 0.6, 0.6]</BatchValue>
+	</param>
+	<param name="stripe_period">400.0</param>
+	<param name="x0_dye">[50, 75, 225, 225, 225, 115]</param>
+	<param name="xf_dye">[100, 125, 275, 275, 275, 165]</param>
+	<param name="y0_dye">[1350, 1500, 1350, 1500, 1200, 1225]</param>
+	<param name="y_GZ_mitosis_border_percent">0.5</param>
+	<param name="yf_dye">[1400, 1550, 1400, 1550, 1250, 1275]</param>
+</params_pkg>
