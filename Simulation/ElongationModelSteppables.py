@@ -490,7 +490,7 @@ class ElongationMitosisSteppableBase(MitosisSteppableBase):
 
         parent_dict = CompuCell.getPyAttrib(parent_cell)
         child_dict = CompuCell.getPyAttrib(child_cell)
-        parent_dict['mitosis_times'].append(self.mcs - parent_dict['last_division_mcs'])
+        parent_dict.get('mitosis_times',[]).append(self.mcs - parent_dict.get('last_division_mcs',self.mcs))
         parent_dict['last_division_mcs'] = self.mcs
 
         # Make a copy of the parent cell's dictionary and attach to child cell
@@ -633,6 +633,7 @@ class RegionalMitosisWithAPConstraint(ElongationMitosisSteppableBase):
          cellDict['divided_GZ']=0
    
    def step(self,mcs):
+      self.mcs = mcs
       print 'Executing Mitosis Steppable'
       if mcs in self.transition_times:
          print '*******************TRANSITIONING MITOSIS TIME WINDOW**********************'
@@ -641,20 +642,19 @@ class RegionalMitosisWithAPConstraint(ElongationMitosisSteppableBase):
          self.r_grow_list=[self.r_grow_R0[self.transition_counter],self.r_grow_R1[self.transition_counter],self.r_grow_R2[self.transition_counter],self.r_grow_R3[self.transition_counter]]      
          self.transition_counter+=1
 
-      mitosis_list=self.make_mitosis_list()
-      self.perform_mitosis(mitosis_list)
       self.y_EN_pos=self.find_posterior_EN_stripe()
       self.y_EN_ant=self.find_anterior_EN_stripe()
       self.y_GZ_border=self.find_y_GZ_mitosis_border()
       for cell in self.cellList:
          self.assign_cell_region(cell)
          self.grow_cell(cell)
-      # mitosis_list=self.make_mitosis_list()
-      # self.perform_mitosis(mitosis_list)
+      mitosis_list=self.make_mitosis_list()
+      self.perform_mitosis(mitosis_list)
 
    def updateAttributes(self):
       ElongationMitosisSteppableBase.updateAttributes(self)
       # Attach the elongation constraint to the child cell
+      childCell = self.mitosisSteppable.childCell
       self.OGPlugin.setElongationAxis(childCell, 0, 1) # Here, we define the axis of elongation.
       self.OGPlugin.setConstraintWidth(childCell, 4.0) # And this function gives a width constraint to each cell
       self.OGPlugin.setElongationEnabled(childCell, True) # Make sure to enable or disable elongation in all cells
