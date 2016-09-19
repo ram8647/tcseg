@@ -31,10 +31,10 @@ global params_scan_spec_path
 '''
 You can add these manually or, and this is recommended, use BatchManager.command
 '''
-params_path = '/home/jeremy/Desktop/tcseg/Params Files/Batch 9.xml' #IO_MANAGER_FLAG_A_DO_NOT_CHANGE_THIS_COMMENT
-stats_reporter_path = '/home/jeremy/Desktop/tcseg/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
-measurements_output_path = '/home/jeremy/Desktop/tcseg/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
-params_scan_spec_path = '/home/jeremy/Desktop/tcseg/Simulation/ParameterScanSpecs.xml' #IO_MANAGER_FLAG_C_DO_NOT_CHANGE_THIS_COMMENT
+params_path = '/Users/jeremyfisher/Desktop/tcseg/Params Files/Params_Batch_10.xml' #IO_MANAGER_FLAG_A_DO_NOT_CHANGE_THIS_COMMENT
+stats_reporter_path = '/Users/jeremyfisher/Desktop/tcseg/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
+measurements_output_path = '/Users/jeremyfisher/Desktop/tcseg/Output/' #IO_MANAGER_FLAG_B_DO_NOT_CHANGE_THIS_COMMENT
+params_scan_spec_path = '/Users/jeremyfisher/Desktop/tcseg/Simulation/ParameterScanSpecs.xml' #IO_MANAGER_FLAG_C_DO_NOT_CHANGE_THIS_COMMENT
 
 ## MAKE SURE  PATHS ARE VALID AND DO STUFF IF THEY ARE NOT
 if not os.path.isfile(params_path):
@@ -235,6 +235,12 @@ MeasurementsInstance = Measurements(sim,_frequency = 100,
                                     _batch=batch,
                                     _batch_iteration=batch_iteration)
 steppableRegistry.registerSteppable(MeasurementsInstance)
+
+'''Temp Cell Volume Histogram'''
+
+from ElongationModelSteppables import HistPlotSteppable
+HistPlotSteppableInstance = HistPlotSteppable(sim, _frequency=1)
+steppableRegistry.registerSteppable(HistPlotSteppableInstance)
 
 ## CONFIGURE EXTRA PLAYER FIELDS
 

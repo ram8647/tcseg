@@ -11,7 +11,40 @@ import math
 from decimal import *
 from random import random
 from copy import deepcopy
+import numpy as np
 
+class HistPlotSteppable(SteppableBasePy):
+    def __init__(self,_simulator,_frequency=10):
+    	SteppableBasePy.__init__(self,_simulator,_frequency)
+
+    def start(self):
+        #initialize setting for Histogram
+        self.pW = self.addNewPlotWindow(_title='Cell Volumes',
+                                        _xAxisTitle='Volume',
+                                        _yAxisTitle='Count')
+        self.pW.addHistogramPlot(_plotName='Hist 1',_color='green',_alpha=100)
+        
+        self.pW2 = self.addNewPlotWindow(_title='Avg Cell Volume and targetVolume',
+                                       _xAxisTitle = 'MonteCarlo Step (MCS)',
+                                       _yAxisTitle = 'Pixels**2')
+                                       
+        self.pW2.addPlot('AvgVol', _style='Dots', _color='red', _size=5)
+        self.pW2.addPlot('AvgTargetVol', _style='Dots', _color='blue', _size=5)
+        
+    def step(self,mcs):
+        volume_list = [cell.volume for cell in self.cellList]
+        n, bins = np.histogram(volume_list, bins=25)
+        self.pW.addHistPlotData('Hist 1', n, bins)
+        self.pW.showAllHistPlots()
+        
+        num_cells = len(self.cellListByType(self.GZ))
+        avg_vol = Decimal(sum(cell.volume for cell in self.cellListByType(self.GZ))) / Decimal(num_cells)
+        avg_tar_vol = Decimal(sum(cell.targetVolume for cell in self.cellListByType(self.GZ))) / Decimal(num_cells)
+        self.pW2.addDataPoint('AvgVol', mcs, avg_vol)
+        self.pW2.addDataPoint('AvgTargetVol', mcs, avg_tar_vol)
+        self.pW2.showAllPlots()
+        
+        
 class VolumeStabilizer(SteppableBasePy):
     def __init__(self,_simulator,_frequency,_params_container):
         SteppableBasePy.__init__(self,_simulator,_frequency)
