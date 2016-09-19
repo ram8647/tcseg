@@ -56,11 +56,11 @@ def window(io_manager):
         io_manager.move_all_files_to_output_folder()
 
     def process_all():
-        convert2vid(io_manager)
-        compress_vtks(io_manager)
+        convert2vid()
+        compress_vtks()
         io_manager.move_all_files_to_output_folder()
         io_manager.delete_unnecessary_output_files()
-        create_summary(io_manager)
+        create_summary()
 
     # Not supported yet
     def convert_txt2xml(inpath):
