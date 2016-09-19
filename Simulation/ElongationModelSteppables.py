@@ -51,19 +51,13 @@ class VolumeStabilizer(SteppableBasePy):
         self.params_container=_params_container
 
     def start(self):
-        Vmin_divide =  self.params_container.getNumberParam('mitosis_Vmin_divide')
-        Vmin=int(Vmin_divide/2.0)
-
         for cell in self.cellList:
-            if cell.type==3: # GZ
-                volume=int(Vmin+Vmin*random())
-                surface=4*int(math.sqrt(volume))
-                cell.targetVolume = volume
-                cell.targetSurface = surface
-            else:
-                cell.targetVolume=cell.volume
-                cell.targetSurface=cell.surface
-
+            cell.targetSurface=cell.surface 
+            cell.targetVolume=cell.volume + 4
+            # In practice, there is always an aproximately 4 pixel difference between the actual
+            # volume and the targetVolume. We add 4 to the targetVolume initially to keep this
+            # consistent throughout the simulation.
+            
             cell.lambdaVolume = 50.0 # A high lambdaVolume makes the cells resist changing volume.
             cell.lambdaSurface = 2.0 # However, a low lambdaSurface still allows them to move easily.
             # In effect, these above two lines allow the cells to travel without squeezing, which would be unrealistic.
