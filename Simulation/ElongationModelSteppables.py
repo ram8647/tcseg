@@ -337,8 +337,9 @@ class Measurements(SteppableBasePy):
             else:
                 self.output_filename = self.fname = '{}batch_run_{}.csv'.format(output_folder, self.batch_iteration)
             with open(self.output_filename, 'w') as self.output_file:
-                measurement_vars = ['MCS', 'GB cell count', 'GB length', 'GB area', 'GB cell divisions', 'GZ cell count',
-                        'GZ length', 'GZ area', 'GZ cell divisions', 'avg division cycle time', 'GZ normalized growth']
+                measurement_vars = ['MCS', 'GB cell count', 'GB length', 'GB area', 'GB cell divisions',
+                                    'GZ cell count', 'GZ length', 'GZ area', 'GZ cell divisions',
+                                    'avg division cycle time', 'GZ div / GZ area']
                 output_str = ','.join(measurement_vars) + '\n'
                 self.output_file.write(output_str)
         except IOError:
