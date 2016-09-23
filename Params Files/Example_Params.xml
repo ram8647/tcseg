@@ -1,4 +1,4 @@
-<params_pkg manager_version="beta1" name="Fifth Batch">
+<params_pkg manager_version="beta1" name="Example Batch">
 	<param name="AP_growth_constraint_flag">
 		<BatchValue>0</BatchValue>
 		<BatchValue>1</BatchValue>
