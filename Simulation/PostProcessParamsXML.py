@@ -4,8 +4,10 @@ def process_dictionary(dict):
     :return: a dictionary where all the values have been checked and manipulated if needed
     '''
 
-    batch_interpreter_version = 'beta1'
+    batch_interpreter_version = 'beta2'
 
+    # Replace special tags with simulation-relevant ones
+    
     if 'r_mitosis_R123' in dict.keys():
         val = dict['r_mitosis_R123']
         dict['r_mitosis_R1'] = val
@@ -32,13 +34,26 @@ def process_dictionary(dict):
         dict['r_grow_R3'] = val
         del dict['r_grow_GZ']
 
-    for i in range(4):
-        default_growth_rate = 0.02
-        if dict['r_mitosis_R{}'.format(i)] == [0.0] * 3:
-            dict['r_grow_R{}'.format(i)] = [0.0] * 3
-        else:
-            if not 'r_grow_R{}'.format(i) in dict.keys():
-                dict['r_grow_R{}'.format(i)] = [default_growth_rate] * 3
+    # Turn off r_grow if r_mitosis is off and, if r_grow
+    # is not specified then give is a default value
+    default_growth_rate = 0.02
+    
+    mitosis_keys = ('r_mitosis_R{}'.format(i) for i in range(4))
+    growth_keys = ('r_grow_R{}'.format(i) for i in range(4))
+    
+    # First, if r_grow is not specified, give an empty array
+    for key in growth_keys:
+        if key not in dict:
+            dict[growth_keys] = []
+    
+    # Then, scan through the r_mitosis_* to see if we need to turn
+    # r_grow_* on
+    for mitosis_key, growth_key in zip(mitosis_keys, growth_keys):
+        for mitosis_rate in dict[r_mitosis_X]
+            if mitosis_rate == 0.0:
+                dict[growth_key].append(0.0)
+            else:
+                dict[growth_key].append(default_growth_rate)
 
     error_check_params_dict(dict)
     return dict
