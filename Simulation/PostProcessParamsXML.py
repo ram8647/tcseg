@@ -1,12 +1,12 @@
 def process_dictionary(dict):
     '''
     :param dict: the raw dictionary
-    :return: a dictionary where all the values have been checked and manipulated if needed
+    :return: a dictionary where all the values have been checked and manipulated as needed
     '''
 
     batch_interpreter_version = 'beta2'
 
-    # Replace special tags with simulation-relevant ones
+    ## Replace special tags with simulation-relevant ones
     
     if 'r_mitosis_R123' in dict.keys():
         val = dict['r_mitosis_R123']
@@ -34,26 +34,36 @@ def process_dictionary(dict):
         dict['r_grow_R3'] = val
         del dict['r_grow_GZ']
 
-    # Turn off r_grow if r_mitosis is off and, if r_grow
-    # is not specified then give is a default value
-    default_growth_rate = 0.02
+    ## Turn off r_grow if r_mitosis is off and, if r_grow is not specified then give is a default value. Also, vise-versa.
     
+    # First, pull default values from the params dict 
+    default_growth_rate = dict.get('default_growth_rate', 0.02) # Unless otherwise specified, this will be 0.02
+    default_mitosis_rate = dict.get('default_mitosis_rate', 0.2) # Unless otherwise specified, this will be 0.2
+    num_mitosis_transitions = len(mitosis_transition_times)
+    
+    # Then, generate the keys 
     mitosis_keys = ('r_mitosis_R{}'.format(i) for i in range(4))
     growth_keys = ('r_grow_R{}'.format(i) for i in range(4))
     
-    # First, if r_grow is not specified, give an empty array
-    for key in growth_keys:
-        if key not in dict:
-            dict[growth_keys] = []
-    
-    # Then, scan through the r_mitosis_* to see if we need to turn
-    # r_grow_* on
+    # Finally, scan through the r_mitosis_* and R_grow_* to see if we need turn them on.
     for mitosis_key, growth_key in zip(mitosis_keys, growth_keys):
-        for mitosis_rate in dict[r_mitosis_X]
-            if mitosis_rate == 0.0:
-                dict[growth_key].append(0.0)
-            else:
-                dict[growth_key].append(default_growth_rate)
+        if mitosis_key not in dict and growth_key not in dict:
+            dict[mitosis_key] = [default_mitosis_rate] * num_mitosis_transitions
+            dict[growth_key] = [default_growth_rate] * num_mitosis_transitions
+            
+        elif mitosis_key in dict and growth_key not in dict:
+            for mitosis_window in dict[mitosis_key]
+                if mitosis_window == 0.0:
+                    dict.get(growth_key,[]).append(0.0)
+                else:
+                    dict.get(growth_key,[]).append(default_growth_rate)
+                    
+        elif mitosis_key not in dict and growth_key  in dict:
+            for growth_window in dict[growth_key]
+                if growth_window == 0.0:
+                    dict.get(mitosis_key, []).append(0.0)
+                else:
+                    dict.get(mitosis_key, []).append(default_growth_rate)
 
     error_check_params_dict(dict)
     return dict
