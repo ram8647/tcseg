@@ -39,7 +39,7 @@ def process_dictionary(dict):
     # First, pull default values from the params dict 
     default_growth_rate = dict.get('default_growth_rate', 0.02) # Unless otherwise specified, this will be 0.02
     default_mitosis_rate = dict.get('default_mitosis_rate', 0.2) # Unless otherwise specified, this will be 0.2
-    num_mitosis_transitions = len(mitosis_transition_times)
+    num_mitosis_transitions = len(dict['mitosis_transition_times'])
     
     # Then, generate the keys 
     mitosis_keys = ('r_mitosis_R{}'.format(i) for i in range(4))
@@ -52,18 +52,20 @@ def process_dictionary(dict):
             dict[growth_key] = [default_growth_rate] * num_mitosis_transitions
             
         elif mitosis_key in dict and growth_key not in dict:
-            for mitosis_window in dict[mitosis_key]
+            dict[growth_key] = []
+            for mitosis_window in dict[mitosis_key]:
                 if mitosis_window == 0.0:
                     dict.get(growth_key,[]).append(0.0)
                 else:
                     dict.get(growth_key,[]).append(default_growth_rate)
                     
-        elif mitosis_key not in dict and growth_key  in dict:
-            for growth_window in dict[growth_key]
+        elif mitosis_key not in dict and growth_key in dict:
+            dict[mitosis_key] = []
+            for growth_window in dict[growth_key]:
                 if growth_window == 0.0:
                     dict.get(mitosis_key, []).append(0.0)
                 else:
-                    dict.get(mitosis_key, []).append(default_growth_rate)
+                    dict.get(mitosis_key, []).append(default_mitosis_rate)
 
     error_check_params_dict(dict)
     return dict
@@ -85,6 +87,10 @@ def error_check_params_dict(dict):
     missing_variables = []
     for var in necessary_variables:
         if var not in dict:
-            missing_variables.append(missing_variables)
+            missing_variables.append(var)
     if len(missing_variables) > 0:
-        raise NameError('Missing Variables! Please specify: {}',', '.join(missing_variables))
+        raise NameError('Missing Variables! Please specify: {}'.format(', '.join(missing_variables)))
+
+
+
+
