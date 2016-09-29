@@ -28,7 +28,7 @@ def create_summary(io_manager, type ='html'):
 
     elif params_path.endswith('.xml'):
 
-        batch_vars_dict = OrderedDict()
+        batch_vars_dict = {}
         xml_file = parse(params_path)
         xml_root = xml_file.getroot()
 
