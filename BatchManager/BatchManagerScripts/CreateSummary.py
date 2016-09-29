@@ -16,7 +16,7 @@ def create_summary(io_manager, type ='html'):
     '''
 
     def has_children(xml_element):
-        return True if len(list(xml_element)) else False
+        return True if len(list(xml_element)) > 0 else False
 
     params_path = io_manager.params_path
     outpath = os.path.join(io_manager.output_folder, 'BatchSummary.html')
@@ -108,7 +108,7 @@ def create_summary(io_manager, type ='html'):
                 csv_title_span = ET.SubElement(csv_title_td, 'span')
                 csv_title_span.text = 'CSV Output'
 
-                # Add in the run values by row
+                # Add in the values by row
                 table_body = ET.SubElement(table, 'tbody')
                 for run_number, combo in enumerate(all_combinations_of_params):
                     row_td = ET.SubElement(table, 'tr')
@@ -123,7 +123,8 @@ def create_summary(io_manager, type ='html'):
                         element_td = ET.SubElement(row_td, 'td')
                         element_td.text = str(element)
 
-                    # Add output'd files
+                    # Add output'd files...
+                    # ...including the final image and the movie
                     video_td = ET.SubElement(row_td, 'td')
                     open_video = ET.SubElement(video_td, 'a')
                     open_video.set('href', 'batch_run_{}.mov'.format(run_number))
@@ -131,13 +132,13 @@ def create_summary(io_manager, type ='html'):
                     img_element.set('src','tcseg_batch_{}_3600.png'.format(run_number))
                     img_element.set('height', '150')
 
-
+                    # ...and the csv
                     csv_td = ET.SubElement(row_td, 'td')
                     open_csv = ET.SubElement(csv_td, 'a')
                     open_csv.set('href', 'batch_run_{}.csv'.format(run_number))
                     open_csv.text = 'batch_run_{}.csv'.format(run_number)
 
-                # Add in javascripts
+                # Finally, add in javascripts that make this dynamic
                 scripts = ['http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js',
                            'http://tablesorter.com/__jquery.tablesorter.min.js',
                            'js/index.js']
