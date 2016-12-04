@@ -1,0 +1,52 @@
+<params_pkg manager_version="beta_2" name="(Two) Testing the effect of the same mitosis parameters but ONLY in R3 OR R4...to examine the impact of spatial variablility (recall the analysis I showed some time ago showing anterior GZ mitosis had a different effect than AP GZ mitosis).">
+	<param name="visualize_eve">1</param>
+	<param name="visualize_Vmeve">1</param>
+	<param name="visualize_runt">0</param>
+	<param name="visualize_odd">0</param>
+	<param name="visualize_all">0</param>
+	<param name="visualization_threshold">0.5</param>
+	<param name="eve_osc_flag">0</param>
+	<param name="embryo_size">4</param>
+	<param name="stripe_period">400</param>
+	<param name="dye_flag">0</param>
+	<param name="x0_dye">[50, 75, 225, 225, 225, 115]</param>
+	<param name="xf_dye">[100, 125, 275, 275, 275, 165]</param>
+	<param name="y0_dye">[1350, 1500, 1350, 1500, 1200, 1225]</param>
+	<param name="yf_dye">[1400, 1550, 1400, 1550, 1250, 1275]</param>
+	<param name="AP_growth_constraint_flag">1</param>
+	<param name="forces_on">1</param>
+	<param name="V_AP_GZposterior">70</param>
+	<param name="k1_AP_GZanterior">65</param>
+	<param name="k2_AP_GZanterior">5</param>
+	<param name="k1_AP_Segments">5</param>
+	<param name="k2_AP_Segments">-0.02</param>
+	<param name="k1_ML_GZ">70</param>
+	<param name="k2_ML_GZ">-0.004167</param>
+	<param name="k1_ML_Segments">70</param>
+	<param name="k2_ML_Segments">-0.02</param>
+	<param name="mitosis_on">1</param>
+	<param name="y_GZ_mitosis_border_percent">0.5</param>
+	<param name="mitosis_transition_times">[0, 1800, 2400]</param>
+	<param name="r_mitosis_R0">[0.0, 0.0, 0.0]</param>
+	<param name="r_mitosis_R1">[0.0, 0.0, 0.0]</param>
+	<param name="r_mitosis_R2">
+		<BatchValue>[0.2, 0.2, 0.2]</BatchValue>
+		<BatchValue>[1.0, 1.0, 1.0]</BatchValue>
+	</param>
+	<param name="r_mitosis_R3">[0.0, 0.0, 0.0]</param>
+	<param name="r_grow_R0">[0.0, 0.0, 0.0]</param>
+	<param name="r_grow_R1">[0.0, 0.0, 0.0]</param>
+	<param name="r_grow_R2">
+		<BatchValue>[0.02, 0.02, 0.02]</BatchValue>
+		<BatchValue>[0.1, 0.1, 0.1]</BatchValue>
+	</param>
+	<param name="r_grow_R3">[0.0, 0.0, 0.0]</param>
+	<param name="mitosis_fraction_AP_oriented">1</param>
+	<param name="mitosis_window">500</param>
+	<param name="mitosis_Vmin_divide">84</param>
+	<param name="mitosis_Vmax">90</param>
+	<param name="mitosis_visualization_flag">1</param>
+	<param name="mitosis_visualization_window">50</param>
+	<param name="dye_mitosis_clones">0</param>
+	<param name="mitosis_dye_window">[50, 50]</param>
+</params_pkg>
